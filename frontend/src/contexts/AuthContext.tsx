@@ -2,20 +2,20 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
 
-type Role = 'admin' | 'student';
+type Role = 'super_admin' | 'admin' | 'teacher' | 'student';
 
 export interface User {
   id: number;
   email: string;
   full_name: string;
-  role: Role;
+  role: Role;           // ✅ now supports all 4 roles
   is_active: boolean;
 }
 
 interface AuthContextType {
   user: User | null;
   token: string | null;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<void>; // ✅ no role needed
   register: (email: string, full_name: string, password: string, role: Role) => Promise<void>;
   logout: () => void;
 }
@@ -42,7 +42,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(user);
   };
 
-  const register = async (email: string, full_name: string, password: string, role: Role) => {
+  const register = async (email: string, full_name: string, password: string, role: string ) => {
+    // Backend will auto-assign role = 'student'
     const res = await axios.post('/api/auth/register', { email, full_name, password, role });
     const { token, user } = res.data;
     localStorage.setItem('token', token);
