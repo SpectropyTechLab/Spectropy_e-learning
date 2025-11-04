@@ -7,7 +7,7 @@ const JWT_SECRET = process.env.JWT_SECRET;
 
 export const register = async (req, res) => {
   const { email, full_name, password, role } = req.body;
-  
+  console.log(req.body);
   if (!['admin', 'student'].includes(role)) {
     return res.status(400).json({ error: 'Invalid role' });
   }
@@ -36,6 +36,7 @@ export const login = async (req, res) => {
   
   try {
     const user = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+    console.log(user);
     if (!user.rows[0]) return res.status(401).json({ error: 'Invalid credentials' });
 
     const isValid = await comparePassword(password, user.rows[0].password_hash);
