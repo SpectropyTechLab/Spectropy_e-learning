@@ -1,5 +1,6 @@
 // src/pages/auth/MainLoginPage.tsx
 import { useNavigate } from 'react-router-dom';
+import Header from "../../components/Header.tsx";
 
 const MainLoginPage = () => {
   const navigate = useNavigate();
@@ -16,46 +17,108 @@ const MainLoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-blue-50 flex flex-col items-center justify-start pt-8 px-4">
+    <div className="min-h-screen bg-white flex flex-col items-center justify-start py-6 px-4
+     overflow-hidden">
       {/* Header */}
-      <header className="w-full bg-blue-900 text-white py-4 px-6 flex justify-between items-center mb-8">
-        <div className="flex items-center space-x-2">
-          <img 
-            src="https://spectropy.com/wp-content/uploads/2023/02/final-blue-white-bg.png" 
-            alt="Spectropy Logo" 
-            className="h-10 rounded-md"
-          />
-        </div>
-      </header>
+      <Header />
+
 
       {/* Main Content */}
-      <main className="w-full max-w-4xl bg-white rounded-xl shadow-lg p-8">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-blue-900 mb-2">SPECTROPY — Learning Management System</h1>
-          <p className="text-gray-600">Select your role to continue</p>
+      <div className="min-h-screen flex flex-col md:flex-row bg-gradient-to-r from-blue-50 via-white to-blue-50 border-2 border-maincolor-300 rounded-lg">
+
+        {/* LEFT SECTION */}
+        <div className="md:w-1/1 bg-maincolor text-white flex flex-col justify-center p-12 relative overflow-hidden">
+
+          {/* Background Design */}
+          <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_center,white,transparent)]"></div>
+
+          <div className="relative z-10">
+            <h1 className="text-4xl md:text-5xl font-extrabold  mb-5 leading-tight">
+              Spectropy<br /> E-Learning Platform
+            </h1>
+
+            <p className="text-lg opacity-95 mb-8 leading-relaxed">
+              A modern digital learning ecosystem built to empower institutions, educators,
+              and learners with seamless and interactive education tools.
+            </p>
+
+            <div className="space-y-3 text-base font-medium">
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">🎓</span> AI-Driven Smart Learning Path
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">📊</span> Advanced Student Analytics & Progress Tracking
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">🧠</span> Adaptive Assessments & Interactive LMS
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">📚</span> Digital Classroom, Notes & Resources Library
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">✨</span> Smooth, Secure and Scalable for Institutions
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* Role Selection Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {roles.map((role) => (
-            <button
-              key={role.id}
-              type="button"
-              onClick={() => handleRoleSelect(role.id)}
-              className="flex flex-col items-center justify-center p-6 border border-blue-200 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition-all duration-300 group"
-            >
-              <span className="text-4xl mb-3 group-hover:scale-110 transition-transform">{role.icon}</span>
-              <h3 className="text-lg font-semibold text-blue-900 mb-2">{role.label}</h3>
-              <p className="text-sm text-gray-600 text-center">{role.description}</p>
-            </button>
-          ))}
-        </div>
+        {/* RIGHT SECTION */}
+        <div className="md:w-1/2 flex items-center justify-center p-10 flex-col grow-1">
 
-        {/* Help Link */}
-        <div className="mt-8 text-center text-gray-500 text-sm">
-          Need help? Contact <a href="mailto:spectropy.com" className="text-blue-600 hover:text-blue-800 underline">spectropy.com</a>
+
+          <div className="text-center mb-10">
+            <h2 className="text-3xl font-bold text-maincolor mb-2">Choose Your Role</h2>
+            <p className="text-gray-600">Personalized portal for every user</p>
+          </div>
+
+          {/* Creative Role Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            {roles.map((role) => (
+              <button
+                key={role.id}
+                onClick={() => handleRoleSelect(role.id)}
+                className="group p-5 rounded-2xl bg-white shadow-md border border-blue-100 
+                           hover:shadow-xl transition-all hover:scale-[1.04] 
+                           hover:bg-maincolor hover:text-white text-center duration-300"
+              >
+                <div className="text-4xl mb-3 group-hover:scale-110 transition-transform">
+                  {role.icon}
+                </div>
+                <h3 className="text-lg font-semibold mb-1">{role.label}</h3>
+                <p className="text-sm opacity-70 group-hover:opacity-90">
+                  {role.description}
+                </p>
+              </button>
+            ))}
+          </div>
+
+          {/* Help Link */}
+          <div className="mt-10 text-center text-gray-500 text-sm">
+            Need help? Contact{" "}
+            <a href="mailto:support@spectropy.com" className="text-blue-600 hover:underline">
+              support@spectropy.com
+            </a>
+          </div>
         </div>
-      </main>
+      </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
       {/* Footer */}
       <footer className="mt-8 text-center text-gray-500 text-sm">

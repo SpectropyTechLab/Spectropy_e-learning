@@ -1,1 +1,7 @@
+/* src/index.css */
 @import "tailwindcss";
+
+@theme {
+    --color-maincolor: #0b285d;
+    --color-lightmain: #153d8a;
+}

@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
+import Header from '../../components/Header';
 
 export default function LoginForm() {
   const [isLogin, setIsLogin] = useState(true); // Toggle between login/register
@@ -11,7 +12,7 @@ export default function LoginForm() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
 
-  const { login, register, user } = useAuth();
+  const { login, register, user } = useAuth();  // Access user info
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -75,22 +76,14 @@ export default function LoginForm() {
   };
 
   const { icon, title, subtitle } = getRoleConfig(selectedRole);
-
+  console.log("login form loaded")
   return (
-    <div className="min-h-screen bg-white flex flex-col items-center justify-start pt-8 px-4">
+    <div className="min-h-screen bg-spectropy-light flex flex-col items-center justify-start py-6 px-4">
       {/* Header */}
-      <header className="w-full bg-white text-blue-900 py-4 px-6 flex justify-between items-center mb-8">
-        <div className="flex items-center space-y-2">
-          <img 
-            src="https://spectropy.com/wp-content/uploads/2023/02/final-blue-white-bg.png" 
-            alt="Spectropy Logo" 
-            className="h-10 rounded-md"
-          />
-        </div>
-      </header>
+      <Header />
 
       {/* Main Form Card */}
-      <main className="w-full max-w-md bg-spectropy-white rounded-xl shadow-lg p-6">
+      <main className="w-full max-w-md bg-spectropy-white rounded-xl shadow-lg p-6 mt-8">
         <div className="text-center mb-6">
           <div className="text-3xl mb-2">{icon}</div>
           <h1 className="text-xl font-bold text-spectropy-blue mb-1">{title}</h1>
@@ -171,16 +164,18 @@ export default function LoginForm() {
           <button
             type="submit"
             disabled={!isLogin && !CAN_REGISTER}
-            className={`w-full py-2 px-4 font-medium rounded-md transition ${
-              !isLogin && !CAN_REGISTER
-                ? 'bg-gray-400 cursor-not-allowed'
+            className={`w-full py-2 px-4 font-medium rounded-md 
+    transition-all duration-300 ease-in-out transform
+    ${!isLogin && !CAN_REGISTER
+                ? "bg-gray-300 cursor-not-allowed text-gray-600"
                 : isLogin
-                ? 'bg-spectropy-blue hover:bg-blue-700 text-white'
-                : 'bg-green-600 hover:bg-green-700 text-white'
-            }`}
+                  ? "bg-maincolor hover:bg-lightmain hover:scale-105 text-white shadow-md hover:shadow-lg"
+                  : "bg-green-700 hover:bg-green-600 hover:scale-105 text-white shadow-md hover:shadow-lg"
+              }`}
           >
-            {isLogin ? 'Sign In' : 'Register'}
+            {isLogin ? "Sign In" : "Register"}
           </button>
+
         </form>
 
         {/* Toggle between Login and Register */}
@@ -219,7 +214,7 @@ export default function LoginForm() {
         {/* Back to Role Selection */}
         <div className="mt-6 text-center">
           <button
-            onClick={() => navigate('/login')}
+            onClick={() => navigate('/login', { replace: true })}
             className="text-spectropy-blue hover:text-blue-800 text-sm flex items-center justify-center mx-auto"
           >
             ← Back to Role Selection

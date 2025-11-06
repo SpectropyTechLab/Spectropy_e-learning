@@ -1,7 +1,6 @@
 // src/App.tsx
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { useAuth } from './contexts/AuthContext';
-import { AuthProvider } from './contexts/AuthContext';
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { useAuth, AuthProvider } from "./contexts/AuthContext";
 
 // Auth pages
 import LandingPage from './pages/auth/LandingPage'; // Contains inline login portal selection
@@ -19,6 +18,16 @@ import CourseView from './pages/student/CourseView';
 
 
 // Protected Route Component
+// Small spinner shown while fetching user info
+function Spinner() {
+  return (
+    <div className="flex items-center justify-center h-screen bg-gray-50">
+      <div className="animate-spin h-10 w-10 border-4 border-blue-600 border-t-transparent rounded-full"></div>
+    </div>
+  );
+}
+
+// ✅ Protects routes based on user role
 function ProtectedRoute({
   children,
   allowedRoles,
@@ -26,43 +35,52 @@ function ProtectedRoute({
   children: React.ReactNode;
   allowedRoles: string[];
 }) {
-  const { user } = useAuth();
-  if (!user) return <Navigate to="/login/e-learning" replace />;
-  if (!allowedRoles.includes(user.role)) return <Navigate to="/login/e-learning" replace />;
+
+  const { user} = useAuth();
+
+ //if (loading) {
+ //   return <Spinner />;
+  //}
+
+  if (!user || !allowedRoles.includes(user.role)) {
+    return <Navigate to="/login" replace />;
+  }
+
   return children;
 }
 
-// Main App Component
-export default function App() {
+// ✅ Moved all routes into a separate component
+function AppRoutes() {
+  const { loading } = useAuth();
+
+  // 🔹 Prevent rendering routes while loading auth data
+  if (loading) return <Spinner />;
+
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          {/* 🟢 Landing Page is the first and home page */}
-          <Route path="/" element={<LandingPage />} />
+    <Routes>
+      {/* Public Routes */}
+      <Route path="/" element={<LandingPage />} />
+      <Route path="/login" element={<MainLoginPage />} />
+      <Route path="/login-form" element={<LoginForm />} />
 
-          {/* 🔑 E-Learning login flow (your existing role-based login) */}
-          <Route path="/login/e-learning" element={<MainLoginPage />} />
-          <Route path="/login-form" element={<LoginForm />} />
-
-          {/* 🛡️ Protected Dashboard Routes */}
-          <Route
-            path="/superadmin/dashboard"
-            element={
-              <ProtectedRoute allowedRoles={['super_admin']}>
-                <SuperAdminDashboard />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/admin/dashboard"
-            element={
-              <ProtectedRoute allowedRoles={['super_admin', 'admin']}>
-                <AdminDashboard />
-              </ProtectedRoute>
-            }
-          />
+      {/* SuperAdmin */}
+      <Route
+        path="/superadmin/dashboard"
+        element={
+          <ProtectedRoute allowedRoles={["super_admin"]}>
+            <SuperAdminDashboard />
+          </ProtectedRoute>
+        }
+      />
+      {/* Admin */}
+      <Route
+        path="/admin/dashboard"
+        element={
+          <ProtectedRoute allowedRoles={["super_admin", "admin"]}>
+            <AdminDashboard />
+          </ProtectedRoute>
+        }
+      />
 
           <Route
             path="/admin/courses/:courseId/content"
@@ -82,14 +100,23 @@ export default function App() {
             }
           />
 
-          <Route
-            path="/teacher/course/:id"
-            element={
-              <ProtectedRoute allowedRoles={['super_admin', 'admin', 'teacher']}>
-                <CourseContentManager />
-              </ProtectedRoute>
-            }
-          />
+      {/* Teacher */}
+      <Route
+        path="/teacher/dashboard"
+        element={
+          <ProtectedRoute allowedRoles={["super_admin", "admin", "teacher"]}>
+            <TeacherDashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/teacher/course/:id"
+        element={
+          <ProtectedRoute allowedRoles={["super_admin", "admin", "teacher"]}>
+            <CourseContentManager />
+          </ProtectedRoute>
+        }
+      />
 
           <Route
             path="/student/dashboard"
@@ -108,10 +135,36 @@ export default function App() {
               </ProtectedRoute>
             }
           />
+      {/* Student */}
+      <Route
+        path="/student/dashboard"
+        element={
+          <ProtectedRoute allowedRoles={["student"]}>
+            <StudentDashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/student/courses/:courseId"
+        element={
+          <ProtectedRoute allowedRoles={["student"]}>
+            <CourseView />
+          </ProtectedRoute>
+        }
+      />
 
-          {/* ⛔ Catch-all: redirect unknown routes to home */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+      {/* Fallback */}
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  );
+}
+
+// ✅ Wrap everything inside AuthProvider
+export default function App() {
+  return (
+    <AuthProvider>
+      <BrowserRouter>
+        <AppRoutes />
       </BrowserRouter>
     </AuthProvider>
   );

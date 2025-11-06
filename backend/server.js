@@ -26,6 +26,7 @@ app.use('/api/student', studentRoutes);
 
 app.get('/api/health', (req, res) => res.json({ status: 'OK' }));
 
-app.listen(PORT,'0.0.0.0',() => {
+app.listen(PORT,() => {
+  
   console.log(`Server running on http://localhost:${PORT}`);
 });

@@ -208,7 +208,7 @@ const LandingPage = () => {
           </div>
           <div className="max-w-2xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
             <Link
-              to="/login/e-learning"
+              to="/login"
               className="block bg-white p-6 rounded-xl shadow-md hover:shadow-lg border border-blue-100 transition-all text-center hover:-translate-y-1"
             >
               <div className="text-3xl mb-3">🖥️</div>
