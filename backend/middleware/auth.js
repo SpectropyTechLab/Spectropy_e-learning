@@ -4,7 +4,8 @@ import pool from '../config/db.js';
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
-export const verifyToken = async (req, res, next) => {
+// ✅ Rename to match your import
+export const authenticateToken = async (req, res, next) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader?.split(' ')[1];
   
@@ -23,6 +24,7 @@ export const verifyToken = async (req, res, next) => {
   }
 };
 
+// Keep this helper (optional)
 export const requireRole = (role) => {
   return (req, res, next) => {
     if (req.user.role !== role) {

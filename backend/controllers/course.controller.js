@@ -1,87 +1,17 @@
-// backend/controllers/course.controller.js
 import pool from '../config/db.js';
 
-// Create new course
-export const createCourse = async (req, res) => {
-  const { title, description, created_by } = req.body;
-
+// GET /teacher/courses
+export const getTeacherCourses = async (req, res) => {
   try {
-    const result = await pool.query(
-      `INSERT INTO courses (title, description, created_by, published)
-       VALUES ($1, $2, $3, FALSE)
-       RETURNING *`,
-      [title, description, created_by]
-    );
-    res.status(201).json(result.rows[0]);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to create course" });
-  }
-};
-
-// Get all courses
-export const getAllCourses = async (req, res) => {
-  try {
-    const result = await pool.query("SELECT * FROM courses ORDER BY created_at DESC");
-    res.json(result.rows);
-  } catch (err) {
-    res.status(500).json({ error: "Failed to fetch courses" });
-  }
-};
-
-// Get single course
-export const getCourseById = async (req, res) => {
-  const { id } = req.params;
-  try {
-    const result = await pool.query("SELECT * FROM courses WHERE id = $1", [id]);
-    if (result.rows.length === 0) return res.status(404).json({ error: "Course not found" });
-    res.json(result.rows[0]);
-  } catch (err) {
-    res.status(500).json({ error: "Failed to fetch course" });
-  }
-};
-
-// Update course
-export const updateCourse = async (req, res) => {
-  const { id } = req.params;
-  const { title, description, published } = req.body;
-
-  try {
-    const result = await pool.query(
-      `UPDATE courses
-       SET title = $1, description = $2, published = $3, updated_at = NOW()
-       WHERE id = $4 RETURNING *`,
-      [title, description, published, id]
-    );
-    res.json(result.rows[0]);
-  } catch (err) {
-    res.status(500).json({ error: "Failed to update course" });
-  }
-};
-
-// Delete course
-export const deleteCourse = async (req, res) => {
-  const { id } = req.params;
-  try {
-    await pool.query("DELETE FROM courses WHERE id = $1", [id]);
-    res.json({ message: "Course deleted" });
-  } catch (err) {
-    res.status(500).json({ error: "Failed to delete course" });
-  }
-};
-
-
-
-
-// Get all published courses for student
-export const getStudentCourses = async (req, res) => {
-  try {
+    const userId = req.user.id; // from auth middleware
     const result = await pool.query(`
-      SELECT c.id, c.title, c.description
-      FROM enrollments e
-      JOIN courses c ON e.course_id = c.id
-      WHERE e.student_id = $1 AND c.published = true
-    `, [req.user.id]);
+      SELECT c.id, c.title, c.description, c.published,
+             (SELECT COUNT(*) FROM enrollments WHERE course_id = c.id AND role = 'student') AS student_count
+      FROM courses c
+      JOIN enrollments e ON c.id = e.course_id
+      WHERE e.user_id = $1 AND e.role = 'teacher'
+      ORDER BY c.created_at DESC
+    `, [userId]);
     res.json(result.rows);
   } catch (err) {
     console.error(err);
@@ -89,22 +19,80 @@ export const getStudentCourses = async (req, res) => {
   }
 };
 
-// Get course content tree (recursive)
-export const getCourseContent = async (req, res) => {
-  const { courseId } = req.params;
-  
+// POST /teacher/courses
+export const createCourse = async (req, res) => {
+  const { title, description, published = false } = req.body;
+  const userId = req.user.id;
+
+  if (!title?.trim()) {
+    return res.status(400).json({ error: 'Title is required' });
+  }
+
   try {
-    // Simple flat list (for MVP); in production, use recursive CTE
+    // Create course
+    const course = await pool.query(`
+      INSERT INTO courses (title, description, created_by, published)
+      VALUES ($1, $2, $3, $4) RETURNING id, title, description, published
+    `, [title.trim(), description || null, userId, published]);
+
+    // Auto-enroll creator as teacher
+    await pool.query(`
+      INSERT INTO enrollments (user_id, course_id, role)
+      VALUES ($1, $2, 'teacher')
+    `, [userId, course.rows[0].id]);
+
+    res.status(201).json(course.rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to create course' });
+  }
+};
+
+// GET /student/courses
+export const getStudentCourses = async (req, res) => {
+  try {
+    const userId = req.user.id;
     const result = await pool.query(`
-      SELECT id, parent_id, item_type, title, content_url, order_index
-      FROM content_items
-      WHERE course_id = $1
-      ORDER BY parent_id NULLS FIRST, order_index
-    `, [courseId]);
-    
+      SELECT c.id, c.title, c.description
+      FROM courses c
+      JOIN enrollments e ON c.id = e.course_id
+      WHERE e.user_id = $1 AND e.role = 'student' AND c.published = true
+      ORDER BY c.created_at DESC
+    `, [userId]);
     res.json(result.rows);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Failed to fetch content' });
+    res.status(500).json({ error: 'Failed to fetch courses' });
+  }
+};
+
+// GET /student/courses/:id/content
+export const getCourseContent = async (req, res) => {
+  const { id: courseId } = req.params;
+  const userId = req.user.id;
+
+  try {
+    // Verify enrollment
+    const enrollment = await pool.query(`
+      SELECT 1 FROM enrollments
+      WHERE user_id = $1 AND course_id = $2 AND role = 'student'
+    `, [userId, courseId]);
+
+    if (enrollment.rows.length === 0) {
+      return res.status(403).json({ error: 'Not enrolled in this course' });
+    }
+
+    // Fetch content hierarchy
+    const content = await pool.query(`
+      SELECT id, parent_id, item_type, title, content_url, order_index
+      FROM content_items
+      WHERE course_id = $1
+      ORDER BY order_index, id
+    `, [courseId]);
+
+    res.json(content.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to load content' });
   }
 };
