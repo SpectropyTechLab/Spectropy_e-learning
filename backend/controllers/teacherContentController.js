@@ -88,3 +88,43 @@ export const addCourseContentItem = async (req, res) => {
     res.status(500).json({ error: 'Failed to add content item' });
   }
 };
+
+// PATCH /teacher/courses/:id/publish
+export const updateCoursePublishStatus = async (req, res) => {
+  const { id } = req.params;
+  const { published } = req.body;
+
+  // Optional: Validate boolean
+  if (typeof published !== 'boolean') {
+    return res.status(400).json({ error: 'Invalid published value' });
+  }
+
+  try {
+    // Optional: Ensure only course owner or admin can publish
+    const userId = req.user.id;
+    const courseCheck = await pool.query(
+      'SELECT created_by FROM courses WHERE id = $1',
+      [id]
+    );
+
+    if (courseCheck.rows.length === 0) {
+      return res.status(404).json({ error: 'Course not found' });
+    }
+
+    const createdBy = courseCheck.rows[0].created_by;
+    if (req.user.role !== 'super_admin' && createdBy !== userId) {
+      return res.status(403).json({ error: 'Not authorized' });
+    }
+
+    // Update published status
+    const result = await pool.query(
+      'UPDATE courses SET published = $1 WHERE id = $2 RETURNING *',
+      [published, id]
+    );
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to update course' });
+  }
+};

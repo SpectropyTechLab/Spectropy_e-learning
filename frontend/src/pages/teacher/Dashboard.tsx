@@ -135,6 +135,7 @@ export default function TeacherDashboard() {
                 <span className="text-sm text-gray-500">
                   {course.student_count} student{course.student_count !== 1 ? 's' : ''}
                 </span>
+
                 <Link
                   to={`/teacher/course/${course.id}`}
                   className="text-blue-600 hover:text-blue-800 font-medium"
@@ -147,6 +148,31 @@ export default function TeacherDashboard() {
                  >
                  Manage Students →
                 </Link>
+                {/* Publish toggle button */}
+                <button
+                 onClick={async () => {
+                 try {
+                    await api.patch(`/teacher/courses/${course.id}/publish`, {
+                    published: !course.published,
+                  });
+                 // Optimistically update UI
+                  setCourses(prev =>
+                  prev.map(c =>
+                  c.id === course.id ? { ...c, published: !c.published } : c
+                  )
+                  );
+                 } catch (err: any) {
+                 alert(err.response?.data?.error || 'Failed to update publish status');
+                }
+                }}
+                className={`px-3 py-1 text-xs rounded font-medium ${
+                course.published
+               ? 'bg-green-600 text-white hover:bg-green-700'
+               : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
+               }`}
+               >
+               {course.published ? 'Published' : 'Publish'}
+              </button>
               </div>
             </div>
           ))}

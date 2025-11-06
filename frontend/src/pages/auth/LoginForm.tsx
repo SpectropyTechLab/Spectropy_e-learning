@@ -77,13 +77,12 @@ export default function LoginForm() {
   const { icon, title, subtitle } = getRoleConfig(selectedRole);
 
   return (
-    <div className="min-h-screen bg-spectropy-light flex flex-col items-center justify-start pt-8 px-4">
+    <div className="min-h-screen bg-white flex flex-col items-center justify-start pt-8 px-4">
       {/* Header */}
-      <header className="w-full bg-spectropy-blue text-white py-4 px-6 flex justify-between items-center mb-8">
-        <h1 className="text-xl font-bold">SPECTROPY</h1>
-        <div className="flex items-center space-x-2">
+      <header className="w-full bg-white text-blue-900 py-4 px-6 flex justify-between items-center mb-8">
+        <div className="flex items-center space-y-2">
           <img 
-            src="https://via.placeholder.com/100x40?text=SPECTROPY+Logo" 
+            src="https://spectropy.com/wp-content/uploads/2023/02/final-blue-white-bg.png" 
             alt="Spectropy Logo" 
             className="h-10 rounded-md"
           />
