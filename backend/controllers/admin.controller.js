@@ -60,9 +60,9 @@ export const getCourseContent = async (req, res) => {
 // POST /admin/courses/:courseId/content
 export const createContentItem = async (req, res) => {
   const { courseId } = req.params;
-  const { item_type, title, parent_id = null } = req.body;
+  const { item_type, title, parent_id = null, content_url = null } = req.body;
 
-  const validTypes = ['folder', 'video', 'text', 'pdf', 'scorm'];
+  const validTypes = ['folder', 'video', 'text', 'pdf', 'scorm', 'audio']; // added 'audio'
   if (!validTypes.includes(item_type)) {
     return res.status(400).json({ error: 'Invalid item type' });
   }
@@ -71,12 +71,17 @@ export const createContentItem = async (req, res) => {
     return res.status(400).json({ error: 'Title is required' });
   }
 
+  // Optional: validate URL if provided
+  if (content_url !== null && typeof content_url !== 'string') {
+    return res.status(400).json({ error: 'content_url must be a string or null' });
+  }
+
   try {
     const result = await pool.query(
-      `INSERT INTO content_items (course_id, parent_id, item_type, title)
-       VALUES ($1, $2, $3, $4)
+      `INSERT INTO content_items (course_id, parent_id, item_type, title, content_url)
+       VALUES ($1, $2, $3, $4, $5)
        RETURNING *`,
-      [courseId, parent_id, item_type, title.trim()]
+      [courseId, parent_id, item_type, title.trim(), content_url]
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {

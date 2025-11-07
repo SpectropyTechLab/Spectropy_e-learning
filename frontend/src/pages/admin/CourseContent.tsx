@@ -21,6 +21,7 @@ const ITEM_TYPES = [
   { value: 'text', label: 'Text/Lesson' },
   { value: 'pdf', label: 'PDF Document' },
   { value: 'scorm', label: 'SCORM Package' },
+  { value: 'audio', label: 'Audio File' },
 ];
 
 export default function CourseContent() {
@@ -34,6 +35,14 @@ export default function CourseContent() {
   const [chapterTitle, setChapterTitle] = useState('');
   const [expandedChapter, setExpandedChapter] = useState<number | null>(null);
   const [chapterItems, setChapterItems] = useState<Record<number, ContentItem[]>>({});
+
+  // State for item form
+  const [itemType, setItemType] = useState<string>('video');
+  const [itemTitle, setItemTitle] = useState<string>('');
+  const [uploadMethod, setUploadMethod] = useState<'upload' | 'url'>('upload');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [publicUrl, setPublicUrl] = useState<string>('');
+  const [isUploading, setIsUploading] = useState(false);
 
   useEffect(() => {
     fetchContent();
@@ -81,21 +90,64 @@ export default function CourseContent() {
     }
   };
 
-  const handleAddItem = async (parentId: number, type: string, title: string) => {
-    if (!title.trim()) return;
+  const handleAddItem = async (parentId: number) => {
+  if (!itemTitle.trim()) {
+    alert('Please enter a title');
+    return;
+  }
 
-    try {
+  try {
+    if (['video', 'audio', 'pdf', 'scorm'].includes(itemType) && uploadMethod === 'upload') {
+      // File upload path
+      if (!selectedFile) {
+        alert('Please select a file');
+        return;
+      }
+
+      setIsUploading(true);
+      const formData = new FormData();
+      formData.append('file', selectedFile);
+      formData.append('item_type', itemType);
+      formData.append('title', itemTitle.trim());
+      formData.append('parent_id', parentId.toString());
+
+      await api.post(`/admin/courses/${courseId}/content/upload`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      alert('Item uploaded and added!');
+    } else {
+      // Public URL or 'text' type
+      let content_url = null;
+      if (['video', 'audio', 'pdf', 'scorm'].includes(itemType) && uploadMethod === 'url') {
+        if (!publicUrl.trim()) {
+          alert('Please enter a public URL');
+          return;
+        }
+        content_url = publicUrl.trim();
+      }
+
       await api.post(`/admin/courses/${courseId}/content`, {
-        item_type: type,
-        title: title.trim(),
+        item_type: itemType,
+        title: itemTitle.trim(),
         parent_id: parentId,
+        content_url,
       });
       alert('Item added!');
-      fetchContent();
-    } catch (err: any) {
-      alert(err.response?.data?.error || 'Failed to add item');
     }
-  };
+
+    // Reset form
+    setItemTitle('');
+    setUploadMethod('upload');
+    setSelectedFile(null);
+    setPublicUrl('');
+    fetchContent();
+  } catch (err: any) {
+    console.error('Add item error:', err);
+    alert(err.response?.data?.error || 'Failed to add item');
+  } finally {
+    setIsUploading(false);
+  }
+};
 
   const toggleChapter = (id: number) => {
     setExpandedChapter(expandedChapter === id ? null : id);
@@ -109,6 +161,22 @@ export default function CourseContent() {
     navigate('/login', { replace: true });
   };
 
+  // Helper: Get accepted file types based on item type
+  const getAcceptTypes = (type: string) => {
+    switch (type) {
+      case 'video':
+        return 'video/*';
+      case 'audio':
+        return 'audio/*';
+      case 'pdf':
+        return '.pdf';
+      case 'scorm':
+        return '.zip,.scorm'; // Adjust as needed
+      default:
+        return '*';
+    }
+  };
+
   return (
     <div className="p-6 max-w-4xl mx-auto">
       <div className="flex justify-between items-center mb-6">
@@ -116,13 +184,13 @@ export default function CourseContent() {
         <div className="flex gap-3">
           <button
             onClick={() => navigate(`/admin/dashboard`)}
-            className="text-blue-600 hover:text-blue-800"
+            className="text-blue-900 hover:text-blue-600"
           >
             ← Back to Courses
           </button>
           <button
             onClick={handleBackToLogin}
-            className="text-sm text-gray-600 hover:text-gray-900"
+            className="text-sm text-blue-900 hover:text-blue-600"
           >
             ↪ Back to Login
           </button>
@@ -149,7 +217,7 @@ export default function CourseContent() {
           />
           <button
             type="submit"
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+            className="bg-blue-900 text-white px-4 py-2 rounded hover:bg-blue-600"
           >
             Create Chapter
           </button>
@@ -190,11 +258,11 @@ export default function CourseContent() {
                   {/* Add Item Form */}
                   <div className="mb-4">
                     <h3 className="text-sm font-medium mb-2">Add Content to "{chapter.title}"</h3>
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 mb-2">
                       <select
-                        defaultValue="video"
+                        value={itemType}
+                        onChange={(e) => setItemType(e.target.value)}
                         className="p-2 border rounded"
-                        id={`type-${chapter.id}`}
                       >
                         {ITEM_TYPES.filter(t => t.value !== 'folder').map((type) => (
                           <option key={type.value} value={type.value}>
@@ -204,29 +272,88 @@ export default function CourseContent() {
                       </select>
                       <input
                         type="text"
+                        value={itemTitle}
+                        onChange={(e) => setItemTitle(e.target.value)}
                         placeholder="Item title"
                         className="flex-1 p-2 border rounded"
-                        id={`title-${chapter.id}`}
                       />
+                    </div>
+
+                    {/* Upload Method Toggle */}
+                    {['video', 'audio', 'pdf', 'scorm'].includes(itemType) && (
+                      <div className="mb-3">
+                        <div className="flex items-center gap-4 mb-2">
+                          <label className="flex items-center">
+                            <input
+                              type="radio"
+                              name={`uploadMethod-${chapter.id}`}
+                              checked={uploadMethod === 'upload'}
+                              onChange={() => setUploadMethod('upload')}
+                              className="mr-2"
+                            />
+                            Upload
+                          </label>
+                          <label className="flex items-center">
+                            <input
+                              type="radio"
+                              name={`uploadMethod-${chapter.id}`}
+                              checked={uploadMethod === 'url'}
+                              onChange={() => setUploadMethod('url')}
+                              className="mr-2"
+                            />
+                            Public URL
+                          </label>
+                        </div>
+
+                        {uploadMethod === 'upload' ? (
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="file"
+                              accept={getAcceptTypes(itemType)}
+                              onChange={(e) => {
+                                if (e.target.files && e.target.files[0]) {
+                                  setSelectedFile(e.target.files[0]);
+                                }
+                              }}
+                              className="p-2 border rounded"
+                            />
+                            <button
+                              disabled={isUploading}
+                              onClick={() => handleAddItem(chapter.id)}
+                              className="bg-blue-900 text-white px-3 py-2 rounded text-sm disabled:opacity-50"
+                            >
+                              {isUploading ? 'Uploading...' : 'Upload'}
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="flex gap-2">
+                            <input
+                              type="url"
+                              value={publicUrl}
+                              onChange={(e) => setPublicUrl(e.target.value)}
+                              placeholder="Enter public URL"
+                              className="flex-1 p-2 border rounded"
+                            />
+                            <button
+                              onClick={() => handleAddItem(chapter.id)}
+                              className="bg-blue-900 text-white px-3 py-2 rounded text-sm"
+                            >
+                              Add
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* For Text/Lesson, no upload needed */}
+                    {itemType === 'text' && (
                       <button
+                        onClick={() => handleAddItem(chapter.id)}
                         className="bg-indigo-600 text-white px-3 py-2 rounded text-sm"
-                        onClick={() => {
-                          const type = (
-                            document.getElementById(`type-${chapter.id}`) as HTMLSelectElement
-                          )?.value;
-                          const title = (
-                            document.getElementById(`title-${chapter.id}`) as HTMLInputElement
-                          )?.value;
-                          handleAddItem(chapter.id, type, title);
-                          // Clear input
-                          if (document.getElementById(`title-${chapter.id}`)) {
-                            (document.getElementById(`title-${chapter.id}`) as HTMLInputElement).value = '';
-                          }
-                        }}
                       >
                         Add Item
                       </button>
-                    </div>
+                    )}
                   </div>
 
                   {/* Chapter Items List */}
@@ -237,6 +364,11 @@ export default function CourseContent() {
                         {chapterItems[chapter.id].map((item) => (
                           <li key={item.id} className="text-sm">
                             <span className="font-medium">{item.title}</span> ({item.item_type})
+                            {item.content_url && (
+                              <a href={item.content_url} target="_blank" rel="noopener noreferrer" className="ml-2 text-blue-500 text-xs">
+                                View
+                              </a>
+                            )}
                           </li>
                         ))}
                       </ul>

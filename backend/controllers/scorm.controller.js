@@ -1,50 +1,74 @@
-// backend/controllers/scorm.controller.js
 import pool from '../config/db.js';
+import multer from 'multer';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import fs from 'fs';
 
-// Save SCORM attempt
-export const saveScormAttempt = async (req, res) => {
-  const { contentItemId } = req.params;
-  const { score_raw, completion_status, total_time, suspend_data } = req.body;
-  
+// Simple disk storage (for dev only!)
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const uploadDir = path.join(__dirname, '../../uploads');
+
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, `${file.fieldname}-${uniqueSuffix}${path.extname(file.originalname)}`);
+  }
+});
+
+// Optional: add file filter for security
+const fileFilter = (req, file, cb) => {
+  const allowedTypes = /\/(video|audio|pdf|zip|application\/zip|application\/scorm)/;
+  if (file.mimetype.match(allowedTypes)) {
+    cb(null, true);
+  } else {
+    cb(new Error('Invalid file type. Only video, audio, PDF, and ZIP (SCORM) allowed.'), false);
+  }
+};
+
+const upload = multer({ storage, fileFilter });
+
+// Export this so you can use it in routes
+export { upload };
+
+// New controller: handle uploaded file + metadata
+export const uploadContentFile = async (req, res) => {
+  const { courseId } = req.params;
+  const { item_type, title, parent_id = null } = req.body;
+
+  // Validate file
+  if (!req.file) {
+    return res.status(400).json({ error: 'No file uploaded' });
+  }
+
+  const validTypes = ['video', 'audio', 'pdf', 'scorm'];
+  if (!validTypes.includes(item_type)) {
+    return res.status(400).json({ error: 'Uploaded items must be video, audio, pdf, or scorm' });
+  }
+
+  // Construct public URL (adjust based on your static file serving)
+  const content_url = `/uploads/${req.file.filename}`;
+
   try {
-    // Check if content item is SCORM
-    const content = await pool.query(
-      'SELECT id FROM content_items WHERE id = $1 AND item_type = $2',
-      [contentItemId, 'scorm']
+    const result = await pool.query(
+      `INSERT INTO content_items (course_id, parent_id, item_type, title, content_url)
+       VALUES ($1, $2, $3, $4, $5)
+       RETURNING *`,
+      [courseId, parent_id, item_type, title?.trim() || req.file.originalname, content_url]
     );
-    if (!content.rows[0]) {
-      return res.status(400).json({ error: 'Invalid SCORM content' });
-    }
 
-    // Get or increment attempt_no
-    const lastAttempt = await pool.query(`
-      SELECT attempt_no FROM scorm_attempts 
-      WHERE user_id = $1 AND content_item_id = $2 
-      ORDER BY attempt_no DESC LIMIT 1
-    `, [req.user.id, contentItemId]);
-
-    const attemptNo = lastAttempt.rows.length ? lastAttempt.rows[0].attempt_no + 1 : 1;
-
-    const result = await pool.query(`
-      INSERT INTO scorm_attempts 
-        (user_id, content_item_id, attempt_no, score_raw, completion_status, total_time, suspend_data, finished_at)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
-      RETURNING id
-    `, [
-      req.user.id, 
-      contentItemId, 
-      attemptNo, 
-      score_raw, 
-      completion_status, 
-      total_time, 
-      suspend_data
-    ]);
-
-    // TODO: Check if course is complete → issue certificate
-
-    res.status(201).json({ id: result.rows[0].id });
+    res.status(201).json(result.rows[0]);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Failed to save SCORM data' });
+    console.error('File upload + DB save error:', err);
+    // Optionally delete uploaded file on DB failure
+    fs.unlinkSync(req.file.path);
+    res.status(500).json({ error: 'Failed to save uploaded content' });
   }
 };
