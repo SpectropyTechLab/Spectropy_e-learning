@@ -7,7 +7,7 @@ import fs from 'fs';
 // Simple disk storage (for dev only!)
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const uploadDir = path.join(__dirname, '../../uploads');
+const uploadDir = path.join(__dirname, '../uploads'); 
 
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
@@ -24,15 +24,31 @@ const storage = multer.diskStorage({
 });
 
 // Optional: add file filter for security
+// In scorm.controller.js
 const fileFilter = (req, file, cb) => {
-  const allowedTypes = /\/(video|audio|pdf|zip|application\/zip|application\/scorm)/;
-  if (file.mimetype.match(allowedTypes)) {
+  const allowedMimeTypes = [
+    // Videos
+    'video/mp4',
+    'video/webm',
+    'video/ogg',
+    // Audios
+    'audio/mpeg',
+    'audio/ogg',
+    'audio/wav',
+    'audio/webm',
+    // PDF
+    'application/pdf',
+    // ZIP (for SCORM)
+    'application/zip',
+    'application/x-zip-compressed',
+  ];
+
+  if (allowedMimeTypes.includes(file.mimetype)) {
     cb(null, true);
   } else {
-    cb(new Error('Invalid file type. Only video, audio, PDF, and ZIP (SCORM) allowed.'), false);
+    cb(new Error('Invalid file type. Only MP4, WebM, OGG, MP3, WAV, PDF, and ZIP files allowed.'), false);
   }
 };
-
 const upload = multer({ storage, fileFilter });
 
 // Export this so you can use it in routes
@@ -54,7 +70,8 @@ export const uploadContentFile = async (req, res) => {
   }
 
   // Construct public URL (adjust based on your static file serving)
-  const content_url = `/uploads/${req.file.filename}`;
+  const baseUrl = process.env.BASE_URL || 'http://localhost:5000';
+  const content_url = `${baseUrl}/uploads/${req.file.filename}`;
 
   try {
     const result = await pool.query(

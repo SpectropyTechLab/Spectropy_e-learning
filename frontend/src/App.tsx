@@ -11,6 +11,7 @@ import LoginForm from './pages/auth/LoginForm';
 import SuperAdminDashboard from './pages/superadmin/RegisterAdmin';
 import AdminDashboard from './pages/admin/admindashboard';
 import CourseContent from './pages/admin/CourseContent';
+import ScormPlayer from "./pages/admin/ScormPlayer";
 import TeacherDashboard from './pages/teacher/Dashboard';
 import CourseContentManager from './pages/teacher/CourseContentManager';
 import StudentDashboard from './pages/student/Dashboard';
@@ -90,6 +91,7 @@ function AppRoutes() {
               </ProtectedRoute>
            }
           />
+          <Route path="/admin/scorm-player/:id" element={<ScormPlayer />} />
 
           <Route
             path="/teacher/dashboard"
