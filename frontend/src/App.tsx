@@ -16,6 +16,8 @@ import CourseContentManager from './pages/teacher/CourseContentManager';
 import StudentDashboard from './pages/student/Dashboard';
 import CourseView from './pages/student/CourseView';
 
+import ContentViewer from './pages/common/ContentViewer';
+
 
 // Protected Route Component
 // Small spinner shown while fetching user info
@@ -36,10 +38,10 @@ function ProtectedRoute({
   allowedRoles: string[];
 }) {
 
-  const { user} = useAuth();
+  const { user } = useAuth();
 
- //if (loading) {
- //   return <Spinner />;
+  //if (loading) {
+  //   return <Spinner />;
   //}
 
   if (!user || !allowedRoles.includes(user.role)) {
@@ -63,6 +65,11 @@ function AppRoutes() {
       <Route path="/login" element={<MainLoginPage />} />
       <Route path="/login-form" element={<LoginForm />} />
 
+
+
+      <Route path="/content/:contentId" element={<ContentViewer />} />
+
+
       {/* SuperAdmin */}
       <Route
         path="/superadmin/dashboard"
@@ -82,23 +89,23 @@ function AppRoutes() {
         }
       />
 
-          <Route
-            path="/admin/courses/:courseId/content"
-            element={
-              <ProtectedRoute allowedRoles={['super_admin', 'admin']}>
-                <CourseContent />
-              </ProtectedRoute>
-           }
-          />
+      <Route
+        path="/admin/courses/:courseId/content"
+        element={
+          <ProtectedRoute allowedRoles={['super_admin', 'admin']}>
+            <CourseContent />
+          </ProtectedRoute>
+        }
+      />
 
-          <Route
-            path="/teacher/dashboard"
-            element={
-              <ProtectedRoute allowedRoles={['super_admin', 'admin', 'teacher']}>
-                <TeacherDashboard />
-              </ProtectedRoute>
-            }
-          />
+      <Route
+        path="/teacher/dashboard"
+        element={
+          <ProtectedRoute allowedRoles={['super_admin', 'admin', 'teacher']}>
+            <TeacherDashboard />
+          </ProtectedRoute>
+        }
+      />
 
       {/* Teacher */}
       <Route
@@ -118,23 +125,23 @@ function AppRoutes() {
         }
       />
 
-          <Route
-            path="/student/dashboard"
-            element={
-              <ProtectedRoute allowedRoles={['student']}>
-                <StudentDashboard />
-              </ProtectedRoute>
-            }
-          />
+      <Route
+        path="/student/dashboard"
+        element={
+          <ProtectedRoute allowedRoles={['student']}>
+            <StudentDashboard />
+          </ProtectedRoute>
+        }
+      />
 
-          <Route
-            path="/student/courses/:courseId"
-            element={
-              <ProtectedRoute allowedRoles={['student']}>
-                <CourseView />
-              </ProtectedRoute>
-            }
-          />
+      <Route
+        path="/student/courses/:courseId"
+        element={
+          <ProtectedRoute allowedRoles={['student']}>
+            <CourseView />
+          </ProtectedRoute>
+        }
+      />
       {/* Student */}
       <Route
         path="/student/dashboard"

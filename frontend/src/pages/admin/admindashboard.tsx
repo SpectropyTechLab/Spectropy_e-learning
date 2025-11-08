@@ -76,13 +76,13 @@ export default function CourseStudents() {
         <div className="flex gap-3">
           <button
             onClick={() => navigate(-1)}
-            className="text-blue-600 hover:text-blue-800"
+            className="text-blue-900 hover:text-blue-600"
           >
             ← Back
           </button>
           <button
             onClick={handleBackToLogin}
-            className="text-sm text-gray-600 hover:text-gray-900"
+            className="text-sm text-blue-900 hover:text-blue-600"
           >
             ↪ Back to Login
           </button>
@@ -144,7 +144,7 @@ export default function CourseStudents() {
             <button
               type="submit"
               disabled={loading}
-              className="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 font-medium"
+              className="bg-blue-900 text-white px-5 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 font-medium"
             >
               {loading ? 'Creating...' : 'Create Course'}
             </button>

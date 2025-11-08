@@ -76,7 +76,7 @@ export default function LoginForm() {
   };
 
   const { icon, title, subtitle } = getRoleConfig(selectedRole);
-  console.log("login form loaded")
+  console.log("login form loaded");
   return (
     <div className="min-h-screen bg-spectropy-light flex flex-col items-center justify-start py-6 px-4">
       {/* Header */}
