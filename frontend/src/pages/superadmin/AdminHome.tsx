@@ -5,7 +5,6 @@ import AdminQuickActions from "./components/AdminQuickActions";
 import AdminFooter from "./components/AdminFooter";
 
 const AdminHome: React.FC = () => {
-    console.log("AdminHome loaded");
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col">
             <AdminNavbar />

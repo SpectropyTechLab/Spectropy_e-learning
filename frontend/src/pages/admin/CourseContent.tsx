@@ -91,63 +91,63 @@ export default function CourseContent() {
   };
 
   const handleAddItem = async (parentId: number) => {
-  if (!itemTitle.trim()) {
-    alert('Please enter a title');
-    return;
-  }
-
-  try {
-    if (['video', 'audio', 'pdf', 'scorm'].includes(itemType) && uploadMethod === 'upload') {
-      // File upload path
-      if (!selectedFile) {
-        alert('Please select a file');
-        return;
-      }
-
-      setIsUploading(true);
-      const formData = new FormData();
-      formData.append('file', selectedFile);
-      formData.append('item_type', itemType);
-      formData.append('title', itemTitle.trim());
-      formData.append('parent_id', parentId.toString());
-
-      await api.post(`/admin/courses/${courseId}/content/upload`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
-      alert('Item uploaded and added!');
-    } else {
-      // Public URL or 'text' type
-      let content_url = null;
-      if (['video', 'audio', 'pdf', 'scorm'].includes(itemType) && uploadMethod === 'url') {
-        if (!publicUrl.trim()) {
-          alert('Please enter a public URL');
-          return;
-        }
-        content_url = publicUrl.trim();
-      }
-
-      await api.post(`/admin/courses/${courseId}/content`, {
-        item_type: itemType,
-        title: itemTitle.trim(),
-        parent_id: parentId,
-        content_url,
-      });
-      alert('Item added!');
+    if (!itemTitle.trim()) {
+      alert('Please enter a title');
+      return;
     }
 
-    // Reset form
-    setItemTitle('');
-    setUploadMethod('upload');
-    setSelectedFile(null);
-    setPublicUrl('');
-    fetchContent();
-  } catch (err: any) {
-    console.error('Add item error:', err);
-    alert(err.response?.data?.error || 'Failed to add item');
-  } finally {
-    setIsUploading(false);
-  }
-};
+    try {
+      if (['video', 'audio', 'pdf', 'scorm'].includes(itemType) && uploadMethod === 'upload') {
+        // File upload path
+        if (!selectedFile) {
+          alert('Please select a file');
+          return;
+        }
+
+        setIsUploading(true);
+        const formData = new FormData();
+        formData.append('file', selectedFile);
+        formData.append('item_type', itemType);
+        formData.append('title', itemTitle.trim());
+        formData.append('parent_id', parentId.toString());
+
+        await api.post(`/admin/courses/${courseId}/content/upload`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+        alert('Item uploaded and added!');
+      } else {
+        // Public URL or 'text' type
+        let content_url = null;
+        if (['video', 'audio', 'pdf', 'scorm'].includes(itemType) && uploadMethod === 'url') {
+          if (!publicUrl.trim()) {
+            alert('Please enter a public URL');
+            return;
+          }
+          content_url = publicUrl.trim();
+        }
+
+        await api.post(`/admin/courses/${courseId}/content`, {
+          item_type: itemType,
+          title: itemTitle.trim(),
+          parent_id: parentId,
+          content_url,
+        });
+        alert('Item added!');
+      }
+
+      // Reset form
+      setItemTitle('');
+      setUploadMethod('upload');
+      setSelectedFile(null);
+      setPublicUrl('');
+      fetchContent();
+    } catch (err: any) {
+      console.error('Add item error:', err);
+      alert(err.response?.data?.error || 'Failed to add item');
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   const toggleChapter = (id: number) => {
     setExpandedChapter(expandedChapter === id ? null : id);
@@ -363,11 +363,15 @@ export default function CourseContent() {
                       <ul className="space-y-1">
                         {chapterItems[chapter.id].map((item) => (
                           <li key={item.id} className="text-sm">
-                            <span className="font-medium">{item.title}</span> ({item.item_type})
+                            <span className="font-medium">{item.title},</span> ({item.item_type})
                             {item.content_url && (
-                              <a href={item.content_url} target="_blank" rel="noopener noreferrer" className="ml-2 text-blue-500 text-xs">
+                              <button
+                                onClick={() => navigate(`/content/${item.id}`)}
+                                className="ml-2 text-blue-500 text-xs underline"
+                              >
                                 View
-                              </a>
+                              </button>
+
                             )}
                           </li>
                         ))}

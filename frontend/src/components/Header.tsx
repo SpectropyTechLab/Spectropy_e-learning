@@ -30,15 +30,15 @@ const Header = () => {
                     Home
                 </span>
 
-                <span className={navItem} onClick={() => navigate("/contact")}>
-                    Contact
+                <span className={navItem} onClick={() => navigate("/courses")}>
+                    Courses
                 </span>
 
                 <span className={navItem} onClick={() => navigate("/about")}>
-                    About
+                    Membership
                 </span>
 
-                <span className={navItem} onClick={() => navigate("/login")}>
+                <span className={navItem} onClick={() => navigate("/login-form")}>
                     Login
                 </span>
             </nav>
