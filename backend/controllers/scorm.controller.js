@@ -1,11 +1,15 @@
+import supabase from "../config/supabaseClient.js";
 import pool from "../config/db.js";
 import multer from "multer";
 import path from "path";
 import { fileURLToPath } from "url";
-import fs from "fs";
-import supabase from "../config/supabaseClient.js"; // ✅ Supabase client
+import * as fs from "fs";
 import AdmZip from "adm-zip";
 import { parseStringPromise } from "xml2js";
+import mime from "mime-types"; // ✅ Add this at the top with your imports
+import fsy from "fsy";
+import { url } from "inspector";
+import fetch from "node-fetch"; // add at top if not already
 
 
 // Fix __dirname for ES modules
@@ -50,7 +54,9 @@ export const uploadContentFile = async (req, res) => {
   try {
     const filePath = req.file.path;
     const bucket = process.env.SUPABASE_BUCKET || "courses";
-    let publicUrl = "";
+    let storagePath = "";
+    let launchFile = "";
+    let uploadFolder = "";
 
     // ---------- SCORM ZIP Handling ----------
     if (item_type === "scorm") {
@@ -59,44 +65,50 @@ export const uploadContentFile = async (req, res) => {
       const tempFolder = filePath.replace(".zip", "_unzipped");
       zip.extractAllTo(tempFolder, true);
 
-      // 2️⃣ Parse imsmanifest.xml to find launch file
+      // 2️⃣ Parse imsmanifest.xml
       const manifestPath = path.join(tempFolder, "imsmanifest.xml");
-      if (!fs.existsSync(manifestPath)) throw new Error("imsmanifest.xml not found");
+      if (!fs.existsSync(manifestPath))
+        throw new Error("imsmanifest.xml not found");
 
       const xmlData = fs.readFileSync(manifestPath, "utf8");
       const parsedManifest = await parseStringPromise(xmlData);
-      const launchFile = parsedManifest.manifest.resources[0].resource[0].$.href;
+      launchFile = parsedManifest.manifest.resources[0].resource[0].$.href;
 
-      // 3️⃣ Upload all files recursively to Supabase
-      const uploadFolder = `${courseId}/${Date.now()}`;
+      // 3️⃣ Upload all files to Supabase Storage (PRIVATE)
+      uploadFolder = `${courseId}/${Date.now()}`;
       const uploadRecursively = async (dirPath, relativePath = "") => {
-        for (const file of fs.readdirSync(dirPath, { withFileTypes: true })) {
-          const fullPath = path.join(dirPath, file.name);
-          const relPath = relativePath ? `${relativePath}/${file.name}` : file.name;
+        for (const entry of fs.readdirSync(dirPath, { withFileTypes: true })) {
+          const fullPath = path.join(dirPath, entry.name);
+          const relPath = relativePath ? `${relativePath}/${entry.name}` : entry.name;
 
-          if (file.isDirectory()) {
+          if (entry.isDirectory()) {
             await uploadRecursively(fullPath, relPath);
           } else {
             const buffer = fs.readFileSync(fullPath);
-            await supabase.storage.from(bucket).upload(
-              `${uploadFolder}/${relPath}`,
-              buffer,
-              { contentType: "application/octet-stream", upsert: true }
-            );
+            const contentType = mime.lookup(entry.name) || "application/octet-stream";
+
+            const { error } = await supabase.storage
+              .from(bucket)
+              .upload(`${uploadFolder}/${relPath}`, buffer, {
+                contentType,
+                upsert: true,
+              });
+
+            if (error) console.error(`❌ Upload failed for ${relPath}`, error);
           }
         }
       };
+
       await uploadRecursively(tempFolder);
 
-      // 4️⃣ Construct public launch URL for iframe
-      publicUrl = `https://YOUR_SUPABASE_URL/storage/v1/object/public/${bucket}/${uploadFolder}/${launchFile}`;
+      // 4️⃣ Save base path (not public)
+      storagePath = `${uploadFolder}/${launchFile}`;
 
-      // 5️⃣ Cleanup temp files
+      // Cleanup
       fs.rmSync(tempFolder, { recursive: true, force: true });
       fs.unlinkSync(filePath);
-    }
-    // ---------- Non-SCORM files ----------
-    else {
+    } else {
+      // ---------- Non-SCORM file ----------
       const fileBuffer = fs.readFileSync(filePath);
       const fileName = `${courseId}/${Date.now()}_${req.file.originalname}`;
       const { error: uploadError } = await supabase.storage
@@ -107,18 +119,16 @@ export const uploadContentFile = async (req, res) => {
         });
       if (uploadError) throw uploadError;
 
-      const { data: publicUrlData } = supabase.storage.from(bucket).getPublicUrl(fileName);
-      publicUrl = publicUrlData.publicUrl;
-
+      storagePath = fileName;
       fs.unlinkSync(filePath);
     }
 
-    // ---------- Save metadata in DB ----------
+    // 5️⃣ Save in DB (private path only)
     const result = await pool.query(
       `INSERT INTO content_items (course_id, parent_id, item_type, title, content_url)
        VALUES ($1, $2, $3, $4, $5)
        RETURNING *`,
-      [courseId, parent_id, item_type, title?.trim() || req.file.originalname, publicUrl]
+      [courseId, parent_id, item_type, title?.trim() || req.file.originalname, storagePath]
     );
 
     return res.status(201).json({
@@ -127,13 +137,11 @@ export const uploadContentFile = async (req, res) => {
       file: result.rows[0],
     });
   } catch (err) {
-    console.error("File upload + DB error:", err);
+    console.error("❌ File upload + DB error:", err);
     if (req.file?.path && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
     return res.status(500).json({ error: "Failed to upload and save content" });
   }
 };
-
-
 
 
 // backend/controllers/scorm.controller.js
@@ -189,5 +197,66 @@ export const getScormProgress = async (req, res) => {
   } catch (err) {
     console.error("Error fetching SCORM progress:", err);
     res.status(500).json({ message: "Error fetching progress" });
+  }
+};
+
+export const getSignedContentUrl = async (req, res) => {
+  try {
+    const { path } = req.query; // e.g. "course-files/8/1762597630232/res/index.html"
+    const bucket = process.env.SUPABASE_BUCKET || "courses";
+    console.log("Requesting signed URL for path:", path);
+    console.log("Using bucket:", bucket);
+    if (!path) {
+      return res.status(400).json({ error: "Missing file path" });
+    }
+
+    // Generate a signed URL that lasts 1 hour
+    const { data, error } = await supabase.storage
+      .from(bucket)
+      .createSignedUrl(path, 60 * 60);
+
+    if (error || !data) {
+      console.error("Error creating signed URL:", error);
+      return res.status(500).json({ error: "Failed to generate signed URL" });
+    }
+    console.log("Generated signed URL for path:", { url: data.signedUrl });
+    res.json({ url: data.signedUrl });
+  } catch (err) {
+    console.error("Server error generating signed URL:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+export const viewScormFile = async (req, res) => {
+  try {
+    const filePath = req.params[0];
+    if (!filePath) return res.status(400).send("Missing file");
+
+    const { data, error } = await supabase
+      .storage
+      .from("course-files")
+      .download(filePath);
+
+    if (error) {
+      return res.status(404).send("File not found");
+    }
+
+    // ✅ Correct MIME type
+    const contentType = mime.lookup(filePath) || "application/octet-stream";
+    res.setHeader("Content-Type", contentType);
+
+    // ✅ SCORM CSP FIX (allows inline JS + eval)
+    res.setHeader(
+      "Content-Security-Policy",
+      "default-src * 'unsafe-inline' 'unsafe-eval' data: blob:;"
+    );
+
+    // ✅ Return raw file contents
+    const buffer = Buffer.from(await data.arrayBuffer());
+    res.send(buffer);
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Server Error");
   }
 };

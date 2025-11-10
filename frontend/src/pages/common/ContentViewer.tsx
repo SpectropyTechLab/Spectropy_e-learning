@@ -32,9 +32,7 @@ export default function ContentViewer() {
             setLoading(false);
         }
     };
-    console.log("Content ID:", contentId);
-    console.log("Content Data:", content);
-    console.log("Loading State:", loading);
+
     if (loading) return <p className="p-6">Loading...</p>;
     if (!content) return <p className="p-6 text-red-500">Content not found.</p>;
 
@@ -75,7 +73,7 @@ export default function ContentViewer() {
         case 'scorm':
             viewerElement = (
                 <div className="w-full h-[80vh] border rounded-lg overflow-hidden">
-                    <ScormPlayer contentUrl={content_url!} />
+                    <ScormPlayer contentUrl={content_url!} contentId={content.id} />
                 </div>
             );
             break;

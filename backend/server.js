@@ -11,15 +11,31 @@ import studentRoutes from './routes/student.routes.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import scormRoutes from './routes/scorm.routes.js';
+import { viewScormFile } from './controllers/scorm.controller.js';
+
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+
 app.use(helmet());
 app.use(cors());
 app.use(express.json());
+
+app.get(
+  "/api/scorm/*",
+  helmet({ frameguard: false }),             // <- disables X-Frame-Options here
+  (req, res, next) => {                      // <- extra hardening: kill any pre-set header
+    res.removeHeader("X-Frame-Options");
+    next();
+  },
+
+  viewScormFile
+);
+
+
 
 // ------------------------------
 // ⬇️ STATIC FILE SERVING FOR UPLOADS
