@@ -219,7 +219,6 @@ export const getSignedContentUrl = async (req, res) => {
       console.error("Error creating signed URL:", error);
       return res.status(500).json({ error: "Failed to generate signed URL" });
     }
-    console.log("Generated signed URL for path:", { url: data.signedUrl });
     res.json({ url: data.signedUrl });
   } catch (err) {
     console.error("Server error generating signed URL:", err);
