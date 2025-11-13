@@ -19,6 +19,7 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// ✅ MUST come BEFORE any other helmet middleware
 
 app.use(helmet());
 app.use(cors());
@@ -29,7 +30,8 @@ app.get(
   "/api/scorm/*",
   helmet({ frameguard: false }),             // <- disables X-Frame-Options here
   (req, res, next) => {                      // <- extra hardening: kill any pre-set header
-    res.removeHeader("X-Frame-Options");
+    res.setHeader("X-Frame-Options", "ALLOWALL");
+    res.setHeader("Content-Security-Policy", "frame-ancestors *;");
     next();
   },
 
@@ -43,6 +45,7 @@ app.get(
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+
 
 app.use('/api/superadmin', superadminRoutes);
 app.use('/api/admin', adminRoutes);

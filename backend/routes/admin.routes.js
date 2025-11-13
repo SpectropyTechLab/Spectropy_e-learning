@@ -7,13 +7,8 @@ import helmet from "helmet";
 
 
 const router = Router();
-router.use(
-    "/view/*",
-    helmet({
-        frameguard: false
-    })
 
-);
+
 router.get('/courses', authenticateToken, getAllCourses);
 router.post('/courses', authenticateToken, createCourse);
 router.get('/courses/:courseId/content', authenticateToken, getCourseContent);

@@ -1,8 +1,8 @@
 // src/pages/common/ContentViewer.tsx
-import { useParams } from 'react-router-dom';
-import { useEffect, useState } from 'react';
-import api from '../../services/api';
-import ScormPlayer from '../../components/ScormPlayer.tsx';
+import { useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import api from "../../services/api";
+import ScormPlayer from "../../components/ScormPlayer.tsx";
 
 interface ContentItem {
     id: number;
@@ -11,17 +11,27 @@ interface ContentItem {
     content_url?: string | null;
 }
 
-export default function ContentViewer() {
+interface ContentViewerProps {
+    item?: ContentItem | null; // supports direct prop
+}
+
+export default function ContentViewer({ item }: ContentViewerProps) {
     const { contentId } = useParams<{ contentId: string }>();
     const [content, setContent] = useState<ContentItem | null>(null);
     const [mediaUrl, setMediaUrl] = useState<string | null>(null); // ✅ For signed URLs
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        if (contentId) fetchContent();
+        if (!item && contentId) {
+            fetchContentFromAPI(contentId);
+        }
     }, [contentId]);
 
-    const fetchContent = async () => {
+    // ✅ Fetch content from API only for route-based view
+    const fetchContentFromAPI = async (id: string) => {
+        setLoading(true);
+        setMediaUrl(null);  // ✅ prevent leaking previous media
+
         try {
             const res = await api.get(`/student/content/${contentId}`);
             const data = res.data;
@@ -41,6 +51,7 @@ export default function ContentViewer() {
         }
     };
 
+    // ✅ Loading states
     if (loading) return <p className="p-6">Loading...</p>;
     if (!content) return <p className="p-6 text-red-500">Content not found.</p>;
 
@@ -48,6 +59,7 @@ export default function ContentViewer() {
 
     let viewerElement;
 
+    // ✅ SELECT VIEWER BASED ON TYPE
     switch (item_type) {
         case 'video':
             viewerElement = mediaUrl ? (
@@ -77,7 +89,7 @@ export default function ContentViewer() {
             ) : <p>Loading PDF...</p>;
             break;
 
-        case 'scorm':
+        case "scorm":
             viewerElement = (
                 <div className="w-full h-[80vh] border rounded-lg overflow-hidden">
                     <ScormPlayer contentUrl={content.content_url!} contentId={content.id} />
@@ -87,10 +99,11 @@ export default function ContentViewer() {
 
         default:
             viewerElement = <div className="p-4 border rounded bg-gray-50">{title}</div>;
+            viewerElement = <div className="p-4 border rounded bg-gray-50">{title}</div>;
     }
 
     return (
-        <div className="p-6 max-w-6xl mx-auto">
+        <div className="h-full p-6 w-full mx-auto">
             <h1 className="text-2xl font-semibold mb-4">{title}</h1>
             {viewerElement}
         </div>

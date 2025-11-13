@@ -1,8 +1,10 @@
-// src/pages/admin/CourseContent.tsx
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
-import api from '../../services/api';
+// ✅ src/pages/admin/CourseContent.tsx
+import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { useAuth } from "../../contexts/AuthContext";
+import api from "../../services/api";
+import LeftPanel from "../../components/CourseContent/LeftPanel"; // ✅ IMPORT LEFT PANEL
+import ContentViewer from "../common/ContentViewer";
 
 interface ContentItem {
   id: number;
@@ -16,12 +18,12 @@ interface ContentItem {
 }
 
 const ITEM_TYPES = [
-  { value: 'folder', label: 'Chapter (Folder)' },
-  { value: 'video', label: 'Video' },
-  { value: 'text', label: 'Text/Lesson' },
-  { value: 'pdf', label: 'PDF Document' },
-  { value: 'scorm', label: 'SCORM Package' },
-  { value: 'audio', label: 'Audio File' },
+  { value: "folder", label: "Chapter (Folder)" },
+  { value: "video", label: "Video" },
+  { value: "text", label: "Text/Lesson" },
+  { value: "pdf", label: "PDF Document" },
+  { value: "scorm", label: "SCORM Package" },
+  { value: "audio", label: "Audio File" },
 ];
 
 export default function CourseContent() {
@@ -29,361 +31,285 @@ export default function CourseContent() {
   const navigate = useNavigate();
   const { logout } = useAuth();
 
-  const [chapters, setChapters] = useState<ContentItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [addingChapter, setAddingChapter] = useState(false);
-  const [chapterTitle, setChapterTitle] = useState('');
-  const [expandedChapter, setExpandedChapter] = useState<number | null>(null);
-  const [chapterItems, setChapterItems] = useState<Record<number, ContentItem[]>>({});
+  const [rawItems, setRawItems] = useState<ContentItem[]>([]);
+  const [chapters, setChapters] = useState<any[]>([]);
+  const [selectedChapter, setSelectedChapter] = useState<number | null>(null);
 
-  // State for item form
-  const [itemType, setItemType] = useState<string>('video');
-  const [itemTitle, setItemTitle] = useState<string>('');
-  const [uploadMethod, setUploadMethod] = useState<'upload' | 'url'>('upload');
+  // ✅ Add Item Modal
+  const [showAddItemModal, setShowAddItemModal] = useState(false);
+  const [itemType, setItemType] = useState("video");
+  const [itemTitle, setItemTitle] = useState("");
+  const [uploadMethod, setUploadMethod] = useState<"upload" | "url">("upload");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [publicUrl, setPublicUrl] = useState<string>('');
-  const [isUploading, setIsUploading] = useState(false);
+  const [publicUrl, setPublicUrl] = useState("");
+  const [selectedItem, setSelectedItem] = useState<ContentItem | null>(null);
+
+
+  // ✅ Add Chapter Modal
+  const [chapterTitle, setChapterTitle] = useState("");
+  const [addingChapter, setAddingChapter] = useState(false);
 
   useEffect(() => {
     fetchContent();
   }, [courseId]);
 
+  // ✅ FETCH CONTENT + TRANSFORM INTO CHAPTER STRUCTURE
   const fetchContent = async () => {
     try {
       const res = await api.get(`/admin/courses/${courseId}/content`);
-      // Top-level chapters (folders with parent_id = null)
-      const topLevel = res.data.filter((item: ContentItem) => item.parent_id === null);
-      setChapters(topLevel);
+      const items = res.data;
+      setRawItems(items);   //set raw items from  course to state
 
-      // Group child items by parent_id
-      const itemsByParent: Record<number, ContentItem[]> = {};
-      res.data.forEach((item: ContentItem) => {
-        if (item.parent_id) {
-          if (!itemsByParent[item.parent_id]) itemsByParent[item.parent_id] = [];
-          itemsByParent[item.parent_id].push(item);
-        }
-      });
-      setChapterItems(itemsByParent);
+
+      // ✅ Build chapters → items mapping
+      const topChapters = items.filter((i: ContentItem) => i.parent_id === null);//sets the top chapters with no parent id
+      const chapterMap: any[] = topChapters.map((chapter: ContentItem) => ({
+        id: chapter.id,
+        title: chapter.title,
+        items: items.filter((i: ContentItem) => i.parent_id === chapter.id),
+
+      }));
+      setChapters(chapterMap); //sets the chapters with their respective items to state
     } catch (err) {
-      console.error('Failed to load course content');
-    } finally {
-      setLoading(false);
+      console.error("Failed to load course content", err);
     }
   };
 
-  const handleAddChapter = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!chapterTitle.trim()) return;
+  // ✅ ADD CHAPTER
+  const handleAddChapter = async () => {
+    if (!chapterTitle.trim()) return alert("Enter a chapter title");
 
-    try {
+    await api.post(`/admin/courses/${courseId}/content`, {
+      item_type: "folder",
+      title: chapterTitle.trim(),
+      parent_id: null,
+    });
+
+    setChapterTitle("");
+    setAddingChapter(false);
+    fetchContent();
+  };
+
+  // ✅ ADD ITEM TO CHAPTER
+  const handleAddItem = async (chapterId: number) => {
+    if (!itemTitle.trim()) return alert("Enter a title");
+
+    const formData = new FormData();
+    formData.append("item_type", itemType);
+    formData.append("title", itemTitle);
+    formData.append("parent_id", chapterId.toString());
+
+    if (uploadMethod === "upload" && selectedFile) {
+      formData.append("file", selectedFile);
+
+      await api.post(
+        `/admin/courses/${courseId}/content/upload`,
+        formData,
+        { headers: { "Content-Type": "multipart/form-data" } }
+      );
+    } else {
       await api.post(`/admin/courses/${courseId}/content`, {
-        item_type: 'folder',
-        title: chapterTitle.trim(),
-        parent_id: null,
+        item_type: itemType,
+        title: itemTitle,
+        parent_id: chapterId,
+        content_url: publicUrl.trim(),
       });
-      alert('Chapter created!');
-      setChapterTitle('');
-      setAddingChapter(false);
-      fetchContent();
-    } catch (err: any) {
-      alert(err.response?.data?.error || 'Failed to add chapter');
     }
+
+    setItemTitle("");
+    setSelectedFile(null);
+    setPublicUrl("");
+    setShowAddItemModal(false);
+    fetchContent();
   };
 
-  const handleAddItem = async (parentId: number) => {
-    if (!itemTitle.trim()) {
-      alert('Please enter a title');
-      return;
-    }
-
-    try {
-      if (['video', 'audio', 'pdf', 'scorm'].includes(itemType) && uploadMethod === 'upload') {
-        // File upload path
-        if (!selectedFile) {
-          alert('Please select a file');
-          return;
-        }
-
-        setIsUploading(true);
-        const formData = new FormData();
-        formData.append('file', selectedFile);
-        formData.append('item_type', itemType);
-        formData.append('title', itemTitle.trim());
-        formData.append('parent_id', parentId.toString());
-
-        await api.post(`/admin/courses/${courseId}/content/upload`, formData, {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        });
-        alert('Item uploaded and added!');
-      } else {
-        // Public URL or 'text' type
-        let content_url = null;
-        if (['video', 'audio', 'pdf', 'scorm'].includes(itemType) && uploadMethod === 'url') {
-          if (!publicUrl.trim()) {
-            alert('Please enter a public URL');
-            return;
-          }
-          content_url = publicUrl.trim();
-        }
-
-        await api.post(`/admin/courses/${courseId}/content`, {
-          item_type: itemType,
-          title: itemTitle.trim(),
-          parent_id: parentId,
-          content_url,
-        });
-        alert('Item added!');
-      }
-
-      // Reset form
-      setItemTitle('');
-      setUploadMethod('upload');
-      setSelectedFile(null);
-      setPublicUrl('');
-      fetchContent();
-    } catch (err: any) {
-      console.error('Add item error:', err);
-      alert(err.response?.data?.error || 'Failed to add item');
-    } finally {
-      setIsUploading(false);
-    }
+  // ✅ DRAG & DROP — REORDER CHAPTERS
+  const handleReorderChapters = async (newOrder: any[]) => {
+    setChapters(newOrder);
+    // TODO: send reordered array to backend
   };
 
-  const toggleChapter = (id: number) => {
-    setExpandedChapter(expandedChapter === id ? null : id);
-    if (expandedChapter !== id && !chapterItems[id]) {
-      // Optionally pre-load items (already done in fetchContent)
-    }
-  };
-
-  const handleBackToLogin = async () => {
-    await logout();
-    navigate('/login', { replace: true });
-  };
-
-  // Helper: Get accepted file types based on item type
-  const getAcceptTypes = (type: string) => {
-    switch (type) {
-      case 'video':
-        return 'video/*';
-      case 'audio':
-        return 'audio/*';
-      case 'pdf':
-        return '.pdf';
-      case 'scorm':
-        return '.zip,.scorm'; // Adjust as needed
-      default:
-        return '*';
-    }
+  // ✅ DRAG & DROP — REORDER ITEMS
+  const handleReorderItems = async (chapterId: number, newItems: any[]) => {
+    setChapters((prev) =>
+      prev.map((ch) =>
+        ch.id === chapterId ? { ...ch, items: newItems } : ch
+      )
+    );
+    // TODO: send reordered items to backend
   };
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Course Content</h1>
-        <div className="flex gap-3">
-          <button
-            onClick={() => navigate(`/admin/dashboard`)}
-            className="text-blue-900 hover:text-blue-600"
-          >
-            ← Back to Courses
-          </button>
-          <button
-            onClick={handleBackToLogin}
-            className="text-sm text-blue-900 hover:text-blue-600"
-          >
-            ↪ Back to Login
-          </button>
+    <div className="w-full h-screen flex flex-col">
+      {/* HEADER */}
+      <div className="w-full flex justify-between items-center px-8 py-4 border-b">
+        <h1 className="text-2xl font-semibold">Course Content</h1>
+        <button
+          onClick={() => navigate("/admin/dashboard")}
+          className="text-lg hover:text-lightmain"
+        >
+          Back to Courses
+        </button>
+      </div>
+
+      {/* MAIN LAYOUT */}
+      <div className="flex flex-1">
+
+        {/* ✅ LEFT PANEL */}
+        <div className="w-[320px] border-r bg-white">
+          <LeftPanel
+            chapters={chapters}
+            onSelectItem={(item: ContentItem) => {
+              console.log("Selected item:", item);
+              setSelectedItem(item);        // ✅ store the entire item
+            }}
+
+            onAddChapter={() => setAddingChapter(true)}
+            onAddItem={(id) => {
+              setSelectedChapter(id);
+              setShowAddItemModal(true);
+            }}
+            onReorderChapters={handleReorderChapters}
+            onReorderItems={handleReorderItems}
+          />
+        </div>
+
+        {/* ✅ RIGHT SIDE — VIEW CONTENT */}
+        <div className="flex-1 bg-white p-6 overflow-y-auto">
+
+          {!selectedItem ? (
+            <p className="text-gray-400 text-center mt-20">
+              Select a chapter from the left panel →
+            </p>
+          ) : (
+            <ContentViewer item={selectedItem} />
+          )}
         </div>
       </div>
 
-      {/* Add Chapter Form */}
-      {!addingChapter ? (
-        <button
-          onClick={() => setAddingChapter(true)}
-          className="mb-6 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-        >
-          + Add New Chapter
-        </button>
-      ) : (
-        <form onSubmit={handleAddChapter} className="mb-6 flex gap-2">
-          <input
-            type="text"
-            value={chapterTitle}
-            onChange={(e) => setChapterTitle(e.target.value)}
-            placeholder="Chapter title (e.g., Introduction)"
-            className="flex-1 p-2 border rounded"
-            autoFocus
-          />
-          <button
-            type="submit"
-            className="bg-blue-900 text-white px-4 py-2 rounded hover:bg-blue-600"
-          >
-            Create Chapter
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              setAddingChapter(false);
-              setChapterTitle('');
-            }}
-            className="px-4 py-2 border border-gray-300 rounded"
-          >
-            Cancel
-          </button>
-        </form>
+      {/* ✅ ADD ITEM MODAL */}
+      {showAddItemModal && (
+        <div className="fixed inset-0 bg-black/40 flex justify-center items-center">
+          <div className="bg-white w-96 p-6 rounded shadow-lg">
+            <h3 className="text-lg font-semibold mb-4">Add Item</h3>
+
+            <select
+              value={itemType}
+              onChange={(e) => setItemType(e.target.value)}
+              className="w-full p-2 border rounded mb-3"
+            >
+              {ITEM_TYPES.filter((t) => t.value !== "folder").map((t) => (
+                <option key={t.value} value={t.value}>
+                  {t.label}
+                </option>
+              ))}
+            </select>
+
+            <input
+              type="text"
+              value={itemTitle}
+              onChange={(e) => setItemTitle(e.target.value)}
+              placeholder="Item title"
+              className="w-full p-2 border rounded mb-3"
+            />
+
+            {["video", "audio", "pdf", "scorm"].includes(itemType) && (
+              <>
+                <div className="flex gap-4 mb-3">
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      checked={uploadMethod === "upload"}
+                      onChange={() => setUploadMethod("upload")}
+                      className="mr-2"
+                    />
+                    Upload
+                  </label>
+
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      checked={uploadMethod === "url"}
+                      onChange={() => setUploadMethod("url")}
+                      className="mr-2"
+                    />
+                    Public URL
+                  </label>
+                </div>
+
+                {uploadMethod === "upload" ? (
+                  <input
+                    type="file"
+                    onChange={(e) =>
+                      setSelectedFile(e.target.files?.[0] || null)
+                    }
+                    className="w-full p-2 border rounded mb-3"
+                  />
+                ) : (
+                  <input
+                    type="url"
+                    value={publicUrl}
+                    onChange={(e) => setPublicUrl(e.target.value)}
+                    placeholder="Enter URL"
+                    className="w-full p-2 border rounded mb-3"
+                  />
+                )}
+              </>
+            )}
+
+            <div className="flex justify-end gap-3 mt-4">
+              <button
+                onClick={() => setShowAddItemModal(false)}
+                className="px-4 py-2 border rounded"
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={() => {
+                  if (selectedChapter !== null) {
+                    handleAddItem(selectedChapter);
+                  }
+                }}
+                className="px-4 py-2 bg-blue-900 text-white rounded"
+              >
+                Add
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
-      {/* Chapters List */}
-      {loading ? (
-        <p>Loading content...</p>
-      ) : chapters.length === 0 ? (
-        <p className="text-gray-500">No chapters added yet.</p>
-      ) : (
-        <div className="space-y-4">
-          {chapters.map((chapter) => (
-            <div key={chapter.id} className="border rounded-lg overflow-hidden">
-              <div
-                className="p-3 bg-gray-50 cursor-pointer flex justify-between items-center"
-                onClick={() => toggleChapter(chapter.id)}
+      {/* ✅ ADD CHAPTER MODAL */}
+      {addingChapter && (
+        <div className="fixed inset-0 bg-black/40 flex justify-center items-center">
+          <div className="bg-white w-96 p-6 rounded shadow-lg">
+            <h3 className="text-lg font-semibold mb-4">Add Chapter</h3>
+
+            <input
+              type="text"
+              value={chapterTitle}
+              onChange={(e) => setChapterTitle(e.target.value)}
+              placeholder="Chapter title"
+              className="w-full p-2 border rounded mb-3"
+            />
+
+            <div className="flex justify-end gap-3 mt-4">
+              <button
+                onClick={() => setAddingChapter(false)}
+                className="px-4 py-2 border rounded"
               >
-                <span className="font-semibold">{chapter.title}</span>
-                <span className="text-xs text-gray-500">
-                  {chapterItems[chapter.id]?.length || 0} items
-                </span>
-              </div>
+                Cancel
+              </button>
 
-              {expandedChapter === chapter.id && (
-                <div className="p-4 bg-white">
-                  {/* Add Item Form */}
-                  <div className="mb-4">
-                    <h3 className="text-sm font-medium mb-2">Add Content to "{chapter.title}"</h3>
-                    <div className="flex gap-2 mb-2">
-                      <select
-                        value={itemType}
-                        onChange={(e) => setItemType(e.target.value)}
-                        className="p-2 border rounded"
-                      >
-                        {ITEM_TYPES.filter(t => t.value !== 'folder').map((type) => (
-                          <option key={type.value} value={type.value}>
-                            {type.label}
-                          </option>
-                        ))}
-                      </select>
-                      <input
-                        type="text"
-                        value={itemTitle}
-                        onChange={(e) => setItemTitle(e.target.value)}
-                        placeholder="Item title"
-                        className="flex-1 p-2 border rounded"
-                      />
-                    </div>
-
-                    {/* Upload Method Toggle */}
-                    {['video', 'audio', 'pdf', 'scorm'].includes(itemType) && (
-                      <div className="mb-3">
-                        <div className="flex items-center gap-4 mb-2">
-                          <label className="flex items-center">
-                            <input
-                              type="radio"
-                              name={`uploadMethod-${chapter.id}`}
-                              checked={uploadMethod === 'upload'}
-                              onChange={() => setUploadMethod('upload')}
-                              className="mr-2"
-                            />
-                            Upload
-                          </label>
-                          <label className="flex items-center">
-                            <input
-                              type="radio"
-                              name={`uploadMethod-${chapter.id}`}
-                              checked={uploadMethod === 'url'}
-                              onChange={() => setUploadMethod('url')}
-                              className="mr-2"
-                            />
-                            Public URL
-                          </label>
-                        </div>
-
-                        {uploadMethod === 'upload' ? (
-                          <div className="flex items-center gap-2">
-                            <input
-                              type="file"
-                              accept={getAcceptTypes(itemType)}
-                              onChange={(e) => {
-                                if (e.target.files && e.target.files[0]) {
-                                  setSelectedFile(e.target.files[0]);
-                                }
-                              }}
-                              className="p-2 border rounded"
-                            />
-                            <button
-                              disabled={isUploading}
-                              onClick={() => handleAddItem(chapter.id)}
-                              className="bg-blue-900 text-white px-3 py-2 rounded text-sm disabled:opacity-50"
-                            >
-                              {isUploading ? 'Uploading...' : 'Upload'}
-                            </button>
-                          </div>
-                        ) : (
-                          <div className="flex gap-2">
-                            <input
-                              type="url"
-                              value={publicUrl}
-                              onChange={(e) => setPublicUrl(e.target.value)}
-                              placeholder="Enter public URL"
-                              className="flex-1 p-2 border rounded"
-                            />
-                            <button
-                              onClick={() => handleAddItem(chapter.id)}
-                              className="bg-blue-900 text-white px-3 py-2 rounded text-sm"
-                            >
-                              Add
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {/* For Text/Lesson, no upload needed */}
-                    {itemType === 'text' && (
-                      <button
-                        onClick={() => handleAddItem(chapter.id)}
-                        className="bg-indigo-600 text-white px-3 py-2 rounded text-sm"
-                      >
-                        Add Item
-                      </button>
-                    )}
-                  </div>
-
-                  {/* Chapter Items List */}
-                  <div className="mt-4">
-                    <h4 className="text-xs font-medium text-gray-500 mb-2">Items:</h4>
-                    {chapterItems[chapter.id]?.length ? (
-                      <ul className="space-y-1">
-                        {chapterItems[chapter.id].map((item) => (
-                          <li key={item.id} className="text-sm">
-                            <span className="font-medium">{item.title},</span> ({item.item_type})
-                            {item.content_url && (
-                              <button
-                                onClick={() => navigate(`/content/${item.id}`)}
-                                className="ml-2 text-blue-500 text-xs underline"
-                              >
-                                View
-                              </button>
-
-                            )}
-                          </li>
-                        ))}
-                      </ul>
-                    ) : (
-                      <p className="text-xs text-gray-400">No items yet.</p>
-                    )}
-                  </div>
-                </div>
-              )}
+              <button
+                onClick={handleAddChapter}
+                className="px-4 py-2 bg-blue-900 text-white rounded"
+              >
+                Add
+              </button>
             </div>
-          ))}
+          </div>
         </div>
       )}
     </div>
