@@ -4,11 +4,15 @@ import axios from 'axios';
 
 type Role = 'super_admin' | 'admin' | 'teacher' | 'student';
 
+const apiaxis = axios.create({
+  baseURL: "https://spectropy-e-learning-backend.onrender.com",
+});
+
 export interface User {
   id: number;
   email: string;
   full_name: string;
-  role: Role;           // ✅ now supports all 4 roles
+  role: Role;
   is_active: boolean;
 }
 
@@ -16,7 +20,7 @@ interface AuthContextType {
   user: User | null;
   token: string | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<void>; // ✅ no role needed
+  login: (email: string, password: string) => Promise<void>;
   register: (email: string, full_name: string, password: string, role: Role) => Promise<void>;
   logout: () => void;
 }
@@ -28,47 +32,40 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
   const [loading, setLoading] = useState(true);
 
-
   useEffect(() => {
     if (token) {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      apiaxis.defaults.headers.common['Authorization'] = `Bearer ${token}`;
     } else {
-      delete axios.defaults.headers.common['Authorization'];
+      delete apiaxis.defaults.headers.common['Authorization'];
     }
   }, [token]);
 
-
-  // ✅ Fetch user details on initial load if token exists
- useEffect(() => {
+  useEffect(() => {
     const fetchUser = async () => {
-      if (!token) {
-        setLoading(false); // no token = not logged in
-        return;
-      }
+      if (!token) return setLoading(false);
       try {
-        const res = await axios.get('/api/auth/me');
+        const res = await apiaxis.get('/api/auth/me');
         setUser(res.data.user);
       } catch (error) {
         console.error('Failed to load user:', error);
-        logout(); // token invalid or expired
+        logout();
       } finally {
-        setLoading(false); // ✅ done loading either way
+        setLoading(false);
       }
     };
     fetchUser();
   }, [token]);
-  
+
   const login = async (email: string, password: string) => {
-    const res = await axios.post('/api/auth/login', { email, password });
+    const res = await apiaxis.post('/api/auth/login', { email, password });
     const { token, user } = res.data;
     localStorage.setItem('token', token);
     setToken(token);
     setUser(user);
   };
 
-  const register = async (email: string, full_name: string, password: string, role: string) => {
-    // Backend will auto-assign role = 'student'
-    const res = await axios.post('/api/auth/register', { email, full_name, password, role });
+  const register = async (email: string, full_name: string, password: string, role: Role) => {
+    const res = await apiaxis.post('/api/auth/register', { email, full_name, password, role });
     const { token, user } = res.data;
     localStorage.setItem('token', token);
     setToken(token);
