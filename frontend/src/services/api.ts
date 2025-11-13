@@ -2,9 +2,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: import.meta.env.PROD 
-    ? 'https://your-production-api.com/api'  // ← Replace with real prod URL later
-    : '/api'  // ← Uses Vite proxy in development
+  baseURL: 'https://spectropy-e-learning-backend.onrender.com/api'
 });
 
 // Add auth token to requests
