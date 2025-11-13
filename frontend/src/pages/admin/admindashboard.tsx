@@ -163,28 +163,38 @@ export default function CourseStudents() {
           <div className="space-y-3">
             {courses.map((course) => (
               <div
-                key={course.id}
-                className="flex justify-between items-start p-3 border rounded"
-              >
-                <div>
-                  <div className="font-medium">{course.title}</div>
-                  {course.description && (
-                    <div className="text-sm text-gray-600 mt-1">{course.description}</div>
-                  )}
-                  <div className="text-xs text-gray-500 mt-1">
-                    Created: {new Date(course.created_at).toLocaleDateString()}
-                    {course.published && (
-                      <span className="ml-2 text-green-600">● Published</span>
-                    )}
-                  </div>
-                </div>
-                <button
-                  onClick={() => navigate(`/admin/courses/${course.id}/content`)}
-                  className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-                >
-                  Add course items 
-                </button>
-              </div>
+  key={course.id}
+  className="flex justify-between items-start p-3 border rounded"
+>
+  <div>
+    <div className="font-medium">{course.title}</div>
+    {course.description && (
+      <div className="text-sm text-gray-600 mt-1">{course.description}</div>
+    )}
+    <div className="text-xs text-gray-500 mt-1">
+      Created: {new Date(course.created_at).toLocaleDateString()}
+      {course.published && (
+        <span className="ml-2 text-green-600">● Published</span>
+      )}
+    </div>
+  </div>
+
+  {/* Right-aligned buttons */}
+  <div className="flex flex-col gap-2 items-end">
+    <button
+      onClick={() => navigate(`/admin/courses/${course.id}/content`)}
+      className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+    >
+      Add course items
+    </button>
+    <button
+      onClick={() => navigate(`/admin/courses/${course.id}/enroll`)}
+      className="text-blue-900 hover:text-blue-600 text-sm font-medium"
+    >
+      Enroll Users
+    </button>
+  </div>
+</div>
             ))}
           </div>
         )}

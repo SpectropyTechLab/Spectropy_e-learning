@@ -11,16 +11,31 @@ import studentRoutes from './routes/student.routes.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import scormRoutes from './routes/scorm.routes.js';
-import courseRoutes from './routes/course.routes.js';
+import { viewScormFile } from './controllers/scorm.controller.js';
+import EnrollmentRouter from './routes/enrollment.routes.js';
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+
 app.use(helmet());
 app.use(cors());
 app.use(express.json());
+
+app.use('/api/scorm', scormRoutes); // Serve SCORM uploads
+app.get(
+  "/api/scorm/*",
+  helmet({ frameguard: false }),             // <- disables X-Frame-Options here
+  (req, res, next) => {                      // <- extra hardening: kill any pre-set header
+    res.removeHeader("X-Frame-Options");
+    next();
+  },
+
+  viewScormFile
+);
+
 
 // ------------------------------
 // ⬇️ STATIC FILE SERVING FOR UPLOADS
@@ -28,16 +43,13 @@ app.use(express.json());
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
-app.use('/uploads/scorm', scormRoutes); // Serve SCORM uploads
-
 
 app.use('/api/superadmin', superadminRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/teacher', teacherRoutes);
 app.use('/api/student', studentRoutes);
-
-app.use('/api', courseRoutes);
+app.use('/api/admin', EnrollmentRouter);
 
 app.get('/api/health', (req, res) => res.json({ status: 'OK' }));
 
@@ -45,9 +57,11 @@ app.get('/api/health', (req, res) => res.json({ status: 'OK' }));
 process.on('uncaughtException', (err) => {
   console.error('Uncaught Exception:', err);
 });
+process.on('unhandledRejection', (reason) => {
+  console.error('Unhandled Rejection:', reason);
+});
 
 app.listen(PORT, () => {
 
   console.log(`Server running on http://localhost:${PORT}`);
-  console.log(`Uploaded files available at http://localhost:${PORT}/uploads/your-file.pdf`);
 });

@@ -1,4 +1,3 @@
-// src/utils/ScormAPIWrapper.ts
 import axios from "axios";
 
 interface ScormData {
@@ -16,45 +15,69 @@ class ScormAPI {
         this.contentId = contentId;
     }
 
+    // --- SCORM 1.2 Required Methods ---
+
     LMSInitialize() {
+        if (this.initialized) return "true";
         this.initialized = true;
-        console.log("SCORM initialized");
+        console.log("✅ SCORM Initialized");
         return "true";
     }
 
     LMSSetValue(name: string, value: string) {
-        if (!this.initialized) return "false";
-        console.log("SetValue:", name, value);
+        if (!this.initialized) {
+            console.warn("⚠️ SCORM not initialized");
+            return "false";
+        }
+        console.log(`📥 SetValue: ${name} = ${value}`);
         this.data[name] = value;
         return "true";
     }
 
     LMSGetValue(name: string) {
-        return this.data[name] || "";
+        const value = this.data[name] || "";
+        console.log(`📤 GetValue: ${name} = ${value}`);
+        return value;
     }
 
-    async LMSCommit() {
-        console.log("Committing SCORM data:", this.data);
+    LMSCommit() {
+        if (!this.initialized) return "false";
+        console.log("💾 Committing SCORM Data:", this.data);
 
-        try {
-            await axios.post("/api/scorm/commit", {
+        return axios
+            .post("http://localhost:5000/api/scorm/commit", {
                 userId: this.userId,
                 contentId: this.contentId,
                 data: this.data,
-                attemptNo: 1, // or dynamic attempt number if you implement multiple
+                attemptNo: 1,
+            })
+            .then(() => {
+                console.log("✅ SCORM data committed successfully");
+                return "true";
+            })
+            .catch((error) => {
+                console.error("❌ Failed to commit SCORM data:", error);
+                return "false";
             });
-            return "true";
-        } catch (error) {
-            console.error("Failed to commit SCORM data:", error);
-            return "false";
-        }
     }
 
-
     LMSFinish() {
-        console.log("SCORM session finished");
+        console.log("🏁 SCORM Session Finished");
         this.LMSCommit();
+        this.initialized = false;
         return "true";
+    }
+
+    LMSGetLastError() {
+        return "0";
+    }
+
+    LMSGetErrorString() {
+        return "No error";
+    }
+
+    LMSGetDiagnostic() {
+        return "No diagnostic information available";
     }
 }
 

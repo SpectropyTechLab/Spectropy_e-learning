@@ -1,11 +1,9 @@
 import { Router } from 'express';
-import {getTeacherCourseContent,addCourseContentItem,updateCoursePublishStatus} from '../controllers/teacherContentController.js';
+import {getTeacherCourse} from '../controllers/enrollment.controller.js';
 import { authenticateToken } from '../middleware/auth.js';
 
 const router = Router();
 
-router.get('/courses/:id/content', authenticateToken, getTeacherCourseContent);
-router.post('/courses/:id/content', authenticateToken, addCourseContentItem);
-router.patch('/courses/:id/publish', authenticateToken,updateCoursePublishStatus);
+router.get('/course/:courseId', authenticateToken, getTeacherCourse);
 
 export default router;

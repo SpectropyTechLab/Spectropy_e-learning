@@ -11,10 +11,12 @@ import Courses from './pages/auth/courses';
 import SuperAdminDashboard from './pages/superadmin/RegisterAdmin';
 import AdminDashboard from './pages/admin/admindashboard';
 import CourseContent from './pages/admin/CourseContent';
+import EnrollUsers from "./pages/admin/EnrollUsers";
 import TeacherDashboard from './pages/teacher/Dashboard';
 import CourseContentManager from './pages/teacher/CourseContentManager';
-import StudentDashboard from './pages/student/Dashboard';
-import CourseView from './pages/student/CourseView';
+import StudentDashboard from './pages/student/StudentDashboard';
+import StudentCourseView from './pages/student/studentcourseview';
+
 
 import ContentViewer from './pages/common/ContentViewer';
 
@@ -98,7 +100,7 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
-
+      <Route path="/admin/courses/:courseId/enroll" element={<EnrollUsers />} />
       <Route
         path="/teacher/dashboard"
         element={
@@ -126,40 +128,31 @@ function AppRoutes() {
         }
       />
 
-      <Route
-        path="/student/dashboard"
-        element={
-          <ProtectedRoute allowedRoles={['student']}>
-            <StudentDashboard />
-          </ProtectedRoute>
-        }
-      />
 
-      <Route
-        path="/student/courses/:courseId"
-        element={
-          <ProtectedRoute allowedRoles={['student']}>
-            <CourseView />
-          </ProtectedRoute>
-        }
-      />
-      {/* Student */}
-      <Route
-        path="/student/dashboard"
-        element={
-          <ProtectedRoute allowedRoles={["student"]}>
-            <StudentDashboard />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/student/courses/:courseId"
-        element={
-          <ProtectedRoute allowedRoles={["student"]}>
-            <CourseView />
-          </ProtectedRoute>
-        }
-      />
+     {/* Student */}
+<Route
+  path="/student/dashboard"
+  element={
+    <ProtectedRoute allowedRoles={["student"]}>
+      <StudentDashboard />
+    </ProtectedRoute>
+  }
+/>
+<Route
+  path="/student/course/:courseId"
+  element={
+    <ProtectedRoute allowedRoles={['student']}>
+      <StudentCourseView />
+    </ProtectedRoute>
+  }
+>
+  {/* Nested child routes */}
+  <Route index element={<div className="p-6 text-gray-500">Select a topic from the left to view content.</div>} />
+  <Route
+    path="content/:contentId"
+    element={<ContentViewer />}
+  />
+</Route>
 
       {/* Fallback */}
       <Route path="*" element={<Navigate to="/" replace />} />
