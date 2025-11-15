@@ -5,7 +5,7 @@ import axios from 'axios';
 type Role = 'super_admin' | 'admin' | 'teacher' | 'student';
 
 const apiaxis = axios.create({
-  baseURL: "https://spectropy-e-learning-backend.onrender.com",
+  baseURL: `${import.meta.env.VITE_API_BASE_URL}` || 'https://localhost:5000',
 });
 
 export interface User {

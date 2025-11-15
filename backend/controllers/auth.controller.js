@@ -37,19 +37,19 @@ export const register = async (req, res) => {
 
 // ✅ Login (supports all roles)
 export const login = async (req, res) => {
-  console.log('JWT_SECRET loaded:', !!process.env.JWT_SECRET);
+
   const { email, password } = req.body;
-  
+
   try {
     const userQueryResult = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
-    
+
     if (userQueryResult.rows.length === 0) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
     const user = userQueryResult.rows[0];
     const isValid = await comparePassword(password, user.password_hash);
-    
+
     if (!isValid) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }

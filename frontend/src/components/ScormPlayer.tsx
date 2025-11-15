@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import ScormAPI from "../utils/ScormAPIWrapper";
 import { useAuth } from "../contexts/AuthContext";
 
+
 interface Props {
     contentUrl: string;  // "8/1762712441564/res/index.html"
     contentId: number;
@@ -23,8 +24,10 @@ const ScormPlayer: React.FC<Props> = ({ contentUrl, contentId }) => {
         const cleanPath = contentUrl.replace(/^\/+/, "");
 
         // ✅ Build proxy URL for backend
-        const backendBase = import.meta.env.VITE_API_BASE_URL ||"http://localhost:5000/api/scorm";
+        const backendBase = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+
         const finalUrl = `${backendBase}/api/scorm/${cleanPath}`;
+
 
         console.log("✅ SCORM Proxy URL:", finalUrl);
 
