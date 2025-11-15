@@ -216,17 +216,14 @@ const LandingPage = () => {
               <p className="text-sm text-gray-600 mt-2">For students, teachers, and admins</p>
             </Link>
 
-            <div className="block bg-gray-100 p-6 rounded-xl text-center opacity-60 cursor-not-allowed">
-              <div className="text-3xl mb-3">📚</div>
-              <h3 className="font-bold text-gray-500">LMS Portal</h3>
-              <p className="text-sm text-gray-500 mt-2">Coming soon</p>
-            </div>
-
-            <div className="block bg-gray-100 p-6 rounded-xl text-center opacity-60 cursor-not-allowed">
+            <Link 
+            to="https://ra-portal-frontend.vercel.app/login"
+            className="block bg-white p-6 rounded-xl shadow-md hover:shadow-lg border border-blue-100 transition-all text-center hover:-translate-y-1"
+            >
               <div className="text-3xl mb-3">📊</div>
-              <h3 className="font-bold text-gray-500">RA Portal</h3>
-              <p className="text-sm text-gray-500 mt-2">Coming soon</p>
-            </div>
+              <h3 className="font-bold text-blue-800">RA Portal</h3>
+              <p className="text-sm text-gray-500 mt-2">Results and Analysis Portal</p>
+            </Link>
           </div>
         </section>
 

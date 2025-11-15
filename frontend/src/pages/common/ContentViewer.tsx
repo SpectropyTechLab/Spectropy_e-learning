@@ -58,7 +58,7 @@ export default function ContentViewer({ item }: ContentViewerProps) {
     const { item_type, title } = content;
 
     let viewerElement;
-
+    console.log("this is commit",content);
     // ✅ SELECT VIEWER BASED ON TYPE
     switch (item_type) {
         case 'video':
@@ -91,7 +91,7 @@ export default function ContentViewer({ item }: ContentViewerProps) {
 
         case "scorm":
             viewerElement = (
-                <div className="w-full h-[80vh] border rounded-lg overflow-hidden">
+                <div >
                     <ScormPlayer contentUrl={content.content_url!} contentId={content.id} />
                 </div>
             );

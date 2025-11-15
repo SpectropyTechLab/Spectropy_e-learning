@@ -23,8 +23,8 @@ const ScormPlayer: React.FC<Props> = ({ contentUrl, contentId }) => {
         const cleanPath = contentUrl.replace(/^\/+/, "");
 
         // ✅ Build proxy URL for backend
-        const backendBase = "http://localhost:5000/api/scorm";
-        const finalUrl = `${backendBase}/${cleanPath}`;
+        const backendBase = import.meta.env.VITE_API_BASE_URL ||"http://localhost:5000/api/scorm";
+        const finalUrl = `${backendBase}/api/scorm/${cleanPath}`;
 
         console.log("✅ SCORM Proxy URL:", finalUrl);
 

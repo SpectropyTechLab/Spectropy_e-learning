@@ -54,7 +54,7 @@ app.use('/api/teacher', teacherRoutes);
 app.use('/api/student', studentRoutes);
 app.use('/api/admin', EnrollmentRouter);
 
-app.get('/api/health', (req, res) => res.json({ status: 'OK' }));
+app.get('/', (req, res) => res.json({ status: 'OK' }));
 
 // ✅ Error handling — catches unhandled promise errors to prevent crashes
 process.on('uncaughtException', (err) => {
@@ -64,7 +64,7 @@ process.on('unhandledRejection', (reason) => {
   console.error('Unhandled Rejection:', reason);
 });
 
-app.listen(PORT, () => {
+app.listen(PORT, "0.0.0.0", () => {
 
   console.log(`Server running on http://localhost:${PORT}`);
 });
