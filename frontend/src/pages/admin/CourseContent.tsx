@@ -30,8 +30,6 @@ export default function CourseContent() {
   const { courseId } = useParams<{ courseId: string }>();
   const navigate = useNavigate();
   const { logout } = useAuth();
-
-  const [rawItems, setRawItems] = useState<ContentItem[]>([]);
   const [chapters, setChapters] = useState<any[]>([]);
   const [selectedChapter, setSelectedChapter] = useState<number | null>(null);
 
@@ -58,8 +56,6 @@ export default function CourseContent() {
     try {
       const res = await api.get(`/admin/courses/${courseId}/content`);
       const items = res.data;
-      setRawItems(items);   //set raw items from  course to state
-
 
       // ✅ Build chapters → items mapping
       const topChapters = items.filter((i: ContentItem) => i.parent_id === null);//sets the top chapters with no parent id
@@ -69,6 +65,7 @@ export default function CourseContent() {
         items: items.filter((i: ContentItem) => i.parent_id === chapter.id),
 
       }));
+
       setChapters(chapterMap); //sets the chapters with their respective items to state
     } catch (err) {
       console.error("Failed to load course content", err);
@@ -78,6 +75,7 @@ export default function CourseContent() {
   // ✅ ADD CHAPTER
   const handleAddChapter = async () => {
     if (!chapterTitle.trim()) return alert("Enter a chapter title");
+
 
     await api.post(`/admin/courses/${courseId}/content`, {
       item_type: "folder",
@@ -138,7 +136,7 @@ export default function CourseContent() {
     );
     // TODO: send reordered items to backend
   };
-
+  console.log("CourseContent rendered");
   return (
     <div className="w-full h-screen flex flex-col">
       {/* HEADER */}

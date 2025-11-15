@@ -40,12 +40,12 @@ class ScormAPI {
         return value;
     }
 
-    LMSCommit() {
+    LMSCommit(data?: any) {
         if (!this.initialized) return "false";
         console.log("💾 Committing SCORM Data:", this.data);
 
         return axios
-            .post("http://localhost:5000/api/scorm/commit", {
+            .post(`${data}/api/scorm/commit`, {
                 userId: this.userId,
                 contentId: this.contentId,
                 data: this.data,

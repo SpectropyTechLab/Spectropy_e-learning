@@ -89,7 +89,7 @@ export default function CourseStudents() {
         </div>
       </div>
 
-       {/* Create Course Form */}
+      {/* Create Course Form */}
       <div className="bg-white p-4 rounded-lg border mb-8">
         <h2 className="text-lg font-semibold mb-3">Create New Course</h2>
         <form onSubmit={handleCreateCourse} className="space-y-4">
@@ -124,15 +124,13 @@ export default function CourseStudents() {
               <button
                 type="button"
                 onClick={() => setPublished(!published)}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
-                  published ? 'bg-green-500' : 'bg-gray-300'
-                }`}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${published ? 'bg-green-500' : 'bg-gray-300'
+                  }`}
                 aria-label="Toggle publish"
               >
                 <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                    published ? 'translate-x-6' : 'translate-x-1'
-                  }`}
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${published ? 'translate-x-6' : 'translate-x-1'
+                    }`}
                 />
               </button>
               <span className="ml-2 text-sm text-gray-600">
@@ -163,38 +161,38 @@ export default function CourseStudents() {
           <div className="space-y-3">
             {courses.map((course) => (
               <div
-  key={course.id}
-  className="flex justify-between items-start p-3 border rounded"
->
-  <div>
-    <div className="font-medium">{course.title}</div>
-    {course.description && (
-      <div className="text-sm text-gray-600 mt-1">{course.description}</div>
-    )}
-    <div className="text-xs text-gray-500 mt-1">
-      Created: {new Date(course.created_at).toLocaleDateString()}
-      {course.published && (
-        <span className="ml-2 text-green-600">● Published</span>
-      )}
-    </div>
-  </div>
+                key={course.id}
+                className="flex justify-between items-start p-3 border rounded"
+              >
+                <div>
+                  <div className="font-medium">{course.title}</div>
+                  {course.description && (
+                    <div className="text-sm text-gray-600 mt-1">{course.description}</div>
+                  )}
+                  <div className="text-xs text-gray-500 mt-1">
+                    Created: {new Date(course.created_at).toLocaleDateString()}
+                    {course.published && (
+                      <span className="ml-2 text-green-600">● Published</span>
+                    )}
+                  </div>
+                </div>
 
-  {/* Right-aligned buttons */}
-  <div className="flex flex-col gap-2 items-end">
-    <button
-      onClick={() => navigate(`/admin/courses/${course.id}/content`)}
-      className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-    >
-      Add course items
-    </button>
-    <button
-      onClick={() => navigate(`/admin/courses/${course.id}/enroll`)}
-      className="text-blue-900 hover:text-blue-600 text-sm font-medium"
-    >
-      Enroll Users
-    </button>
-  </div>
-</div>
+                {/* Right-aligned buttons */}
+                <div className="flex flex-col gap-2 items-end">
+                  <button
+                    onClick={() => navigate(`/admin/courses/${course.id}/content`)}
+                    className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                  >
+                    Add course items
+                  </button>
+                  <button
+                    onClick={() => navigate(`/admin/courses/${course.id}/enroll`)}
+                    className="text-blue-900 hover:text-blue-600 text-sm font-medium"
+                  >
+                    Enroll Users
+                  </button>
+                </div>
+              </div>
             ))}
           </div>
         )}
