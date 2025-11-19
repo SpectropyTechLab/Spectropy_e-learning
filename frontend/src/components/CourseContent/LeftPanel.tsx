@@ -104,26 +104,21 @@ const LeftPanel: React.FC<Props> = ({
     };
 
     return (
-        <div className="w-full h-full bg-white border-r border-gray-200 overflow-y-auto">
+        <div className="w-full h-full bg-white border-r border-gray-200  flex flex-col">
 
-            {/* Header */}
-            <div className="p-4 border-b border-gray-200 flex justify-between items-center">
+            {/* Header WITHOUT Add Chapter button */}
+            <div className="p-4 border-b border-gray-200 shrink-0">
                 <h1 className="text-lg font-semibold">Course Content</h1>
-
-                <button
-                    onClick={onAddChapter}
-                    className="flex items-center gap-1 px-2 py-1 bg-maincolor hover:bg-lightmain text-white rounded-md text-sm"
-                >
-                    <MdAdd className="text-lg" />
-                    Add Chapter
-                </button>
             </div>
 
             <DragDropContext onDragEnd={onDragEnd}>
                 <Droppable droppableId="chapters" type="CHAPTER">
                     {(provided) => (
-                        <div className="p-3" {...provided.droppableProps} ref={provided.innerRef}>
-
+                        <div
+                            className="p-3 flex-1 overflow-y-scroll"
+                            {...provided.droppableProps}
+                            ref={provided.innerRef}
+                        >
                             {chapters.map((chapter, chapterIndex) => (
                                 <Draggable
                                     key={chapter.id}
@@ -182,7 +177,7 @@ const LeftPanel: React.FC<Props> = ({
                                                 </div>
                                             </div>
 
-                                            {/* ITEM LIST */}
+                                            {/* Items List */}
                                             {expanded === chapter.id && (
                                                 <Droppable
                                                     droppableId={`items-${chapter.id}`}
@@ -205,13 +200,10 @@ const LeftPanel: React.FC<Props> = ({
                                                                             ref={itemProvided.innerRef}
                                                                             {...itemProvided.draggableProps}
                                                                             {...itemProvided.dragHandleProps}
+                                                                            onClick={() => onSelectItem(item)}
                                                                             className="flex justify-between items-center p-2 my-1 rounded border border-gray-200 relative group hover:bg-blue-50 cursor-pointer"
                                                                         >
-
-                                                                            <div
-                                                                                className="flex items-center gap-2"
-                                                                                onClick={() => onSelectItem(item)}
-                                                                            >
+                                                                            <div className="flex items-center gap-2">
                                                                                 {getIconForType(item.item_type)}
                                                                                 <span className="text-gray-700 font-medium">
                                                                                     {item.title}
@@ -221,7 +213,9 @@ const LeftPanel: React.FC<Props> = ({
                                                                             <div
                                                                                 onClick={(e) => {
                                                                                     e.stopPropagation();
-                                                                                    setOpenItemMenu(openItemMenu === item.id ? null : item.id);
+                                                                                    setOpenItemMenu(
+                                                                                        openItemMenu === item.id ? null : item.id
+                                                                                    );
                                                                                 }}
                                                                                 className="opacity-0 group-hover:opacity-100 transition"
                                                                             >
@@ -280,7 +274,21 @@ const LeftPanel: React.FC<Props> = ({
                     )}
                 </Droppable>
             </DragDropContext>
+
+            {/* Bottom Add Chapter button */}
+            <div className="p-3 border-t border-gray-200 shrink-0">
+                <button
+                    onClick={onAddChapter}
+                    className="flex items-center gap-1 px-3 py-2 bg-maincolor hover:bg-lightmain text-white rounded-md w-full justify-center"
+                >
+                    <MdAdd className="text-lg" />
+                    Add Chapter
+                </button>
+            </div>
+
         </div>
+
+
     );
 };
 

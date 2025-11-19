@@ -40,7 +40,7 @@ const ScormPlayer: React.FC<Props> = ({ contentUrl, contentId }) => {
     }, [user, contentUrl, contentId]);
 
     return (
-        <div className="w-full h-screen bg-gray-100">
+        <div className="w-full h-full bg-gray-100">
             {proxyUrl ? (
                 <iframe
                     ref={iframeRef}
