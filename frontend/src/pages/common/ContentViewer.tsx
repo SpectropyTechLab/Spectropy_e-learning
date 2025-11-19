@@ -83,14 +83,14 @@ export default function ContentViewer({ item }: ContentViewerProps) {
 
     const { item_type, title } = content;
     let viewerElement = null;
-
+    const valcss = "w-[70vw] h-[80vh] ";
     /** -----------------------------------------------------
      *  CONTENT RENDERER (Based on Type)
      * ---------------------------------------------------- */
     switch (item_type) {
         case "video":
             viewerElement = mediaUrl ? (
-                <video controls className="w-full max-h-[80vh] rounded-lg shadow">
+                <video controls className={valcss}>
                     <source src={mediaUrl} type="video/mp4" />
                 </video>
             ) : (
@@ -100,7 +100,7 @@ export default function ContentViewer({ item }: ContentViewerProps) {
 
         case "audio":
             viewerElement = mediaUrl ? (
-                <audio controls className="w-full mt-4">
+                <audio controls className={valcss}>
                     <source src={mediaUrl} type="audio/mpeg" />
                 </audio>
             ) : (
@@ -113,7 +113,7 @@ export default function ContentViewer({ item }: ContentViewerProps) {
                 <iframe
                     src={mediaUrl}
                     title={title}
-                    className="w-full h-[80vh] border rounded-lg"
+                    className={valcss}
                 />
             ) : (
                 <p>Loading PDF...</p>
@@ -122,7 +122,7 @@ export default function ContentViewer({ item }: ContentViewerProps) {
 
         case "scorm":
             viewerElement = (
-                <div >
+                <div className={valcss}>
                     <ScormPlayer
                         contentUrl={content.content_url!}
                         contentId={content.id}
@@ -143,8 +143,8 @@ export default function ContentViewer({ item }: ContentViewerProps) {
      *  FINAL RENDER
      * ---------------------------------------------------- */
     return (
-        <div className="h-full p-6 w-full mx-auto">
-            <h1 className="text-2xl font-semibold mb-4">{title}</h1>
+        <div className="flex-1 p-2 w-full mx-auto flex flex-col justify-center items-center ">
+            <h1 className="text-xl font-semibold mb-4">{title.toUpperCase()}</h1>
             {viewerElement}
         </div>
     );

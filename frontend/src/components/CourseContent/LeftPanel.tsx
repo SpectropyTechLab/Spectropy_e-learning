@@ -9,7 +9,7 @@ import {
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { FiChevronDown, FiChevronRight } from "react-icons/fi";
 import { MdAdd } from "react-icons/md";
-import { useNavigate } from "react-router-dom";
+//import { useNavigate } from "react-router-dom";
 
 import {
     FaVideo,
@@ -57,7 +57,7 @@ const LeftPanel: React.FC<Props> = ({
     const [expanded, setExpanded] = useState<number | null>(null);
     const [openMenu, setOpenMenu] = useState<number | null>(null);
     const [openItemMenu, setOpenItemMenu] = useState<number | null>(null);
-    const navigate = useNavigate();
+    //const navigate = useNavigate();
 
     const toggleExpand = (chapterId: number) => {
         setExpanded(expanded === chapterId ? null : chapterId);
@@ -106,34 +106,21 @@ const LeftPanel: React.FC<Props> = ({
     };
 
     return (
-        <div className="w-full h-full bg-white border-r border-gray-200 overflow-y-auto">
+        <div className="w-full h-full bg-white border-r border-gray-200  flex flex-col">
 
-            {/* Header */}
-            <div className="p-4 border-b border-gray-200 flex justify-between items-center">
-                 <nav>
-                <div className="w-10 h-10 bg-blue-900 rounded-full flex items-center justify-center mb-3">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2m12-10V5a2 2 0 00-2-2h-2a2 2 0 00-2 2v4a2 2 0 002 2h2a2 2 0 002-2z" />
-            </svg>
-          </div>
-          
+            {/* Header WITHOUT Add Chapter button */}
+            <div className="p-4 border-b border-gray-200 shrink-0">
                 <h1 className="text-lg font-semibold">Course Content</h1>
-                </nav>
-                <button
-                    onClick={onAddChapter}
-                    className="flex items-center gap-1 px-2 py-1 bg-blue-900 hover:bg-blue-700 text-white rounded-md text-sm"
-                >
-                    <MdAdd className="text-lg" />
-                    Add Chapter
-                </button>
-                
             </div>
 
             <DragDropContext onDragEnd={onDragEnd}>
                 <Droppable droppableId="chapters" type="CHAPTER">
                     {(provided) => (
-                        <div className="p-3" {...provided.droppableProps} ref={provided.innerRef}>
-
+                        <div
+                            className="p-3 flex-1 overflow-y-scroll"
+                            {...provided.droppableProps}
+                            ref={provided.innerRef}
+                        >
                             {chapters.map((chapter, chapterIndex) => (
                                 <Draggable
                                     key={chapter.id}
@@ -192,7 +179,7 @@ const LeftPanel: React.FC<Props> = ({
                                                 </div>
                                             </div>
 
-                                            {/* ITEM LIST */}
+                                            {/* Items List */}
                                             {expanded === chapter.id && (
                                                 <Droppable
                                                     droppableId={`items-${chapter.id}`}
@@ -215,13 +202,10 @@ const LeftPanel: React.FC<Props> = ({
                                                                             ref={itemProvided.innerRef}
                                                                             {...itemProvided.draggableProps}
                                                                             {...itemProvided.dragHandleProps}
+                                                                            onClick={() => onSelectItem(item)}
                                                                             className="flex justify-between items-center p-2 my-1 rounded border border-gray-200 relative group hover:bg-blue-50 cursor-pointer"
                                                                         >
-
-                                                                            <div
-                                                                                className="flex items-center gap-2"
-                                                                                onClick={() => onSelectItem(item)}
-                                                                            >
+                                                                            <div className="flex items-center gap-2">
                                                                                 {getIconForType(item.item_type)}
                                                                                 <span className="text-gray-700 font-medium">
                                                                                     {item.title}
@@ -231,7 +215,9 @@ const LeftPanel: React.FC<Props> = ({
                                                                             <div
                                                                                 onClick={(e) => {
                                                                                     e.stopPropagation();
-                                                                                    setOpenItemMenu(openItemMenu === item.id ? null : item.id);
+                                                                                    setOpenItemMenu(
+                                                                                        openItemMenu === item.id ? null : item.id
+                                                                                    );
                                                                                 }}
                                                                                 className="opacity-0 group-hover:opacity-100 transition"
                                                                             >
@@ -290,30 +276,21 @@ const LeftPanel: React.FC<Props> = ({
                     )}
                 </Droppable>
             </DragDropContext>
-            {/* Footer*/}
-            <div className="p-4 border-t border-gray-200">
-                      <button
-                      onClick={() => navigate("/admin/dashboard")}
-                      className="w-full flex items-center justify-center px-4 py-2 text-sm text-blue-900 hover:text-blue-600">
 
-                      <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-4 w-4 mr-2"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M10 19l-7-7m0 0l7-7m-7 7h18"
-                />
-              </svg>
-                      Back to Courses
-                    </button>
-                    </div>
+            {/* Bottom Add Chapter button */}
+            <div className="p-3 border-t border-gray-200 shrink-0">
+                <button
+                    onClick={onAddChapter}
+                    className="flex items-center gap-1 px-3 py-2 bg-maincolor hover:bg-lightmain text-white rounded-md w-full justify-center"
+                >
+                    <MdAdd className="text-lg" />
+                    Add Chapter
+                </button>
+            </div>
+
         </div>
+
+
     );
 };
 

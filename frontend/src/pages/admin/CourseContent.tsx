@@ -1,6 +1,6 @@
 // ✅ src/pages/admin/CourseContent.tsx
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import api from "../../services/api";
 import LeftPanel from "../../components/CourseContent/LeftPanel"; // ✅ IMPORT LEFT PANEL
 import ContentViewer from "../common/ContentViewer";
@@ -27,6 +27,7 @@ const ITEM_TYPES = [
 
 export default function CourseContent() {
   const { courseId } = useParams<{ courseId: string }>();
+  const navigate = useNavigate();
   const [chapters, setChapters] = useState<any[]>([]);
   const [selectedChapter, setSelectedChapter] = useState<number | null>(null);
 
@@ -38,7 +39,7 @@ export default function CourseContent() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [publicUrl, setPublicUrl] = useState("");
   const [selectedItem, setSelectedItem] = useState<ContentItem | null>(null);
-
+  const items = chapters.flatMap(ch => ch.items);
 
   // ✅ Add Chapter Modal
   const [chapterTitle, setChapterTitle] = useState("");
@@ -62,7 +63,7 @@ export default function CourseContent() {
         items: items.filter((i: ContentItem) => i.parent_id === chapter.id),
 
       }));
-
+      console.log("Fetched course content:", chapterMap);
       setChapters(chapterMap); //sets the chapters with their respective items to state
     } catch (err) {
       console.error("Failed to load course content", err);
@@ -84,6 +85,44 @@ export default function CourseContent() {
     setAddingChapter(false);
     fetchContent();
   };
+  // ✅ update the item as completed
+  const markItemCompleted = async (itemId: number) => {
+    try {
+      await api.post(`/student/item-attempt`, {
+        content_item_id: itemId,
+        completion_status: "completed"
+      });
+    } catch (err) {
+      console.error("❌ Failed to mark item completed", err);
+    }
+  };
+
+
+  const goToNext = async () => {
+    if (!selectedItem) return;
+
+    const index = items.findIndex(i => i.id === selectedItem.id);
+
+    // Step 1: mark current item completed
+    await markItemCompleted(selectedItem.id);
+
+    // Step 2: go to next
+    if (index < items.length - 1) {
+      setSelectedItem(items[index + 1]);
+    }
+  };
+
+
+  const goToPrevious = () => {
+    if (!selectedItem) return;
+
+    const index = items.findIndex(i => i.id === selectedItem.id);
+
+    if (index > 0) {
+      setSelectedItem(items[index - 1]);
+    }
+  };
+
 
   // ✅ ADD ITEM TO CHAPTER
   const handleAddItem = async (chapterId: number) => {
@@ -133,15 +172,49 @@ export default function CourseContent() {
     );
     // TODO: send reordered items to backend
   };
-  console.log("CourseContent rendered");
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="w-full h-screen flex flex-col">
+      {/* HEADER */}
+      <div className="w-full flex justify-between items-center px-8 py-4 border-b">
+
+        {/* LEFT SIDE — BACK */}
+        <button
+          onClick={() => navigate("/admin/dashboard")}
+          className="text-lg hover:text-lightmain"
+        >
+          Back to Courses
+        </button>
+
+        {/* RIGHT SIDE — PREVIOUS / NEXT */}
+        <div className="flex items-center gap-4">
+
+          <button
+            onClick={goToPrevious}
+            disabled={!selectedItem}
+            className={`px-4 py-2 rounded border ${!selectedItem ? "opacity-40 cursor-not-allowed" : "hover:bg-gray-100"
+              }`}
+          >
+            ◀ Previous
+          </button>
+
+          <button
+            onClick={goToNext}
+            disabled={!selectedItem}
+            className={`px-4 py-2 rounded border ${!selectedItem ? "opacity-40 cursor-not-allowed" : "hover:bg-gray-100"
+              }`}
+          >
+            Next ▶
+          </button>
+
+        </div>
+      </div>
+
 
       {/* MAIN LAYOUT */}
-      <div className="flex flex-1">
+      <div className="flex flex-1 min-h-0 ">
 
         {/* ✅ LEFT PANEL */}
-        <div className="w-[320px] border-r bg-white">
+        <div className=" w-[320px] border-r bg-white shrink-0">
           <LeftPanel
             chapters={chapters}
             onSelectItem={(item: ContentItem) => {
@@ -161,7 +234,7 @@ export default function CourseContent() {
         
 
         {/* ✅ RIGHT SIDE — VIEW CONTENT */}
-        <div className="flex-1 bg-white p-6 overflow-y-auto">
+        <div className="flex-1 bg-white p-2 shrink-0 overflow-y-none flex flex-col">
 
           {!selectedItem ? (
             <p className="text-gray-400 text-center mt-20">
