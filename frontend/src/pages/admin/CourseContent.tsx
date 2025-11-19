@@ -1,7 +1,6 @@
 // ✅ src/pages/admin/CourseContent.tsx
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { useAuth } from "../../contexts/AuthContext";
+import { useParams } from "react-router-dom";
 import api from "../../services/api";
 import LeftPanel from "../../components/CourseContent/LeftPanel"; // ✅ IMPORT LEFT PANEL
 import ContentViewer from "../common/ContentViewer";
@@ -28,8 +27,6 @@ const ITEM_TYPES = [
 
 export default function CourseContent() {
   const { courseId } = useParams<{ courseId: string }>();
-  const navigate = useNavigate();
-  const { logout } = useAuth();
   const [chapters, setChapters] = useState<any[]>([]);
   const [selectedChapter, setSelectedChapter] = useState<number | null>(null);
 
@@ -138,17 +135,7 @@ export default function CourseContent() {
   };
   console.log("CourseContent rendered");
   return (
-    <div className="w-full h-screen flex flex-col">
-      {/* HEADER */}
-      <div className="w-full flex justify-between items-center px-8 py-4 border-b">
-        <h1 className="text-2xl font-semibold">Course Content</h1>
-        <button
-          onClick={() => navigate("/admin/dashboard")}
-          className="text-lg hover:text-lightmain"
-        >
-          Back to Courses
-        </button>
-      </div>
+    <div className="flex h-screen bg-gray-50">
 
       {/* MAIN LAYOUT */}
       <div className="flex flex-1">
@@ -171,6 +158,7 @@ export default function CourseContent() {
             onReorderItems={handleReorderItems}
           />
         </div>
+        
 
         {/* ✅ RIGHT SIDE — VIEW CONTENT */}
         <div className="flex-1 bg-white p-6 overflow-y-auto">

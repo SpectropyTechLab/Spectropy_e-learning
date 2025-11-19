@@ -158,9 +158,20 @@ export default function CourseStudents() {
             onClick={handleBackToLogin}
             className="w-full flex items-center justify-center px-4 py-2 text-sm text-blue-900 hover:text-blue-600"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 6v.01M6 6h.01M6 6h.01" />
-            </svg>
+            <svg
+    xmlns="http://www.w3.org/2000/svg"
+    className="h-4 w-4 mr-2"
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M10 19l-7-7m0 0l7-7m-7 7h18"
+    />
+  </svg>
             Logout
           </button>
         </div>

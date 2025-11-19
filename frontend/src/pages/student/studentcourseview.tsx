@@ -135,13 +135,28 @@ export default function StudentCourseView() {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50 overflow-hidden">
+    <div className="flex h-screen bg-gray-50">
       {/* LEFT BAR - Navigation & Progress */}
-      <div className="w-80 bg-white border-r p-4 flex flex-col">
-        <div className="mb-6">
-          <Link to="/student/dashboard" className="text-blue-600 text-sm font-medium">
-            ← Back to My Courses
-          </Link>
+      <div className="w-64 bg-white border-r border-gray-200 flex flex-col">
+        {/* Logo/Brand */}
+        <div className="p-6 border-b border-gray-200">
+          <div className="w-10 h-10 bg-blue-900 rounded-full flex items-center justify-center mb-3">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-6 w-6 text-white"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2m12-10V5a2 2 0 00-2-2h-2a2 2 0 00-2 2v4a2 2 0 002 2h2a2 2 0 002-2z"
+              />
+            </svg>
+          </div>
+          <h1 className="text-lg font-semibold">courses view</h1>
         </div>
 
         {/* Chapters & Content Items List */}
@@ -150,13 +165,12 @@ export default function StudentCourseView() {
     <div key={chapter.id} className="mb-3">
       {/* Chapter Header (Toggle) */}
       <div
-        className="font-bold text-sm mb-1.8 flex items-center cursor-pointer hover:bg-gray-100 p-1 rounded"
+        className="font-semibold text-lg mb-1.8 flex items-center cursor-pointer bg-gray-100 p-1 rounded"
         onClick={() => toggleChapter(chapter.id)}
       >
         <span className="mr-2">
-          {expandedChapters.has(chapter.id) ? '▼' : '▶'}
+          {expandedChapters.has(chapter.id) ? 'v' : '>'}
         </span>
-        <span className="mr-2">📁</span>
         {chapter.title}
       </div>
 
@@ -166,7 +180,7 @@ export default function StudentCourseView() {
           {chapter.content_items.map((item) => (
             <div
               key={item.id}
-              className="flex items-center gap-2 py-1 px-2 rounded hover:bg-gray-100 cursor-pointer"
+              className=" font-semibold text-lg mb-1.8 flex items-center gap-2 py-1 px-2 rounded hover:bg-gray-100 cursor-pointer"
               onClick={() => navigate(`content/${item.id}`)}
             >
               <span className="inline-flex w-4 h-4 rounded-full bg-blue-100 text-blue-800 text-[10px] items-center justify-center">
@@ -183,22 +197,34 @@ export default function StudentCourseView() {
     </div>
   ))}
 </div>
+     <div className="p-4 border-t border-gray-200">
+          <Link to="/student/dashboard" className="w-full flex items-center justify-center px-4 py-2 text-sm text-blue-900 hover:text-blue-600">
+          <svg
+    xmlns="http://www.w3.org/2000/svg"
+    className="h-4 w-4 mr-2"
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M10 19l-7-7m0 0l7-7m-7 7h18"
+    />
+  </svg>
+             Back to My Courses
+          </Link>
+        </div>
       </div>
 
       {/* RIGHT BAR - Content Viewer */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 overflow-y-auto">
         {/* Header */}
-        <div className="flex justify-between items-center mb-4 pb-4 border-b px-4">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => navigate('/student/dashboard')}
-              className="p-2 rounded hover:bg-gray-200"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-            </button>
-            <h1 className="text-xl font-bold truncate max-w-md">{course.title}</h1>
+        <div className="p-6 border-b border-gray-200">
+          <div className="flex justify-between items-center">
+            <div>
+            <h1 className="text-2xl font-bold">{course.title}</h1>
           </div>
           <div className="flex gap-2">
             <button
@@ -218,11 +244,12 @@ export default function StudentCourseView() {
               className={`px-4 py-2 text-sm rounded ${
                 currentIndex >= allContentItems.length - 1
                   ? 'bg-indigo-300 text-white cursor-not-allowed'
-                  : 'bg-indigo-600 text-white hover:bg-indigo-700'
+                  : 'bg-blue-900 text-white hover:bg-indigo-700'
               }`}
             >
               Next <span className="ml-1">▶</span>
             </button>
+          </div>
           </div>
         </div>
 

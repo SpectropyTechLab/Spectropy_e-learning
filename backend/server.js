@@ -13,6 +13,7 @@ import { fileURLToPath } from 'url';
 import scormRoutes from './routes/scorm.routes.js';
 import { viewScormFile } from './controllers/scorm.controller.js';
 import EnrollmentRouter from './routes/enrollment.routes.js';
+import CourseRouter from './routes/course.routes.js';
 
 dotenv.config();
 
@@ -52,7 +53,10 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/teacher', teacherRoutes);
 app.use('/api/student', studentRoutes);
+
 app.use('/api/admin', EnrollmentRouter);
+
+app.use('/api/course', CourseRouter);
 
 app.get('/', (req, res) => res.json({ status: 'OK' }));
 

@@ -13,6 +13,7 @@ interface EnrolledCourse {
 }
 
 export default function StudentDashboard() {
+  const [activeTab, setActiveTab] = useState<'courses'>();
   const [courses, setCourses] = useState<EnrolledCourse[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -40,51 +41,89 @@ export default function StudentDashboard() {
   }; 
 
  return (
-    <div className="flex min-h-screen bg-gray-50">
-      {/* Sidebar — fixed width, no toggle */}
-      <aside className="bg-white border-r w-64">
-        <div className="p-4 border-b">
-          <h1 className="font-bold text-lg">Student Portal</h1>
+    <div className="flex h-screen bg-gray-50">
+       {/* Left Sidebar */}
+      <div className="w-64 bg-white border-r border-gray-200 flex flex-col">
+        {/* Logo/Brand */}
+        <div className="p-6 border-b border-gray-200">
+          <div className="w-10 h-10 bg-blue-900 rounded-full flex items-center justify-center mb-3">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-6 w-6 text-white"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2m12-10V5a2 2 0 00-2-2h-2a2 2 0 00-2 2v4a2 2 0 002 2h2a2 2 0 002-2z"
+              />
+            </svg>
+          </div>
+          <h1 className="text-lg font-semibold">Student Dashboard</h1>
         </div>
-        <nav className="p-4">
-          <ul className="space-y-2">
-            <li>
-              <Link
-                to="/student/dashboard"
-                className="flex items-center gap-3 p-2 rounded hover:bg-gray-100 text-blue-900 font-medium"
-              >
-                <span>📊</span>
-                <span>Course</span>
-              </Link>
-            </li>
-            <li>
-              <Link
-                to="/student/profile"
-                className="flex items-center gap-3 p-2 rounded hover:bg-gray-100 text-gray-700"
-              >
-                <span>👤</span>
-                <span>Profile</span>
-              </Link>
-            </li>
-            <li>
-              <button
-                onClick={handleBackToLogin}
-                className="w-full text-left flex items-center gap-3 p-2 rounded hover:bg-red-50 text-red-600"
-              >
-                <span>↪</span>
-                <span>Back to Login</span>
-              </button>
-            </li>
-            
-          </ul>
+      
+        <nav className="flex-1 p-4 space-y-1">
+          <button
+            onClick={() => setActiveTab('courses')}
+            className={`w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
+              activeTab === 'courses' 
+                ? 'bg-blue-50 text-blue-900 border-l-4 border-blue-900' 
+                : 'text-gray-700 hover:bg-gray-100'
+            }`}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+            </svg>
+            Courses
+          </button>
         </nav>
-      </aside>
+            {/* Footer */}
+        <div className="p-4 border-t border-gray-200">
+          <button
+            onClick={handleBackToLogin}
+            className="w-full flex items-center justify-center px-4 py-2 text-sm text-blue-900 hover:text-blue-600"
+          >
+            <svg
+    xmlns="http://www.w3.org/2000/svg"
+    className="h-4 w-4 mr-2"
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M10 19l-7-7m0 0l7-7m-7 7h18"
+    />
+  </svg>
+            Logout
+          </button>
+        </div>  
+        </div>
+      {/*Right panel*/}
+      <div className="flex-1 overflow-y-auto">
+        {/* Header */}
+        <div className="p-6 border-b border-gray-200">
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-2xl font-bold">
+                {activeTab === 'courses' && 'Active Courses'}
+              </h1>
+              <p className="text-gray-600 mt-1">
+                {activeTab === 'courses' && 'Set up your courses and share your knowledge.'}
+              </p>
+            </div>  
+          </div>
+        </div>
 
       {/* Main Content */}
-      <main className="flex-1 p-6">
+       <div className="p-6">
+        {activeTab === 'courses' && (
         <div className="max-w-6xl mx-auto">
-          <h1 className="text-xl font-bold mb-6">Active Courses</h1>
-
           {loading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {[1, 2, 3].map((i) => (
@@ -108,11 +147,11 @@ export default function StudentDashboard() {
                   key={course.id}
                   className="border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition"
                 >
-                  <div className="bg-gray-100 h-32 flex items-center justify-center">
+                  <div className="bg-white h-32 flex items-center justify-center">
                   </div>
                   <div className="p-4">
-                    <h2 className="font-semibold text-sm">{course.title}</h2>
-                    <p className="text-xs text-gray-500 mt-1">
+                    <h2 className="font-semibold text-xl">{course.title}</h2>
+                    <p className="text-l text-gray-500 mt-1">
                       {course.description || 'Instructor: Not specified'}
                     </p>
 
@@ -128,7 +167,9 @@ export default function StudentDashboard() {
             </div>
           )}
         </div>
-      </main>
+        )}
+        </div>
+      </div>
     </div>
   );
 }

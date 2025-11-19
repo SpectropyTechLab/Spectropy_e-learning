@@ -72,32 +72,56 @@ export const enrollUserByEmail = async (req, res) => {
 
 /**
  * GET /admin/courses/:courseId/enrollments
- * (Optional) Get list of enrolled students/teachers for a course
  */
 export const getCourseEnrollments = async (req, res) => {
   const { courseId } = req.params;
+  const courseIdInt = parseInt(courseId, 10);
+  if (isNaN(courseIdInt)) {
+    return res.status(400).json({ error: 'Invalid course ID' });
+  }
 
   try {
     const result = await pool.query(
       `
         SELECT 
           u.id AS user_id,
-          u.name,
+          u.full_name AS name,
           u.email,
           e.role,
           e.enrolled_at
         FROM enrollments e
         JOIN users u ON e.user_id = u.id
         WHERE e.course_id = $1
-        ORDER BY e.role, u.name
+        ORDER BY e.role, u.email
       `,
-      [courseId]
+      [courseIdInt]
     );
 
     res.json(result.rows);
   } catch (err) {
-    console.error('Error fetching enrollments:', err);
-    res.status(500).json({ error: 'Failed to load enrollments' });
+    console.error('🚨 FULL ERROR DETAILS 🚨', {
+    message: err.message,
+    code: err.code,           // e.g., '42703' = column not found
+    detail: err.detail,
+    hint: err.hint,
+    position: err.position,
+    internalPosition: err.internalPosition,
+    internalQuery: err.internalQuery,
+    where: err.where,
+    schema: err.schema,
+    table: err.table,
+    column: err.column,
+    dataType: err.dataType,
+    constraint: err.constraint,
+    file: err.file,
+    line: err.line,
+    routine: err.routine,
+    stack: err.stack
+  });
+
+  res.status(500).json({ 
+    error: 'Failed to load enrollments', 
+    });
   }
 };
 

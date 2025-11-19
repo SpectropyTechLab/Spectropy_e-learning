@@ -9,6 +9,7 @@ import {
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { FiChevronDown, FiChevronRight } from "react-icons/fi";
 import { MdAdd } from "react-icons/md";
+import { useNavigate } from "react-router-dom";
 
 import {
     FaVideo,
@@ -56,6 +57,7 @@ const LeftPanel: React.FC<Props> = ({
     const [expanded, setExpanded] = useState<number | null>(null);
     const [openMenu, setOpenMenu] = useState<number | null>(null);
     const [openItemMenu, setOpenItemMenu] = useState<number | null>(null);
+    const navigate = useNavigate();
 
     const toggleExpand = (chapterId: number) => {
         setExpanded(expanded === chapterId ? null : chapterId);
@@ -108,15 +110,23 @@ const LeftPanel: React.FC<Props> = ({
 
             {/* Header */}
             <div className="p-4 border-b border-gray-200 flex justify-between items-center">
+                 <nav>
+                <div className="w-10 h-10 bg-blue-900 rounded-full flex items-center justify-center mb-3">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2m12-10V5a2 2 0 00-2-2h-2a2 2 0 00-2 2v4a2 2 0 002 2h2a2 2 0 002-2z" />
+            </svg>
+          </div>
+          
                 <h1 className="text-lg font-semibold">Course Content</h1>
-
+                </nav>
                 <button
                     onClick={onAddChapter}
-                    className="flex items-center gap-1 px-2 py-1 bg-maincolor hover:bg-lightmain text-white rounded-md text-sm"
+                    className="flex items-center gap-1 px-2 py-1 bg-blue-900 hover:bg-blue-700 text-white rounded-md text-sm"
                 >
                     <MdAdd className="text-lg" />
                     Add Chapter
                 </button>
+                
             </div>
 
             <DragDropContext onDragEnd={onDragEnd}>
@@ -280,6 +290,29 @@ const LeftPanel: React.FC<Props> = ({
                     )}
                 </Droppable>
             </DragDropContext>
+            {/* Footer*/}
+            <div className="p-4 border-t border-gray-200">
+                      <button
+                      onClick={() => navigate("/admin/dashboard")}
+                      className="w-full flex items-center justify-center px-4 py-2 text-sm text-blue-900 hover:text-blue-600">
+
+                      <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-4 w-4 mr-2"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M10 19l-7-7m0 0l7-7m-7 7h18"
+                />
+              </svg>
+                      Back to Courses
+                    </button>
+                    </div>
         </div>
     );
 };
