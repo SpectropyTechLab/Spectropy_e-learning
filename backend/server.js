@@ -58,6 +58,7 @@ app.use('/api/admin', EnrollmentRouter);
 
 app.use('/api/course', CourseRouter);
 
+
 app.get('/', (req, res) => res.json({ status: 'OK' }));
 
 // ✅ Error handling — catches unhandled promise errors to prevent crashes

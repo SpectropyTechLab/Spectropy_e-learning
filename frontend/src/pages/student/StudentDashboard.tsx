@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import api from '../../services/api';
+import logo from "/logo.png"; // adjust path if needed
 
 interface EnrolledCourse {
   id: number;
@@ -13,7 +14,7 @@ interface EnrolledCourse {
 }
 
 export default function StudentDashboard() {
-  const [activeTab, setActiveTab] = useState<'courses'>();
+  const [activeTab, setActiveTab] = useState<'courses'>('courses');
   const [courses, setCourses] = useState<EnrolledCourse[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -46,22 +47,13 @@ export default function StudentDashboard() {
       <div className="w-64 bg-white border-r border-gray-200 flex flex-col">
         {/* Logo/Brand */}
         <div className="p-6 border-b border-gray-200">
-          <div className="w-10 h-10 bg-blue-900 rounded-full flex items-center justify-center mb-3">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6 text-white"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2m12-10V5a2 2 0 00-2-2h-2a2 2 0 00-2 2v4a2 2 0 002 2h2a2 2 0 002-2z"
-              />
-            </svg>
-          </div>
+          <div className="flex items-center space-x-2 cursor-pointer">
+                 <img
+                    src={logo}
+                    alt="Spectropy Logo"
+                    className="h-10 w-auto md:h-10 lg:h-12 rounded-md"
+                  />
+            </div>
           <h1 className="text-lg font-semibold">Student Dashboard</h1>
         </div>
       

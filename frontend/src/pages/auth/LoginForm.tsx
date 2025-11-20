@@ -2,7 +2,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
-import Header from '../../components/Header';
 
 export default function LoginForm() {
   const [isLogin, setIsLogin] = useState(true); // Toggle between login/register
@@ -59,36 +58,14 @@ export default function LoginForm() {
     }
   };
 
-  // Role-specific icons and titles
-  const getRoleConfig = (role: string) => {
-    switch (role) {
-      case 'super_admin':
-        return { icon: '🔐', title: 'Super Admin Login', subtitle: 'Manage system-wide settings' };
-      case 'admin':
-        return { icon: '🏢', title: 'Admin Login', subtitle: 'Oversee schools and courses' };
-      case 'teacher':
-        return { icon: '👩‍🏫', title: 'Teacher Login', subtitle: 'Upload assignments and grades' };
-      case 'student':
-        return { icon: '🎓', title: 'Student Login', subtitle: 'Access courses and track progress' };
-      default:
-        return { icon: '👤', title: 'Login', subtitle: 'Enter your credentials' };
-    }
-  };
 
-  const { icon, title, subtitle } = getRoleConfig(selectedRole);
+  //const { icon, title, subtitle } = getRoleConfig(selectedRole);
   console.log("login form loaded");
   return (
     <div className="min-h-screen bg-spectropy-light flex flex-col items-center justify-start py-6 px-4">
-      {/* Header */}
-      <Header />
 
       {/* Main Form Card */}
       <main className="w-full max-w-md bg-spectropy-white rounded-xl shadow-lg p-6 mt-8">
-        <div className="text-center mb-6">
-          <div className="text-3xl mb-2">{icon}</div>
-          <h1 className="text-xl font-bold text-spectropy-blue mb-1">{title}</h1>
-          <p className="text-spectropy-gray text-sm">{subtitle}</p>
-        </div>
 
         <form onSubmit={handleAuth} className="space-y-4">
           {error && (
