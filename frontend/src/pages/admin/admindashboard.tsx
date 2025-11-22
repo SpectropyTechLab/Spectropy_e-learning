@@ -386,6 +386,17 @@ const handlePublish = async () => {
                           
                           {/* Action Buttons */}
                           <div className="flex gap-2 pt-2">
+                          {!course.published && (
+  <button
+    onClick={() => openPublishModal(course.id)}
+    className="flex-1 text-xs px-3 py-1.5 border border-gray-300 rounded hover:bg-gray-50"
+  >
+    <div className="flex items-center justify-center space-x-1">
+      <FiUpload className="text-sm" />
+      <span>Publish</span>
+    </div>
+  </button>
+)}
                             
                             <button
                               onClick={() => navigate(`/admin/courses/${course.id}/content`)}
