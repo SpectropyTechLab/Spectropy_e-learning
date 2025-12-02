@@ -143,8 +143,7 @@ export default function ContentViewer({ item }: ContentViewerProps) {
      *  FINAL RENDER
      * ---------------------------------------------------- */
     return (
-        <div className="flex-1 p-2 w-full mx-auto flex flex-col justify-center items-center ">
-            <h1 className="text-xl font-semibold mb-4">{title.toUpperCase()}</h1>
+        <div className="flex-1 p-2 w-   full mx-auto flex flex-col justify-center items-center ">
             {viewerElement}
         </div>
     );

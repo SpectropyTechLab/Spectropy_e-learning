@@ -46,7 +46,7 @@ const ScormPlayer: React.FC<Props> = ({ contentUrl, contentId }) => {
                     ref={iframeRef}
                     src={proxyUrl}
                     title="SCORM Content"
-                    className="w-full h-full border-none"
+                    className="w-full h-full border-none background-white"
                     allow="fullscreen"
                 />
             ) : (

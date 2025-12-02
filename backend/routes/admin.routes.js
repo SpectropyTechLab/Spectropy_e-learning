@@ -3,7 +3,7 @@ import { createCourse, getAllCourses, getCourseContent, createContentItem } from
 import { authenticateToken } from '../middleware/auth.js';
 import { upload, uploadContentFile, viewScormFile } from '../controllers/scorm.controller.js';
 import helmet from "helmet";
-
+import { deleteContentItem, renameContentItem } from "../controllers/content.controller.js";
 
 
 const router = Router();
@@ -14,7 +14,8 @@ router.post('/courses', authenticateToken, createCourse);
 router.get('/courses/:courseId/content', authenticateToken, getCourseContent);
 router.post('/courses/:courseId/content', authenticateToken, createContentItem);
 router.post('/courses/:courseId/content/upload', upload.single('file'), authenticateToken, uploadContentFile);
-router.get("/view/*", viewScormFile); // 
-
+router.get("/view/*", viewScormFile); //
+router.delete("/courses/:courseId/content/:id", authenticateToken, deleteContentItem);
+router.put("/courses/:courseId/content/:id/rename", authenticateToken, renameContentItem);
 
 export default router;

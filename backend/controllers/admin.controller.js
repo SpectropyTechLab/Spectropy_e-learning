@@ -42,20 +42,53 @@ export const createCourse = async (req, res) => {
 // GET /admin/courses/:courseId/content
 export const getCourseContent = async (req, res) => {
   const { courseId } = req.params;
+  const userId = req.user?.id; // assuming you have user info from auth middleware
+  const role = req.user?.role; // e.g., 'student', 'admin', 'instructor'
+
   try {
-    const result = await pool.query(
-      `SELECT id, course_id, parent_id, item_type, title, content_url, order_index, created_at
-       FROM content_items
-       WHERE course_id = $1
-       ORDER BY parent_id NULLS FIRST, order_index ASC, created_at ASC`,
-      [courseId]
-    );
+    let query;
+    let params;
+
+    if (/*role === 'student' &&*/ userId) {
+      // Student request: fetch content + student's attempt status
+      query = `
+        SELECT ci.id,
+               ci.course_id,
+               ci.parent_id,
+               ci.item_type,
+               ci.title,
+               ci.content_url,
+               ci.order_index,
+               ci.created_at,
+               sa.completion_status
+        FROM content_items ci
+        LEFT JOIN student_attempts sa
+               ON ci.id = sa.content_item_id
+              AND sa.user_id = $2
+        WHERE ci.course_id = $1
+        ORDER BY ci.parent_id NULLS FIRST, ci.order_index ASC, ci.created_at ASC
+      `;
+      params = [courseId, userId];
+    } else {
+      // Non-student request: fetch only content items
+      query = `
+        SELECT id, course_id, parent_id, item_type, title, content_url, order_index, created_at
+        FROM content_items
+        WHERE course_id = $1
+        ORDER BY parent_id NULLS FIRST, order_index ASC, created_at ASC
+      `;
+      params = [courseId];
+    }
+
+    const result = await pool.query(query, params);
+    console.log("Fetched content items:", result.rows);
     res.json(result.rows);
   } catch (err) {
     console.error('Failed to fetch content:', err);
     res.status(500).json({ error: 'Failed to fetch course content' });
   }
 };
+;
 
 // POST /admin/courses/:courseId/content
 export const createContentItem = async (req, res) => {

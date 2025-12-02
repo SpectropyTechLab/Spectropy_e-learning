@@ -1,9 +1,11 @@
 // ✅ src/pages/admin/CourseContent.tsx
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
+import { useAuth } from "../../contexts/AuthContext";
 import api from "../../services/api";
 import LeftPanel from "../../components/CourseContent/LeftPanel"; // ✅ IMPORT LEFT PANEL
 import ContentViewer from "../common/ContentViewer";
+import { SlControlPlay, SlControlRewind } from "react-icons/sl";
 
 interface ContentItem {
   id: number;
@@ -14,6 +16,8 @@ interface ContentItem {
   content_url?: string | null;
   order_index: number;
   created_at: string;
+  completion_status?: string | null; // 👈 ADD THIS
+
 }
 
 const ITEM_TYPES = [
@@ -27,7 +31,7 @@ const ITEM_TYPES = [
 
 export default function CourseContent() {
   const { courseId } = useParams<{ courseId: string }>();
-  const navigate = useNavigate();
+
   const [chapters, setChapters] = useState<any[]>([]);
   const [selectedChapter, setSelectedChapter] = useState<number | null>(null);
 
@@ -39,7 +43,19 @@ export default function CourseContent() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [publicUrl, setPublicUrl] = useState("");
   const [selectedItem, setSelectedItem] = useState<ContentItem | null>(null);
-  const items = chapters.flatMap(ch => ch.items);
+
+  const [allItems, setAllItems] = useState<ContentItem[]>([]);
+
+
+
+  const items = allItems;
+  const currentIndex = items.findIndex(i => i.id === selectedItem?.id);
+
+  const isFirstItem = currentIndex === 0;
+  const isLastItem = currentIndex === items.length - 1;
+
+
+  const { user } = useAuth();
 
   // ✅ Add Chapter Modal
   const [chapterTitle, setChapterTitle] = useState("");
@@ -55,6 +71,8 @@ export default function CourseContent() {
       const res = await api.get(`/admin/courses/${courseId}/content`);
       const items = res.data;
 
+      // 🔥 store raw list
+
       // ✅ Build chapters → items mapping
       const topChapters = items.filter((i: ContentItem) => i.parent_id === null);//sets the top chapters with no parent id
       const chapterMap: any[] = topChapters.map((chapter: ContentItem) => ({
@@ -63,10 +81,16 @@ export default function CourseContent() {
         items: items.filter((i: ContentItem) => i.parent_id === chapter.id),
 
       }));
-      console.log("Fetched course content:", chapterMap);
+
       setChapters(chapterMap); //sets the chapters with their respective items to state
+
+      // 🔥 set all items for progress tracking
+      setAllItems(items.filter((i: ContentItem) => i.item_type !== "folder"));
     } catch (err) {
       console.error("Failed to load course content", err);
+    }
+    finally {
+      // Any final steps if needed
     }
   };
 
@@ -102,15 +126,38 @@ export default function CourseContent() {
     if (!selectedItem) return;
 
     const index = items.findIndex(i => i.id === selectedItem.id);
-
-    // Step 1: mark current item completed
     await markItemCompleted(selectedItem.id);
+    if (user?.role === "student") {
+      await markItemCompleted(selectedItem.id);
+    }
+    // 🔥 Update chapters state
+    setChapters(prev =>
+      prev.map((ch: any) => ({
+        ...ch,
+        items: ch.items.map((i: ContentItem) =>
+          i.id === selectedItem?.id
+            ? { ...i, completion_status: "completed" }
+            : i
+        )
+      }))
+    );
 
-    // Step 2: go to next
+
+    // 🔥 Update ALL ITEMS (progress bar source)
+    setAllItems(prev =>
+      prev.map(i =>
+        i.id === selectedItem.id
+          ? { ...i, completion_status: "completed" }
+          : i
+      )
+    );
+
+
     if (index < items.length - 1) {
       setSelectedItem(items[index + 1]);
     }
   };
+
 
 
   const goToPrevious = () => {
@@ -172,43 +219,9 @@ export default function CourseContent() {
     );
     // TODO: send reordered items to backend
   };
+  console.log("************************************************************************************************************\nRendering CourseContent with items:", items);
   return (
     <div className="w-full h-screen flex flex-col">
-      {/* HEADER */}
-      <div className="w-full flex justify-between items-center px-8 py-4 border-b">
-
-        {/* LEFT SIDE — BACK */}
-        <button
-          onClick={() => navigate("/admin/dashboard")}
-          className="text-lg hover:text-lightmain"
-        >
-          Back to Courses
-        </button>
-
-        {/* RIGHT SIDE — PREVIOUS / NEXT */}
-        <div className="flex items-center gap-4">
-
-          <button
-            onClick={goToPrevious}
-            disabled={!selectedItem}
-            className={`px-4 py-2 rounded border ${!selectedItem ? "opacity-40 cursor-not-allowed" : "hover:bg-gray-100"
-              }`}
-          >
-            ◀ Previous
-          </button>
-
-          <button
-            onClick={goToNext}
-            disabled={!selectedItem}
-            className={`px-4 py-2 rounded border ${!selectedItem ? "opacity-40 cursor-not-allowed" : "hover:bg-gray-100"
-              }`}
-          >
-            Next ▶
-          </button>
-
-        </div>
-      </div>
-
 
       {/* MAIN LAYOUT */}
       <div className="flex flex-1 min-h-0 ">
@@ -217,6 +230,7 @@ export default function CourseContent() {
         <div className=" w-[320px] border-r bg-white shrink-0">
           <LeftPanel
             chapters={chapters}
+            allItems={items}
             onSelectItem={(item: ContentItem) => {
               console.log("Selected item:", item);
               setSelectedItem(item);        // ✅ store the entire item
@@ -231,10 +245,52 @@ export default function CourseContent() {
             onReorderItems={handleReorderItems}
           />
         </div>
-        
+
 
         {/* ✅ RIGHT SIDE — VIEW CONTENT */}
-        <div className="flex-1 bg-white p-2 shrink-0 overflow-y-none flex flex-col">
+        <div className="flex-1 bg-white  shrink-0 overflow-y-none flex flex-col">
+          {/* HEADER */}
+          <div className="w-full flex justify-between items-center px-4 pt-4 pb-2.5 border-b border-gray-200 ">
+            <h1 className="text-xl font-semibold ">{selectedItem ? selectedItem.title.toUpperCase() : ""}</h1>
+
+
+            {/* RIGHT SIDE — PREVIOUS / NEXT */}
+            <div className="flex items-center gap-4">
+
+              {/* PREVIOUS BUTTON */}
+              <button
+                onClick={goToPrevious}
+                disabled={!selectedItem || isFirstItem}
+                className={`flex items-center gap-2 py-2 rounded-md border justify-center
+  transition-all duration-200 text-xs bg-maincolor text-white w-20
+  ${!selectedItem || isFirstItem
+                    ? "opacity-40 cursor-not-allowed"
+                    : "hover:bg-lightmain hover:border-gray-300 active:scale-95"
+                  }`}
+              >
+                <SlControlRewind /> Previous
+              </button>
+
+
+
+              {/* NEXT BUTTON */}
+              <button
+                onClick={goToNext}
+                disabled={!selectedItem || isLastItem}
+                className={`flex items-center gap-2 py-2 rounded-md border justify-center
+  transition-all duration-200 text-xs bg-maincolor text-white w-20
+  ${!selectedItem || isLastItem
+                    ? "opacity-40 cursor-not-allowed"
+                    : "hover:bg-lightmain hover:border-gray-300 active:scale-95"
+                  }`}
+              >
+                Next <SlControlPlay />
+              </button>
+
+
+
+            </div>
+          </div>
 
           {!selectedItem ? (
             <p className="text-gray-400 text-center mt-20">
