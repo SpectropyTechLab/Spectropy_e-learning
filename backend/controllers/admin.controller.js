@@ -122,3 +122,23 @@ export const createContentItem = async (req, res) => {
     res.status(500).json({ error: 'Failed to create content item' });
   }
 };
+
+// PATCH /api/courses/:id/publish
+export const publishCourse = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const result = await pool.query(
+      `UPDATE courses SET published = true WHERE id = $1 RETURNING *`,
+      [id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Course not found' });
+    }
+
+    res.json({ success: true, course: result.rows[0] });
+  } catch (err) {
+    console.error('Failed to publish course:', err);
+    res.status(500).json({ error: 'Failed to publish course' });
+  }
+};

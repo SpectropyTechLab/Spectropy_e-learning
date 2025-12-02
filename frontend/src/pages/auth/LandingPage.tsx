@@ -1,6 +1,7 @@
 // src/pages/auth/LandingPage.tsx
 import { useState,useEffect  } from 'react';
 import { Link } from 'react-router-dom';
+import logo from "/spectropy_logo.png";
 
 const sliderImages = [
   'https://spectropy.com/wp-content/uploads/2023/02/5281999.png',
@@ -115,26 +116,21 @@ const LandingPage = () => {
       />
     <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Header */}
-      <header className="bg-blue-950 shadow-sm">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <div className="flex items-center">
-            <img
-              src="https://spectropy.com/wp-content/uploads/2023/02/final-blue-white-bg.png"
-              alt="Spectropy Logo"
-              className="h-10 rounded-md"
-            />
-          </div>
+      <header className="w-full text-blue-900 py-6 px-4 flex justify-between items-center mb-4 md:flex-row flex-col md:gap-0 gap-4 "> 
+           <div className="flex items-center space-x-2 cursor-pointer">
+                 <img
+                    src={logo}
+                    alt="Spectropy Logo"
+                    className="h-10 w-auto md:h-10 lg:h-12 rounded-md"
+                  />
+            </div>
 
-          <nav className="flex space-x-6 text-white font-medium">
+          <nav className="flex space-x-6 text-blue-900 font-medium">
             <Link to="/" className="hover:text-blue-600">Home</Link>
             <a href="#about" className="hover:text-blue-600">About</a>
             <a href="#contact" className="hover:text-blue-600">Contact</a>
-            <a href="#login-portals" className="hover:text-blue-600 font-medium">
-              Login
-            </a>
-            <a href="#explore" className="hover:text-blue-600">Explore</a>
+            <a href="#login-portals" className="hover:text-blue-600 font-medium">Login</a>
           </nav>
-        </div>
       </header>
 
       {/* 🔸 IMAGE SLIDER */}

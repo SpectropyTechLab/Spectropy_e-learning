@@ -1,8 +1,15 @@
 // src/pages/admin/admindashboard.tsx
-import { useState, useEffect } from 'react';
+import { useState, useEffect, type SetStateAction } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import api from '../../services/api';
+import logo from "/logo.png"; // adjust path if needed
+import { PiUsersBold } from "react-icons/pi";
+import { RiHome2Line } from "react-icons/ri";
+import { BiBookOpen } from "react-icons/bi";
+import { PiChatsCircleBold } from "react-icons/pi";
+import { FiUpload } from 'react-icons/fi';
+import { GrChapterAdd } from "react-icons/gr";
 
 interface Course {
   id: number;
@@ -26,6 +33,8 @@ export default function CourseStudents() {
   const [fetching, setFetching] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [showCreateForm, setShowCreateForm] = useState(false); // NEW STATE
+  const [publishModalOpen, setPublishModalOpen] = useState(false);
+  const [courseToPublish, setCourseToPublish] = useState<number | null>(null);
 
   // Fetch all courses on mount
   useEffect(() => {
@@ -78,17 +87,41 @@ export default function CourseStudents() {
     course.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const openPublishModal = (courseId: SetStateAction<number | null>) => {
+  setCourseToPublish(courseId);
+  setPublishModalOpen(true);
+};
+
+const closePublishModal = () => {
+  setPublishModalOpen(false);
+  setCourseToPublish(null);
+};
+
+const handlePublish = async () => {
+  if (courseToPublish === null) return; // safety check
+  try {
+    await api.patch(`/admin/courses/${courseToPublish}/publish`);
+    await fetchCourses();
+    closePublishModal();
+  } catch (err) {
+    console.error('Failed to publish course:', err);
+    alert('Failed to publish course. Please try again.');
+  }
+};
+
   return (
     <div className="flex h-screen bg-gray-50">
       {/* Left Sidebar */}
       <div className="w-64 bg-white border-r border-gray-200 flex flex-col">
         {/* Logo/Brand */}
         <div className="p-6 border-b border-gray-200">
-          <div className="w-10 h-10 bg-blue-900 rounded-full flex items-center justify-center mb-3">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2m12-10V5a2 2 0 00-2-2h-2a2 2 0 00-2 2v4a2 2 0 002 2h2a2 2 0 002-2z" />
-            </svg>
-          </div>
+           <div className="flex items-center space-x-2 cursor-pointer">
+                <img
+                    src={logo}
+                    alt="Spectropy Logo"
+                    className="h-10 w-auto md:h-10 lg:h-12 rounded-md"
+                />
+            </div>
           <h1 className="text-lg font-semibold">Admin Dashboard</h1>
         </div>
 
@@ -102,9 +135,7 @@ export default function CourseStudents() {
                 : 'text-gray-700 hover:bg-gray-100'
             }`}
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7m-2 0l-2-2m-2 2l-2-2" />
-            </svg>
+            <RiHome2Line className="text-lg text-black mr-3"/>
             Home
           </button>
 
@@ -116,9 +147,8 @@ export default function CourseStudents() {
                 : 'text-gray-700 hover:bg-gray-100'
             }`}
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-            </svg>
+            <BiBookOpen className="text-lg text-black mr-3"/>
+
             Courses
           </button>
 
@@ -130,9 +160,9 @@ export default function CourseStudents() {
                 : 'text-gray-700 hover:bg-gray-100'
             }`}
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-5.356-5.356L12 18.644z" />
-            </svg>
+
+            <PiUsersBold  className="text-lg text-black mr-3"/>
+
             Users
           </button>
 
@@ -144,10 +174,7 @@ export default function CourseStudents() {
                 : 'text-gray-700 hover:bg-gray-100'
             }`}
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2v-7h18v7a2 2 0 01-2 2z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 19v-4c0-1.105 1.343-2 3-2h10c1.657 0 3 .895 3 2v4M3 19h18v-4c0-1.105-1.343-2-3-2H6c-1.657 0-3 .895-3 2v4z" />
-            </svg>
+            <PiChatsCircleBold className="text-lg text-black mr-3"/>
             Community
           </button>
         </nav>
@@ -321,6 +348,7 @@ export default function CourseStudents() {
     </div>
   </div>
 )}
+
               
               {/* Course List */}
               <div>
@@ -358,35 +386,36 @@ export default function CourseStudents() {
                           
                           {/* Action Buttons */}
                           <div className="flex gap-2 pt-2">
-                            <button
-                              onClick={() => navigate(`/admin/courses/${course.id}/details`)}
-                              className="flex-1 text-xs px-3 py-1.5 border border-gray-300 rounded hover:bg-gray-50"
-                            >
-                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 inline mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                              </svg>
-                              Details
-                            </button>
+                          {!course.published && (
+  <button
+    onClick={() => openPublishModal(course.id)}
+    className="flex-1 text-xs px-3 py-1.5 border border-gray-300 rounded hover:bg-gray-50"
+  >
+    <div className="flex items-center justify-center space-x-1">
+      <FiUpload className="text-sm" />
+      <span>Publish</span>
+    </div>
+  </button>
+)}
                             
                             <button
                               onClick={() => navigate(`/admin/courses/${course.id}/content`)}
                               className="flex-1 text-xs px-3 py-1.5 border border-gray-300 rounded hover:bg-gray-50"
                             >
-                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 inline mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-.426 1.038-.426 1.464 0l1.514 1.514c1.038 1.038 1.038 2.704 0 3.742l-1.514 1.514a1.038 1.038 0 01-1.464 0l-1.514-1.514a1.038 1.038 0 010-1.464l1.514-1.514a1.038 1.038 0 011.464 0z" />
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.75 12h-1.5a6 6 0 00-6-6h-1.5m-3 6a6 6 0 006 6h1.5m3-6a6 6 0 00-6-6h-1.5m12 12h-1.5a6 6 0 00-6-6h-1.5m3 6a6 6 0 006 6h1.5" />
-                              </svg>
-                              Add Items
+                              <div className="flex items-center space-x-2">
+                              <GrChapterAdd  className="text-lg text-black"/>
+                              <span>Add Items</span>
+                              </div>
                             </button>
                             
                             <button
                               onClick={() => navigate(`/admin/courses/${course.id}/enroll`)}
                               className="flex-1 text-xs px-3 py-1.5 border border-gray-300 rounded hover:bg-gray-50"
                             >
-                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 inline mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-5.356-5.356L12 18.644z" />
-                              </svg>
-                              Enroll Users
+                               <div className="flex items-center">
+                              <PiUsersBold  className="text-lg text-black"/>
+                              <span>Enroll Users</span>
+                              </div>
                             </button>
                           </div>
                         </div>
@@ -395,8 +424,34 @@ export default function CourseStudents() {
                   </div>
                 )}
               </div>
+
+              {publishModalOpen && (
+  <div className="fixed inset-0 bg-black/40 flex justify-center items-center">
+    <div className="bg-white rounded-lg p-6 w-96 max-w-[90%]">
+      <h3 className="text-lg font-semibold mb-3">Publish Course?</h3>
+      <p className="text-gray-700 mb-5">
+        Are you sure you want to publish this course? It will become visible to learners.
+      </p>
+      <div className="flex justify-end gap-3">
+        <button
+          onClick={closePublishModal}
+          className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded"
+        >
+          No
+        </button>
+        <button
+          onClick={handlePublish}
+          className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+        >
+          Yes, Publish
+        </button>
+      </div>
+    </div>
+  </div>
+)}
             </div>
           )}
+
 
           {activeTab === 'home' && (
             <div className="text-center py-10">

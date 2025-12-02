@@ -16,7 +16,7 @@ export default function LoginForm() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const selectedRole = location.state?.role || 'student';
+  const selectedRole = location.state?.role || '';
   const CAN_REGISTER = ['student', 'teacher'].includes(selectedRole);
 
   // Redirect after login
@@ -71,11 +71,12 @@ export default function LoginForm() {
       case 'student':
         return { icon: '🎓', title: 'Student Login', subtitle: 'Access courses and track progress' };
       default:
-        return { icon: '👤', title: 'Login', subtitle: 'Enter your credentials' };
+        return { icon: '', title: 'Login', subtitle: 'Enter your credentials' };
     }
   };
 
   const { icon, title, subtitle } = getRoleConfig(selectedRole);
+  //const { icon, title, subtitle } = getRoleConfig(selectedRole);
   console.log("login form loaded");
   return (
     <div className="min-h-screen bg-spectropy-light flex flex-col items-center justify-start py-6 px-4">

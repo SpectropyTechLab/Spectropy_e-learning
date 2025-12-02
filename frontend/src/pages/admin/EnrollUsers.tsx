@@ -1,6 +1,8 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../../services/api';
+import logo from "/logo.png"; // adjust path if needed
+import { PiUsersBold } from "react-icons/pi";
 
 export default function EnrollUsers() {
   const { courseId } = useParams<{ courseId: string }>();
@@ -108,22 +110,13 @@ export default function EnrollUsers() {
       <div className="w-64 bg-white border-r border-gray-200 flex flex-col">
         {/* Logo/Brand */}
         <div className="p-6 border-b border-gray-200">
-          <div className="w-10 h-10 bg-blue-900 rounded-full flex items-center justify-center mb-3">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6 text-white"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2m12-10V5a2 2 0 00-2-2h-2a2 2 0 00-2 2v4a2 2 0 002 2h2a2 2 0 002-2z"
-              />
-            </svg>
-          </div>
+          <div className="flex items-center space-x-2 cursor-pointer">
+                <img
+                    src={logo}
+                    alt="Spectropy Logo"
+                    className="h-10 w-auto md:h-10 lg:h-12 rounded-md"
+                />
+            </div>
           <h1 className="text-lg font-semibold">Enroll Users</h1>
         </div>
 
@@ -137,21 +130,10 @@ export default function EnrollUsers() {
                 : 'text-gray-700 hover:bg-gray-100'
             }`}
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5 mr-3"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-5.356-5.356L12 18.644z"
-              />
-            </svg>
-            Enroll Student
+          <div className="flex items-center space-x-2">
+                              <PiUsersBold  className="text-lg text-black"/>
+                              <span>Enroll student</span>
+                              </div>
           </button>
           <button
             onClick={() => setRole('teacher')}
@@ -161,21 +143,10 @@ export default function EnrollUsers() {
                 : 'text-gray-700 hover:bg-gray-100'
             }`}
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5 mr-3"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-5.356-5.356L12 18.644z"
-              />
-            </svg>
-            Enroll Teacher
+            <div className="flex items-center space-x-2">
+                              <PiUsersBold  className="text-lg text-black"/>
+                              <span>Enroll Teacher</span>
+                              </div>
           </button>
         </nav>
 
