@@ -55,6 +55,7 @@ interface Props {
     onAddItem: (chapterId: number) => void;
     onReorderChapters: (newChapters: Chapter[]) => void;
     onReorderItems: (chapterId: number, newItems: CourseItem[]) => void;
+    onUpdateFile: (item: CourseItem) => void;
 }
 
 const LeftPanel: React.FC<Props> = ({
@@ -65,6 +66,7 @@ const LeftPanel: React.FC<Props> = ({
     onAddItem,
     onReorderChapters,
     onReorderItems,
+    onUpdateFile,
 }) => {
     const [expanded, setExpanded] = useState<number | null>(null);
     const [openMenu, setOpenMenu] = useState<number | null>(null);
@@ -239,7 +241,8 @@ const LeftPanel: React.FC<Props> = ({
                         <AiOutlineArrowLeft />
                     </button>
 
-                    <h1 className="text-lg font-semibold">Course Content</h1></div>
+                    <h1 className="text-lg font-semibold">Course Content</h1>
+                </div>
                 {/* Progress Bar*/}
                 <div className="w-full pt-4 px-4"><CourseProgressBar completed={completedItems} total={totalItems}
                 /></div>
@@ -311,19 +314,6 @@ const LeftPanel: React.FC<Props> = ({
                                                                 }}
                                                             >
                                                                 ✏ Rename
-                                                            </button>
-
-                                                            {/* Update */}
-                                                            <button
-                                                                className="block w-full px-3 py-2 text-left hover:bg-gray-100 text-sm"
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation();
-                                                                    setOpenMenu(null);
-                                                                    alert("Update feature for chapter will open model here.");
-                                                                    // TODO: open edit modal component in next update
-                                                                }}
-                                                            >
-                                                                🔄 Update
                                                             </button>
 
                                                             {/* Delete */}
@@ -414,6 +404,9 @@ const LeftPanel: React.FC<Props> = ({
                                                                                             e.stopPropagation();
                                                                                             setOpenItemMenu(null);
                                                                                             alert("Here we will open Replace File Modal.");
+                                                                                            onUpdateFile(item);
+
+
                                                                                             // TODO: build replace modal
                                                                                         }}
                                                                                     >

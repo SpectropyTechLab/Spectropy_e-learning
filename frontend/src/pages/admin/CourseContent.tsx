@@ -46,13 +46,95 @@ export default function CourseContent() {
 
   const [allItems, setAllItems] = useState<ContentItem[]>([]);
 
+  // ⭐ Modal + File state
+  const [showUpdateFileModal, setShowUpdateFileModal] = useState(false);
+  const [itemToUpdate, setItemToUpdate] = useState<ContentItem | null>(null);
+  const [newFile, setNewFile] = useState<File | null>(null);
+
+
+
+  // ✅ HANDLE REPLACE FILE
+  const handleReplaceFile = async () => {
+    if (!itemToUpdate) return;
+
+    const formData = new FormData();
+
+    // ⭐ Add new name
+    formData.append("title", itemToUpdate.title);
+
+    // ⭐ Add file only if user changed it
+    if (newFile) {
+      formData.append("file", newFile);
+    }
+
+
+    try {
+      console.log("conforming formData entries:before sending:");
+      const res = await api.put(
+        `/admin/courses/${itemToUpdate.course_id}/content/${itemToUpdate.id}/file`,
+        formData,
+        { headers: { "Content-Type": "multipart/form-data" } }
+      );
+      console.log("conforming formData entries:after sending:");
+
+      const updatedUrl = res.data?.content_url;
+
+      // ⭐ Update UI (title + content_url)
+      setChapters(prev =>
+        prev.map(ch => ({
+          ...ch,
+          items: ch.items.map((i: ContentItem) =>
+            i.id === itemToUpdate.id
+              ? { ...i, title: itemToUpdate.title, content_url: updatedUrl || i.content_url }
+              : i
+          )
+        }))
+      );
+
+      setAllItems(prev =>
+        prev.map(i =>
+          i.id === itemToUpdate.id
+            ? { ...i, title: itemToUpdate.title, content_url: updatedUrl || i.content_url }
+            : i
+        )
+      );
+
+      if (selectedItem?.id === itemToUpdate.id) {
+        setSelectedItem(prev =>
+          prev
+            ? { ...prev, title: itemToUpdate.title, content_url: updatedUrl || prev.content_url }
+            : null
+        );
+      }
+
+      setShowUpdateFileModal(false);
+      setItemToUpdate(null);
+      setNewFile(null);
+      alert("Item updated successfully!");
+
+    } catch (err) {
+      console.error(err);
+      alert("Failed to update item");
+    }
+  };
+
+
+
+
+
+  const openReplaceModal = (item: ContentItem) => {
+    setItemToUpdate(item);
+    setShowUpdateFileModal(true);
+  };
+
+
 
 
   const items = allItems;
   const currentIndex = items.findIndex(i => i.id === selectedItem?.id);
 
   const isFirstItem = currentIndex === 0;
-  const isLastItem = currentIndex === items.length - 1;
+  //const isLastItem = currentIndex === items.length - 1;
 
 
   const { user } = useAuth();
@@ -243,6 +325,7 @@ export default function CourseContent() {
             }}
             onReorderChapters={handleReorderChapters}
             onReorderItems={handleReorderItems}
+            onUpdateFile={openReplaceModal}
           />
         </div>
 
@@ -276,10 +359,10 @@ export default function CourseContent() {
               {/* NEXT BUTTON */}
               <button
                 onClick={goToNext}
-                disabled={!selectedItem || isLastItem}
+                disabled={!selectedItem}
                 className={`flex items-center gap-2 py-2 rounded-md border justify-center
   transition-all duration-200 text-xs bg-maincolor text-white w-20
-  ${!selectedItem || isLastItem
+  ${!selectedItem
                     ? "opacity-40 cursor-not-allowed"
                     : "hover:bg-lightmain hover:border-gray-300 active:scale-95"
                   }`}
@@ -427,6 +510,55 @@ export default function CourseContent() {
           </div>
         </div>
       )}
+      {showUpdateFileModal && (
+        <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-50">
+          <div className="bg-white w-96 p-6 rounded shadow-lg">
+
+            <h3 className="text-lg font-semibold mb-4">
+              Update Item – {itemToUpdate?.title}
+            </h3>
+
+            {/* ⭐ Update Item Name */}
+            <label className="block text-sm font-medium mb-1">Item Name</label>
+            <input
+              type="text"
+              value={itemToUpdate?.title || ""}
+              onChange={(e) =>
+                setItemToUpdate(prev =>
+                  prev ? { ...prev, title: e.target.value } : null
+                )
+              }
+              className="w-full p-2 border rounded mb-4"
+            />
+
+            {/* ⭐ Replace File */}
+            <label className="block text-sm font-medium mb-1">Select New File</label>
+            <input
+              type="file"
+              onChange={(e) => setNewFile(e.target.files?.[0] || null)}
+              className="w-full p-2 border rounded mb-4"
+            />
+
+            <div className="flex justify-end gap-3 mt-4">
+              <button
+                onClick={() => setShowUpdateFileModal(false)}
+                className="px-4 py-2 border rounded"
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={handleReplaceFile}
+                className="px-4 py-2 bg-maincolor text-white rounded"
+              >
+                Update
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+
     </div>
   );
 }

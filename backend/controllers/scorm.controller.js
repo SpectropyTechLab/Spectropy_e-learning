@@ -144,6 +144,138 @@ export const uploadContentFile = async (req, res) => {
 };
 
 
+
+export const updateContentFile = async (req, res) => {
+  const { courseId, itemId } = req.params;
+  const { title } = req.body;
+  const newFile = req.file; // Multer file
+  const bucket = process.env.SUPABASE_BUCKET || "courses";
+
+  try {
+    // 1️⃣ Fetch existing item from DB
+    const existing = await pool.query(
+      `SELECT * FROM content_items WHERE id = $1`,
+      [itemId]
+    );
+
+    if (existing.rows.length === 0) {
+      return res.status(404).json({ error: "Content item not found" });
+    }
+
+    const oldItem = existing.rows[0];
+    const oldStoragePath = oldItem.content_url;
+
+    let newStoragePath = oldStoragePath; // default (no new file)
+    let launchFile = "";
+
+    // -----------------------------------------
+    // 2️⃣ If a NEW file is uploaded → Replace it
+    // -----------------------------------------
+    if (newFile) {
+      const filePath = newFile.path;
+
+      // If SCORM ZIP → full SCORM handling
+      if (oldItem.item_type === "scorm") {
+        const zip = new AdmZip(filePath);
+        const tempFolder = filePath.replace(".zip", "_unzipped");
+        zip.extractAllTo(tempFolder, true);
+
+        const manifestPath = path.join(tempFolder, "imsmanifest.xml");
+        if (!fs.existsSync(manifestPath))
+          throw new Error("imsmanifest.xml not found");
+
+        const xmlData = fs.readFileSync(manifestPath, "utf8");
+        const parsedManifest = await parseStringPromise(xmlData);
+        launchFile = parsedManifest.manifest.resources[0].resource[0].$.href;
+
+        // New folder name for SCORM
+        const uploadFolder = `${courseId}/${Date.now()}`;
+
+        // Upload extracted SCORM files
+        const uploadRecursively = async (dirPath, relativePath = "") => {
+          for (const entry of fs.readdirSync(dirPath, { withFileTypes: true })) {
+            const fullPath = path.join(dirPath, entry.name);
+            const relPath = relativePath ? `${relativePath}/${entry.name}` : entry.name;
+
+            if (entry.isDirectory()) {
+              await uploadRecursively(fullPath, relPath);
+            } else {
+              const buffer = fs.readFileSync(fullPath);
+              const contentType = mime.lookup(entry.name) || "application/octet-stream";
+
+              const { error } = await supabase.storage
+                .from(bucket)
+                .upload(`${uploadFolder}/${relPath}`, buffer, {
+                  contentType,
+                  upsert: true,
+                });
+
+              if (error) console.error(`❌ Upload failed for ${relPath}`, error);
+            }
+          }
+        };
+
+        await uploadRecursively(tempFolder);
+
+        newStoragePath = `${uploadFolder}/${launchFile}`;
+
+        fs.rmSync(tempFolder, { recursive: true, force: true });
+        fs.unlinkSync(filePath);
+      }
+
+      // If not SCORM → simply overwrite file
+      else {
+        const fileBuffer = fs.readFileSync(filePath);
+        const ext = path.extname(newFile.originalname);
+        const finalPath = `${courseId}/${itemId}_${Date.now()}${ext}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from(bucket)
+          .upload(finalPath, fileBuffer, {
+            contentType: newFile.mimetype,
+            upsert: true,
+          });
+
+        if (uploadError) throw uploadError;
+
+        newStoragePath = finalPath;
+
+        fs.unlinkSync(filePath);
+      }
+
+      // OPTIONAL: Delete old file from Supabase
+      if (oldStoragePath) {
+        await supabase.storage.from(bucket).remove([oldStoragePath]);
+      }
+    }
+
+    // -----------------------------------------
+    // 3️⃣ Update DB entry (title + file path)
+    // -----------------------------------------
+    const updated = await pool.query(
+      `UPDATE content_items
+       SET title = $1, content_url = $2
+       WHERE id = $3
+       RETURNING *`,
+      [title || oldItem.title, newStoragePath, itemId]
+    );
+
+    return res.json({
+      success: true,
+      message: "File updated successfully",
+      content_url: updated.rows[0].content_url,
+      item: updated.rows[0],
+    });
+
+  } catch (err) {
+    console.error("❌ Update file error:", err);
+
+    return res.status(500).json({
+      error: "Failed to update content item",
+    });
+  }
+};
+
 // backend/controllers/scorm.controller.js
 export const saveScormProgress = async (req, res) => {
   const { userId, contentId, data, attemptNo = 1 } = req.body;

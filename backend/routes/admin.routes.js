@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { createCourse, getAllCourses, getCourseContent, createContentItem, publishCourse } from '../controllers/admin.controller.js';
 import { authenticateToken } from '../middleware/auth.js';
-import { upload, uploadContentFile, viewScormFile } from '../controllers/scorm.controller.js';
+import { upload, uploadContentFile, viewScormFile, updateContentFile } from '../controllers/scorm.controller.js';
 import helmet from "helmet";
 import { deleteContentItem, renameContentItem } from "../controllers/content.controller.js";
 
@@ -18,5 +18,7 @@ router.post('/courses/:courseId/content/upload', upload.single('file'), authenti
 router.get("/view/*", viewScormFile); //
 router.delete("/courses/:courseId/content/:id", authenticateToken, deleteContentItem);
 router.put("/courses/:courseId/content/:id/rename", authenticateToken, renameContentItem);
+router.put("/courses/:courseId/content/:itemId/file", upload.single("file"), updateContentFile);
+
 
 export default router;
