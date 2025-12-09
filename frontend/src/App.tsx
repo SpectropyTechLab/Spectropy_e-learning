@@ -1,6 +1,7 @@
 // src/App.tsx
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useAuth, AuthProvider } from "./contexts/AuthContext";
+import { Toaster } from 'react-hot-toast';
 
 // Auth pages
 import LandingPage from './pages/auth/LandingPage'; // Contains inline login portal selection
@@ -66,7 +67,7 @@ function AppRoutes() {
       <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<MainLoginPage />} />
       <Route path="/login-form" element={<LoginForm />} />
-      <Route path="/courses" element={<Courses/>} />
+      <Route path="/courses" element={<Courses />} />
 
 
 
@@ -129,30 +130,30 @@ function AppRoutes() {
       />
 
 
-     {/* Student */}
-<Route
-  path="/student/dashboard"
-  element={
-    <ProtectedRoute allowedRoles={["student"]}>
-      <StudentDashboard />
-    </ProtectedRoute>
-  }
-/>
-<Route
-  path="/student/course/:courseId"
-  element={
-    <ProtectedRoute allowedRoles={['student']}>
-      <StudentCourseView />
-    </ProtectedRoute>
-  }
->
-  {/* Nested child routes */}
-  <Route index element={<div className="p-6 text-gray-500">Select a topic from the left to view content.</div>} />
-  <Route
-    path="content/:contentId"
-    element={<ContentViewer />}
-  />
-</Route>
+      {/* Student */}
+      <Route
+        path="/student/dashboard"
+        element={
+          <ProtectedRoute allowedRoles={["student"]}>
+            <StudentDashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/student/course/:courseId"
+        element={
+          <ProtectedRoute allowedRoles={['student']}>
+            <StudentCourseView />
+          </ProtectedRoute>
+        }
+      >
+        {/* Nested child routes */}
+        <Route index element={<div className="p-6 text-gray-500">Select a topic from the left to view content.</div>} />
+        <Route
+          path="content/:contentId"
+          element={<ContentViewer />}
+        />
+      </Route>
 
       {/* Fallback */}
       <Route path="*" element={<Navigate to="/" replace />} />
@@ -165,6 +166,7 @@ export default function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
+        <Toaster position="bottom-right" />
         <AppRoutes />
       </BrowserRouter>
     </AuthProvider>

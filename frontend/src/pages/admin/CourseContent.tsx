@@ -6,6 +6,7 @@ import api from "../../services/api";
 import LeftPanel from "../../components/CourseContent/LeftPanel"; // ✅ IMPORT LEFT PANEL
 import ContentViewer from "../common/ContentViewer";
 import { SlControlPlay, SlControlRewind } from "react-icons/sl";
+import toast from "react-hot-toast";
 
 interface ContentItem {
   id: number;
@@ -50,12 +51,13 @@ export default function CourseContent() {
   const [showUpdateFileModal, setShowUpdateFileModal] = useState(false);
   const [itemToUpdate, setItemToUpdate] = useState<ContentItem | null>(null);
   const [newFile, setNewFile] = useState<File | null>(null);
-
-
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [loading, setLoading] = useState<boolean>(false);
 
   // ✅ HANDLE REPLACE FILE
   const handleReplaceFile = async () => {
     if (!itemToUpdate) return;
+    setIsUpdating(true);
 
     const formData = new FormData();
 
@@ -69,23 +71,21 @@ export default function CourseContent() {
 
 
     try {
-      console.log("conforming formData entries:before sending:");
       const res = await api.put(
         `/admin/courses/${itemToUpdate.course_id}/content/${itemToUpdate.id}/file`,
         formData,
         { headers: { "Content-Type": "multipart/form-data" } }
       );
-      console.log("conforming formData entries:after sending:");
 
       const updatedUrl = res.data?.content_url;
-
+      const updatedType = res.data?.item?.item_type || itemToUpdate.item_type;
       // ⭐ Update UI (title + content_url)
       setChapters(prev =>
         prev.map(ch => ({
           ...ch,
           items: ch.items.map((i: ContentItem) =>
             i.id === itemToUpdate.id
-              ? { ...i, title: itemToUpdate.title, content_url: updatedUrl || i.content_url }
+              ? { ...i, title: itemToUpdate.title, content_url: updatedUrl || i.content_url, item_type: updatedType, }
               : i
           )
         }))
@@ -94,7 +94,7 @@ export default function CourseContent() {
       setAllItems(prev =>
         prev.map(i =>
           i.id === itemToUpdate.id
-            ? { ...i, title: itemToUpdate.title, content_url: updatedUrl || i.content_url }
+            ? { ...i, title: itemToUpdate.title, content_url: updatedUrl || i.content_url, item_type: updatedType, }
             : i
         )
       );
@@ -102,7 +102,7 @@ export default function CourseContent() {
       if (selectedItem?.id === itemToUpdate.id) {
         setSelectedItem(prev =>
           prev
-            ? { ...prev, title: itemToUpdate.title, content_url: updatedUrl || prev.content_url }
+            ? { ...prev, title: itemToUpdate.title, content_url: updatedUrl || prev.content_url, item_type: updatedType, }
             : null
         );
       }
@@ -116,26 +116,19 @@ export default function CourseContent() {
       console.error(err);
       alert("Failed to update item");
     }
+    setIsUpdating(false);
   };
-
-
-
-
 
   const openReplaceModal = (item: ContentItem) => {
     setItemToUpdate(item);
     setShowUpdateFileModal(true);
   };
 
-
-
-
   const items = allItems;
   const currentIndex = items.findIndex(i => i.id === selectedItem?.id);
 
   const isFirstItem = currentIndex === 0;
   //const isLastItem = currentIndex === items.length - 1;
-
 
   const { user } = useAuth();
 
@@ -149,6 +142,7 @@ export default function CourseContent() {
 
   // ✅ FETCH CONTENT + TRANSFORM INTO CHAPTER STRUCTURE
   const fetchContent = async () => {
+    setLoading(true);
     try {
       const res = await api.get(`/admin/courses/${courseId}/content`);
       const items = res.data;
@@ -171,9 +165,7 @@ export default function CourseContent() {
     } catch (err) {
       console.error("Failed to load course content", err);
     }
-    finally {
-      // Any final steps if needed
-    }
+    setLoading(false);
   };
 
   // ✅ ADD CHAPTER
@@ -202,7 +194,6 @@ export default function CourseContent() {
       console.error("❌ Failed to mark item completed", err);
     }
   };
-
 
   const goToNext = async () => {
     if (!selectedItem) return;
@@ -240,8 +231,6 @@ export default function CourseContent() {
     }
   };
 
-
-
   const goToPrevious = () => {
     if (!selectedItem) return;
 
@@ -257,33 +246,47 @@ export default function CourseContent() {
   const handleAddItem = async (chapterId: number) => {
     if (!itemTitle.trim()) return alert("Enter a title");
 
-    const formData = new FormData();
-    formData.append("item_type", itemType);
-    formData.append("title", itemTitle);
-    formData.append("parent_id", chapterId.toString());
 
-    if (uploadMethod === "upload" && selectedFile) {
-      formData.append("file", selectedFile);
-
-      await api.post(
-        `/admin/courses/${courseId}/content/upload`,
-        formData,
-        { headers: { "Content-Type": "multipart/form-data" } }
-      );
-    } else {
-      await api.post(`/admin/courses/${courseId}/content`, {
-        item_type: itemType,
-        title: itemTitle,
-        parent_id: chapterId,
-        content_url: publicUrl.trim(),
-      });
-    }
-
-    setItemTitle("");
-    setSelectedFile(null);
-    setPublicUrl("");
+    // Close modal immediately (UI becomes free)
     setShowAddItemModal(false);
-    fetchContent();
+
+    // Show uploading toast
+    const uploadToast = toast.loading("Uploading content...");
+
+    try {
+      const formData = new FormData();
+      formData.append("item_type", itemType);
+      formData.append("title", itemTitle);
+      formData.append("parent_id", chapterId.toString());
+
+      if (uploadMethod === "upload" && selectedFile) {
+        formData.append("file", selectedFile);
+
+        await api.post(
+          `/admin/courses/${courseId}/content/upload`,
+          formData,
+          { headers: { "Content-Type": "multipart/form-data" } }
+        );
+      } else {
+        await api.post(`/admin/courses/${courseId}/content`, {
+          item_type: itemType,
+          title: itemTitle,
+          parent_id: chapterId,
+          content_url: publicUrl.trim(),
+        });
+      }
+
+      toast.success("Item added successfully!", { id: uploadToast });
+
+      setItemTitle("");
+      setSelectedFile(null);
+      setPublicUrl("");
+      setShowAddItemModal(false);
+      fetchContent();
+    } catch (err) {
+      console.error("❌ Failed to add item:", err);
+      toast.error("Failed to add item", { id: uploadToast });
+    }
   };
 
   // ✅ DRAG & DROP — REORDER CHAPTERS
@@ -301,7 +304,6 @@ export default function CourseContent() {
     );
     // TODO: send reordered items to backend
   };
-  console.log("************************************************************************************************************\nRendering CourseContent with items:", items);
   return (
     <div className="w-full h-screen flex flex-col">
 
@@ -313,6 +315,7 @@ export default function CourseContent() {
           <LeftPanel
             chapters={chapters}
             allItems={items}
+            selectedItemId={selectedItem?.id}
             onSelectItem={(item: ContentItem) => {
               console.log("Selected item:", item);
               setSelectedItem(item);        // ✅ store the entire item
@@ -329,13 +332,11 @@ export default function CourseContent() {
           />
         </div>
 
-
         {/* ✅ RIGHT SIDE — VIEW CONTENT */}
         <div className="flex-1 bg-white  shrink-0 overflow-y-none flex flex-col">
           {/* HEADER */}
           <div className="w-full flex justify-between items-center px-4 pt-4 pb-2.5 border-b border-gray-200 ">
             <h1 className="text-xl font-semibold ">{selectedItem ? selectedItem.title.toUpperCase() : ""}</h1>
-
 
             {/* RIGHT SIDE — PREVIOUS / NEXT */}
             <div className="flex items-center gap-4">
@@ -344,17 +345,13 @@ export default function CourseContent() {
               <button
                 onClick={goToPrevious}
                 disabled={!selectedItem || isFirstItem}
-                className={`flex items-center gap-2 py-2 rounded-md border justify-center
-  transition-all duration-200 text-xs bg-maincolor text-white w-20
-  ${!selectedItem || isFirstItem
-                    ? "opacity-40 cursor-not-allowed"
-                    : "hover:bg-lightmain hover:border-gray-300 active:scale-95"
+                className={`flex items-center gap-2 py-2 rounded-md border justify-center transition-all duration-200 text-xs bg-maincolor text-white w-20 ${!selectedItem || isFirstItem
+                  ? "opacity-40 cursor-not-allowed"
+                  : "hover:bg-lightmain hover:border-gray-300 active:scale-95"
                   }`}
               >
                 <SlControlRewind /> Previous
               </button>
-
-
 
               {/* NEXT BUTTON */}
               <button
@@ -541,22 +538,42 @@ export default function CourseContent() {
 
             <div className="flex justify-end gap-3 mt-4">
               <button
-                onClick={() => setShowUpdateFileModal(false)}
-                className="px-4 py-2 border rounded"
+                onClick={() => !isUpdating && setShowUpdateFileModal(false)}
+                disabled={isUpdating}
+                className="px-4 py-2 border rounded disabled:opacity-50"
               >
                 Cancel
               </button>
 
+
               <button
                 onClick={handleReplaceFile}
-                className="px-4 py-2 bg-maincolor text-white rounded"
+                disabled={isUpdating}
+                className={`px-4 py-2 rounded text-white 
+    ${isUpdating ? "bg-gray-400 cursor-not-allowed" : "bg-maincolor hover:bg-lightmain"}
+  `}
               >
-                Update
+                {isUpdating ? (
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    Updating...
+                  </div>
+                ) : (
+                  "Update"
+                )}
               </button>
+
             </div>
           </div>
         </div>
       )}
+
+      {loading && (
+        <div className="text-center text-sm text-gray-400 py-1">
+          Refreshing content...
+        </div>
+      )}
+
 
 
     </div>

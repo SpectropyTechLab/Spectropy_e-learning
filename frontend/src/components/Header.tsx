@@ -1,4 +1,3 @@
-import React from "react";
 import logo from "/spectropy_logo.png"; // adjust path if needed
 import { useNavigate } from "react-router-dom";
 
@@ -12,7 +11,7 @@ const Header = () => {
     hover:after:w-full";
 
     return (
-        <header className="w-full text-[#0b285d] py-6 px-4 flex justify-between items-center mb-4 md:flex-row flex-col md:gap-0 gap-4 ">
+        <header className="w-full  py-6 px-4 flex justify-between items-center mb-4 md:flex-row flex-col md:gap-0 gap-4 ">
 
             {/* Logo */}
             <div className="flex items-center space-x-2 cursor-pointer" onClick={() => navigate("/")}>

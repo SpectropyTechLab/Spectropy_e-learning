@@ -18,7 +18,7 @@ router.post('/courses/:courseId/content/upload', upload.single('file'), authenti
 router.get("/view/*", viewScormFile); //
 router.delete("/courses/:courseId/content/:id", authenticateToken, deleteContentItem);
 router.put("/courses/:courseId/content/:id/rename", authenticateToken, renameContentItem);
-router.put("/courses/:courseId/content/:itemId/file", upload.single("file"), updateContentFile);
+router.put("/courses/:courseId/content/:itemId/file", upload.single("file"), authenticateToken, updateContentFile);
 
 
 export default router;

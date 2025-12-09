@@ -3,6 +3,8 @@ import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import api from "../../services/api";
 import ScormPlayer from "../../components/ScormPlayer";
+import PdfViewer from "../../components/CourseContent/PdfViewer";
+
 
 interface ContentItem {
     id: number;
@@ -110,11 +112,7 @@ export default function ContentViewer({ item }: ContentViewerProps) {
 
         case "pdf":
             viewerElement = mediaUrl ? (
-                <iframe
-                    src={mediaUrl}
-                    title={title}
-                    className={valcss}
-                />
+                <PdfViewer url={mediaUrl} title={title} />
             ) : (
                 <p>Loading PDF...</p>
             );
