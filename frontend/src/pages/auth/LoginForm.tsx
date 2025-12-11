@@ -11,6 +11,8 @@ export default function LoginForm() {
   const [fullName, setFullName] = useState(''); // Only used in registration
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
 
   const { login, register, user } = useAuth();  // Access user info
   const navigate = useNavigate();
@@ -32,32 +34,32 @@ export default function LoginForm() {
     }
   }, [user, navigate]);
 
+
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setLoading(true);   // 🔵 Start loading spinner
 
-    if (isLogin) {
-      // Login flow
-      try {
+    try {
+      if (isLogin) {
         await login(email, password);
-      } catch (err: any) {
-        setError(err.response?.data?.error || 'Login failed.');
-      }
-    } else {
-      // Registration flow
-      if (password !== confirmPassword) {
-        setError('Passwords do not match');
-        return;
-      }
-      try {
+      } else {
+        if (password !== confirmPassword) {
+          setError("Passwords do not match");
+          setLoading(false);
+          return;
+        }
         await register(email, fullName, password, selectedRole);
         setIsLogin(true);
-        setError('Registration successful! Please log in.');
-      } catch (err: any) {
-        setError(err.response?.data?.error || 'Registration failed.');
+        setError("Registration successful! Please log in.");
       }
+    } catch (err: any) {
+      setError(err.response?.data?.error || 'Operation failed.');
     }
+
+    setLoading(false); // 🔵 Stop loading spinner
   };
+
 
   // Role-specific icons and titles
   const getRoleConfig = (role: string) => {
@@ -164,18 +166,27 @@ export default function LoginForm() {
 
           <button
             type="submit"
-            disabled={!isLogin && !CAN_REGISTER}
-            className={`w-full py-2 px-4 font-medium rounded-md 
-    transition-all duration-300 ease-in-out transform
-    ${!isLogin && !CAN_REGISTER
-                ? "bg-gray-300 cursor-not-allowed text-gray-600"
-                : isLogin
-                  ? "bg-maincolor hover:bg-lightmain hover:scale-105 text-white shadow-md hover:shadow-lg"
-                  : "bg-green-700 hover:bg-green-600 hover:scale-105 text-white shadow-md hover:shadow-lg"
+            disabled={loading || (!isLogin && !CAN_REGISTER)}
+            className={`w-full py-2 px-4 font-medium rounded-md transition-all duration-300 transform
+    ${loading
+                ? "bg-gray-400 cursor-not-allowed"
+                : !isLogin && !CAN_REGISTER
+                  ? "bg-gray-300 cursor-not-allowed text-gray-600"
+                  : isLogin
+                    ? "bg-maincolor hover:bg-lightmain hover:scale-105 text-white shadow-md hover:shadow-lg"
+                    : "bg-green-700 hover:bg-green-600 hover:scale-105 text-white shadow-md hover:shadow-lg"
               }`}
           >
-            {isLogin ? "Sign In" : "Register"}
+            {loading ? (
+              <div className="flex items-center justify-center gap-2">
+                <span className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></span>
+                <span>Loading...</span>
+              </div>
+            ) : (
+              isLogin ? "Sign In" : "Register"
+            )}
           </button>
+
 
         </form>
 
