@@ -1,5 +1,5 @@
 // src/pages/auth/LandingPage.tsx
-import { useState,useEffect  } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import logo from "/spectropy_logo.png";
 
@@ -85,9 +85,9 @@ const services = [
 ];
 
 const LandingPage = () => {
-    const [selectedService, setSelectedService] = useState<(typeof services)[0] | null>(null);
-    const [currentSlide, setCurrentSlide] = useState(0);
-    const closeModal = () => setSelectedService(null);
+  const [selectedService, setSelectedService] = useState<(typeof services)[0] | null>(null);
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const closeModal = () => setSelectedService(null);
 
   // Auto-advance slider every 5 seconds
   useEffect(() => {
@@ -103,9 +103,9 @@ const LandingPage = () => {
 
 
   return (
-    <div className="min-h-screen flex flex-col relative">
+    <div className="min-h-screen flex flex-col relative ">
       {/* 🔸 Watermark Background */}
-      <div 
+      <div
         className="absolute inset-0 z-0 opacity-5 pointer-events-none"
         style={{
           backgroundImage: "url('watermak.pgn')",
@@ -114,16 +114,16 @@ const LandingPage = () => {
           backgroundPosition: 'center',
         }}
       />
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* Header */}
-      <header className="w-full text-blue-900 py-6 px-4 flex justify-between items-center mb-4 md:flex-row flex-col md:gap-0 gap-4 "> 
-           <div className="flex items-center space-x-2 cursor-pointer">
-                 <img
-                    src={logo}
-                    alt="Spectropy Logo"
-                    className="h-10 w-auto md:h-10 lg:h-12 rounded-md"
-                  />
-            </div>
+      <div className="min-h-screen bg-white flex flex-col">
+        {/* Header */}
+        <header className="w-full text-blue-900 py-6 px-4 flex justify-between items-center mb-4 md:flex-row flex-col md:gap-0 gap-4 ">
+          <div className="flex items-center space-x-2 cursor-pointer">
+            <img
+              src={logo}
+              alt="Spectropy Logo"
+              className="h-10 w-auto md:h-10 lg:h-12 rounded-md"
+            />
+          </div>
 
           <nav className="flex space-x-6 text-blue-900 font-medium">
             <Link to="/" className="hover:text-blue-600">Home</Link>
@@ -131,18 +131,19 @@ const LandingPage = () => {
             <a href="#contact" className="hover:text-blue-600">Contact</a>
             <a href="#login-portals" className="hover:text-blue-600 font-medium">Login</a>
           </nav>
-      </header>
+        </header>
 
-      {/* 🔸 IMAGE SLIDER */}
-        <div className="relative w-full h-64 md:h-80 overflow-hidden">
+        {/* 🔸 IMAGE SLIDER */}
+        <div className="relative w-full h-[80vh] overflow-hidden md:h-[80vh]">
+
           {/* Slides */}
-          <div 
+          <div
             className="flex transition-transform duration-500 ease-in-out h-full w-fit"
-            style={{ transform: `translateX(-${currentSlide * 100}%)`, width: `${sliderImages.length * 100}%` }}
+            style={{ transform: `translateX(-${currentSlide * 100}%)` }}
           >
             {sliderImages.map((img, index) => (
-              <div key={index} className="h-full w-full shrink-0 object-contain flex align-center">
-                
+              <div key={index} className="h-full w-full shrink-0 object-contain flex align-center justify-center">
+
                 <img
                   src={img}
                   alt={`Slide ${index + 1}`}
@@ -158,108 +159,107 @@ const LandingPage = () => {
               <button
                 key={index}
                 onClick={() => goToSlide(index)}
-                className={`w-3 h-3 rounded-full ${
-                  index === currentSlide ? 'bg-white' : 'bg-white bg-opacity-50'
-                }`}
+                className={`w-3 h-3 rounded-full ${index === currentSlide ? 'bg-white' : 'bg-white bg-opacity-50'
+                  }`}
                 aria-label={`Go to slide ${index + 1}`}
               />
             ))}
           </div>
         </div>
 
-      {/* Hero / Services Section */}
-      <main className="grow container mx-auto px-4 py-12">
-        {/* Three Service Blocks with "More about" links */}
-         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-  {services.map((item) => (
-    <div
-      key={item.id}
-      className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow text-center"
-    >
-      <h3 className="text-xl font-bold text-blue-900 mb-3">{item.title}</h3>
-      <p className="text-gray-600 mb-4">{item.shortDesc}</p>
-      <button
-        onClick={() => setSelectedService(item)}
-        className="text-blue-600 hover:text-blue-800 font-medium text-sm inline-flex items-center"
-      >
-        More about →
-      </button>
-    </div>
-  ))}
-</div>
-
-        {/* 4 Persuasive Lines */}
-        <div className="text-center mb-16 space-y-3 text-gray-700">
-          <p>🏆 Trusted by 50,000+ Students Across India</p>
-          <p>📈 95% Success Rate in Top Engineering Entrance Exams</p>
-          <p>👨‍🏫 Expert Faculty with 10+ Years of Teaching Experience</p>
-          <p>📱 Access Anytime, Anywhere — Learn at Your Own Pace</p>
-        </div>
-
-        {/* 🔑 LOGIN PORTALS SECTION */}
-        <section id="login-portals" className="mb-16">
-          <div className="text-center mb-8">
-            <h2 className="text-2xl font-bold text-blue-900">Login to Your Portal</h2>
-            <p className="text-gray-600 mt-2">Select the platform you use</p>
-          </div>
-          <div className="max-w-2xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Link
-              to="/login"
-              className="block bg-white p-6 rounded-xl shadow-md hover:shadow-lg border border-blue-100 transition-all text-center hover:-translate-y-1"
-            >
-              <div className="text-3xl mb-3">🖥️</div>
-              <h3 className="font-bold text-blue-800">E-Learning (LMS)</h3>
-              <p className="text-sm text-gray-600 mt-2">For students, teachers, and admins</p>
-            </Link>
-
-            <Link 
-            to="https://ra-portal-frontend.vercel.app/login"
-            className="block bg-white p-6 rounded-xl shadow-md hover:shadow-lg border border-blue-100 transition-all text-center hover:-translate-y-1"
-            >
-              <div className="text-3xl mb-3">📊</div>
-              <h3 className="font-bold text-blue-800">RA Portal</h3>
-              <p className="text-sm text-gray-500 mt-2">Results and Analysis Portal</p>
-            </Link>
-          </div>
-        </section>
-
-        {/* Happy Clients with Logo Placeholders */}
-        <section className="mb-16">
-          <h2 className="text-2xl font-bold text-center text-blue-900 mb-8">Happy Clients</h2>
-          <div className="flex flex-wrap justify-center gap-10">
-            {/* Replace these with real logo URLs later */}
-            {[
-              'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRfSrFFpfWSUTp-Eqp6k9vSiVyyhju0xzHMRg&s',
-              'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSKhYHsDIzoiLLVblksrmiOaVQ-dNVTo8DAtQ&s',
-              'https://spectropy.com/wp-content/uploads/2024/03/logo-msn-High-school-1004x1024.png',
-              'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSrE23ghi1mCZf8uusWoLlJ7WSxtNeXOA_PgA&s',
-              'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRej_DGTs81iadaEabcIRIb9LE31C3FIT5y1Q&s',
-            ].map((logo, i) => (
-              <img
-                key={i}
-                src={logo}
-                alt={`Client ${i + 1}`}
-                className="h-18 object-contain opacity-80 hover:opacity-100 transition-opacity"
-              />
-            ))}
-          </div>
-        </section>
-
-        {/* Products Section */}
-        <section className="rounded-2xl p-8 mb-16">
-          <h2 className="text-2xl font-bold text-center text-blue-900 mb-6">Our Products</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {['Crash Course', 'Full Syllabus Package', 'Personal Mentorship'].map((p, i) => (
-              <div key={i} className="bg-white p-5 rounded-lg shadow text-center">
-                <h3 className="font-semibold text-lg">{p}</h3>
-                <p className="text-sm text-gray-600 mt-2">Comprehensive learning solution</p>
+        {/* Hero / Services Section */}
+        <main className="grow container mx-auto px-4 py-12">
+          {/* Three Service Blocks with "More about" links */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+            {services.map((item) => (
+              <div
+                key={item.id}
+                className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow text-center"
+              >
+                <h3 className="text-xl font-bold text-blue-900 mb-3">{item.title}</h3>
+                <p className="text-gray-600 mb-4">{item.shortDesc}</p>
+                <button
+                  onClick={() => setSelectedService(item)}
+                  className="text-blue-600 hover:text-blue-800 font-medium text-sm inline-flex items-center"
+                >
+                  More about →
+                </button>
               </div>
             ))}
           </div>
-        </section>
 
-        {/* ✅ ABOUT US SECTION */}
-        <section id="about" className="mb-16">
+          {/* 4 Persuasive Lines */}
+          <div className="text-center mb-16 space-y-3 text-gray-700">
+            <p>🏆 Trusted by 50,000+ Students Across India</p>
+            <p>📈 95% Success Rate in Top Engineering Entrance Exams</p>
+            <p>👨‍🏫 Expert Faculty with 10+ Years of Teaching Experience</p>
+            <p>📱 Access Anytime, Anywhere — Learn at Your Own Pace</p>
+          </div>
+
+          {/* 🔑 LOGIN PORTALS SECTION */}
+          <section id="login-portals" className="mb-16">
+            <div className="text-center mb-8">
+              <h2 className="text-2xl font-bold text-blue-900">Login to Your Portal</h2>
+              <p className="text-gray-600 mt-2">Select the platform you use</p>
+            </div>
+            <div className="max-w-2xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
+              <Link
+                to="/login"
+                className="block bg-white p-6 rounded-xl shadow-md hover:shadow-lg border border-blue-100 transition-all text-center hover:-translate-y-1"
+              >
+                <div className="text-3xl mb-3">🖥️</div>
+                <h3 className="font-bold text-blue-800">E-Learning (LMS)</h3>
+                <p className="text-sm text-gray-600 mt-2">For students, teachers, and admins</p>
+              </Link>
+
+              <Link
+                to="https://ra-portal-frontend.vercel.app/login"
+                className="block bg-white p-6 rounded-xl shadow-md hover:shadow-lg border border-blue-100 transition-all text-center hover:-translate-y-1"
+              >
+                <div className="text-3xl mb-3">📊</div>
+                <h3 className="font-bold text-blue-800">RA Portal</h3>
+                <p className="text-sm text-gray-500 mt-2">Results and Analysis Portal</p>
+              </Link>
+            </div>
+          </section>
+
+          {/* Happy Clients with Logo Placeholders */}
+          <section className="mb-16">
+            <h2 className="text-2xl font-bold text-center text-blue-900 mb-8">Happy Clients</h2>
+            <div className="flex flex-wrap justify-center gap-10">
+              {/* Replace these with real logo URLs later */}
+              {[
+                'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRfSrFFpfWSUTp-Eqp6k9vSiVyyhju0xzHMRg&s',
+                'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSKhYHsDIzoiLLVblksrmiOaVQ-dNVTo8DAtQ&s',
+                'https://spectropy.com/wp-content/uploads/2024/03/logo-msn-High-school-1004x1024.png',
+                'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSrE23ghi1mCZf8uusWoLlJ7WSxtNeXOA_PgA&s',
+                'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRej_DGTs81iadaEabcIRIb9LE31C3FIT5y1Q&s',
+              ].map((logo, i) => (
+                <img
+                  key={i}
+                  src={logo}
+                  alt={`Client ${i + 1}`}
+                  className="h-18 object-contain opacity-80 hover:opacity-100 transition-opacity"
+                />
+              ))}
+            </div>
+          </section>
+
+          {/* Products Section */}
+          <section className="rounded-2xl p-8 mb-16">
+            <h2 className="text-2xl font-bold text-center text-blue-900 mb-6">Our Products</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {['Crash Course', 'Full Syllabus Package', 'Personal Mentorship'].map((p, i) => (
+                <div key={i} className="bg-white p-5 rounded-lg shadow text-center">
+                  <h3 className="font-semibold text-lg">{p}</h3>
+                  <p className="text-sm text-gray-600 mt-2">Comprehensive learning solution</p>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* ✅ ABOUT US SECTION */}
+          <section id="about" className="mb-16">
             <h2 className="text-3xl font-bold text-center text-blue-900 mb-6">About Spectropy</h2>
             <div className="text-gray-700 text-lg leading-relaxed space-y-5 max-w-4xl mx-auto">
               <p>
@@ -290,48 +290,48 @@ const LandingPage = () => {
                 </Link>
               </div>
             </div>
-        </section>
-        {/* === MODAL === */}
+          </section>
+          {/* === MODAL === */}
           {selectedService && (
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-white bg-opacity-50">
-                <div className="p-6">
-                  <div className="flex justify-between items-start">
-                    <h2 className="text-2xl font-bold text-blue-900">{selectedService.title}</h2>
-                    <button
-                      onClick={closeModal}
-                      className="text-gray-500 hover:text-gray-800 text-2xl"
-                    >
-                      &times;
-                    </button>
-                  </div>
-                  <div className="mt-6 text-gray-700 leading-relaxed">
-                    {selectedService.fullDesc}
-                  </div>
-                  <div className="mt-6 text-center">
-                    <button
-                      onClick={closeModal}
-                      className="px-4 py-2 bg-blue-900 text-white rounded-lg"
-                    >
-                      Close
-                    </button>
-                  </div>
+              <div className="p-6">
+                <div className="flex justify-between items-start">
+                  <h2 className="text-2xl font-bold text-blue-900">{selectedService.title}</h2>
+                  <button
+                    onClick={closeModal}
+                    className="text-gray-500 hover:text-gray-800 text-2xl"
+                  >
+                    &times;
+                  </button>
+                </div>
+                <div className="mt-6 text-gray-700 leading-relaxed">
+                  {selectedService.fullDesc}
+                </div>
+                <div className="mt-6 text-center">
+                  <button
+                    onClick={closeModal}
+                    className="px-4 py-2 bg-blue-900 text-white rounded-lg"
+                  >
+                    Close
+                  </button>
                 </div>
               </div>
+            </div>
           )}
-      </main>
+        </main>
 
-      {/* Footer */}
-      <footer className="bg-gray-900 text-white py-8" id="contact">
-        <div className="container mx-auto px-4 text-center">
-          <p className="mb-2">📞 +91 93912 94429 (10:00 AM – 7:00 PM)</p>
-          <p className="mb-2">✉️ contact@spectropy.com</p>
-          <p className="mb-4">📍 Hyderabad, India</p>
-          <p className="text-gray-400 text-sm">
-            © {new Date().getFullYear()} Spectropy. All rights reserved.
-          </p>
-        </div>
-      </footer>
-    </div>
+        {/* Footer */}
+        <footer className="bg-gray-900 text-white py-8" id="contact">
+          <div className="container mx-auto px-4 text-center">
+            <p className="mb-2">📞 +91 93912 94429 (10:00 AM – 7:00 PM)</p>
+            <p className="mb-2">✉️ contact@spectropy.com</p>
+            <p className="mb-4">📍 Hyderabad, India</p>
+            <p className="text-gray-400 text-sm">
+              © {new Date().getFullYear()} Spectropy. All rights reserved.
+            </p>
+          </div>
+        </footer>
+      </div>
     </div>
   );
 };
