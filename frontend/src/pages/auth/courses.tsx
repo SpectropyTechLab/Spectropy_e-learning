@@ -45,24 +45,35 @@ export default function CoursesPage() {
   const publishedCourses = courses.filter(course => course.published === true);
   
    return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Available Courses</h1>
-      <div className="space-y-3">
-        {publishedCourses.length === 0 ? (
-          <p>No published courses available.</p>
-        ) : (
-          publishedCourses.map((course) => (
-            <div key={course.id} className="border p-4 rounded">
-              <h2 className="font-semibold">{course.title}</h2>
-              {course.description && <p>{course.description}</p>}
-              <p className="text-sm text-gray-500">
-                Published: Yes •{' '}
-                Created: {new Date(course.created_at).toLocaleDateString()}
+  <div className="p-6">
+    <h1 className="text-2xl font-bold mb-6">Available Courses</h1>
+    
+    {publishedCourses.length === 0 ? (
+      <p>No published courses available.</p>
+    ) : (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {publishedCourses.map((course) => (
+          <div
+            key={course.id}
+            className="border border-gray-200 rounded-lg p-5 hover:shadow-md transition-shadow"
+          >
+            <h2 className="font-bold text-lg text-gray-900 mb-2">
+              {course.title.toUpperCase()}
+            </h2>
+           {course.description ? (
+              <p
+                className="text-gray-700 text-sm mb-3 line-clamp-3"
+                title={course.description} // ✅ Full text on hover
+              >
+                {course.description}
               </p>
-            </div>
-          ))
-        )}
+            ) : (
+              <p className="text-gray-500 text-sm mb-3 italic">No description</p>
+            )}
+          </div>
+        ))}
       </div>
-    </div>
-  );
+    )}
+  </div>
+);
 }
