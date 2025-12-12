@@ -1,6 +1,6 @@
 // src/components/PdfViewer.tsx
 import { useEffect, useRef, useState } from "react";
-import { AiOutlineDownload } from "react-icons/ai";
+//import { AiOutlineDownload } from "react-icons/ai";
 
 // ✔ Correct imports (v3.x)
 import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf";
@@ -58,18 +58,18 @@ export default function PdfViewer({ url }: PdfViewerProps) {
         <div className="flex flex-col items-center w-full h-full gap-4">
 
             {/* ⭐ Download PDF */}
-            <button
+            {/*<button
                 onClick={() => window.open(url, "_blank")}
                 className="flex items-center gap-2 px-4 py-2 bg-maincolor text-white rounded hover:bg-lightmain"
             >
                 <AiOutlineDownload size={18} />
                 Download PDF
-            </button>
+            </button>*/}
 
             {/* ⭐ All Pages */}
             <div
                 ref={containerRef}
-                className="overflow-y-auto max-h-[80vh] p-4 border shadow rounded w-full flex flex-col items-center gap-8"
+                className="overflow-y-auto w-full h-full bg-gray-100 p-4 overflow-auto flex flex-col items-center gap-4"
             >
                 {Array.from({ length: numPages }, (_, i) => (
                     <canvas key={i} className="shadow rounded" />

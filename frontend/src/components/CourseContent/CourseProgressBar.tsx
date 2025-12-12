@@ -23,8 +23,6 @@ const CourseProgressBar: React.FC<Props> = ({ completed, total }) => {
 
             </div>
 
-
-
             <p className="text-[10px] text-gray-500 mt-[-5px]">
                 {completed} of {total} items
             </p>
