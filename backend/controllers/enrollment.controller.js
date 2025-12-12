@@ -125,8 +125,9 @@ export const getCourseEnrollments = async (req, res) => {
   }
 };
 
+
 // For students: only published courses & enrolled users
-export const getStudentCourse = async (req, res) => {
+/*export const getStudentCourse = async (req, res) => {
   const { courseId } = req.params;
   const userId = req.user.id;
 
@@ -224,6 +225,141 @@ export const getStudentCourse = async (req, res) => {
         })),
       });
     }
+
+    res.json({
+      id: parseInt(courseId, 10),
+      title: course.title,
+      description: course.description,
+      chapters: chaptersWithContent,
+    });
+  } catch (err) {
+    console.error('Error loading student course:', err);
+    res.status(500).json({ error: 'Failed to load course content' });
+  }
+};*/
+
+export const getStudentCourse = async (req, res) => {
+  const { courseId } = req.params;
+  const userId = req.user.id;
+
+  try {
+    // 1. Verify enrollment + course published
+    const enrollment = await pool.query(
+      `
+        SELECT e.role, c.published, c.title, c.description
+        FROM enrollments e
+        JOIN courses c ON e.course_id = c.id
+        WHERE e.user_id = $1 AND e.course_id = $2 AND e.role = 'student' AND c.published = true
+      `,
+      [userId, courseId]
+    );
+
+    if (enrollment.rows.length === 0) {
+      return res.status(403).json({ error: 'Access denied or course not published' });
+    }
+
+    const course = enrollment.rows[0];
+
+    // 2. Fetch top-level folders (chapters)
+    const folders = await pool.query(
+      `
+        SELECT 
+          id, 
+          title, 
+          item_type,
+          order_index
+        FROM content_items
+        WHERE course_id = $1 AND parent_id IS NULL
+        ORDER BY order_index, id
+      `,
+      [courseId]
+    );
+
+    // 3. For each folder, fetch children WITH latest completion_status
+    const chaptersWithContent = [];
+    for (const folder of folders.rows) {
+      const children = await pool.query(
+        `
+          SELECT 
+            ci.id,
+            ci.title,
+            ci.item_type AS type,
+            ci.content_url,
+            ci.order_index,
+            COALESCE(latest_sa.completion_status, 'not attempted') AS completion_status
+          FROM content_items ci
+          LEFT JOIN LATERAL (
+            SELECT sa.completion_status
+            FROM student_attempts sa
+            WHERE sa.user_id = $2
+              AND sa.content_item_id = ci.id
+            ORDER BY sa.id DESC  -- or sa.started_at DESC
+            LIMIT 1
+          ) latest_sa ON true
+          WHERE ci.parent_id = $1
+          ORDER BY ci.order_index, ci.id
+        `,
+        [folder.id, userId]
+      );
+
+      chaptersWithContent.push({
+        id: folder.id,
+        title: folder.title,
+        position: folder.order_index || 0,
+        content_items: children.rows.map(child => ({
+          id: child.id,
+          title: child.title,
+          item_type: child.type, // match frontend 'item_type'
+          content_url: child.content_url,
+          completion_status: child.completion_status, // ✅ now included!
+        })),
+      });
+    }
+
+    // 4. Handle orphaned (non-folder) top-level items
+    const orphanedItems = await pool.query(
+      `
+        SELECT 
+          ci.id,
+          ci.title,
+          ci.item_type AS type,
+          ci.content_url,
+          ci.order_index,
+          COALESCE(latest_sa.completion_status, 'not attempted') AS completion_status
+        FROM content_items ci
+        LEFT JOIN LATERAL (
+          SELECT sa.completion_status
+          FROM student_attempts sa
+          WHERE sa.user_id = $2
+            AND sa.content_item_id = ci.id
+          ORDER BY sa.id DESC
+          LIMIT 1
+        ) latest_sa ON true
+        WHERE ci.course_id = $1 
+          AND ci.parent_id IS NULL 
+          AND ci.item_type != 'folder'
+        ORDER BY ci.order_index, ci.id
+      `,
+      [courseId, userId]
+    );
+
+    if (orphanedItems.rows.length > 0) {
+      chaptersWithContent.push({
+        id: -1,
+        title: 'General Content',
+        position: -1,
+        content_items: orphanedItems.rows.map(item => ({
+          id: item.id,
+          title: item.title,
+          item_type: item.type,
+          content_url: item.content_url,
+          completion_status: item.completion_status,
+        })),
+      });
+    }
+
+    // Sort chapters by position
+    chaptersWithContent.sort((a, b) => a.position - b.position);
 
     res.json({
       id: parseInt(courseId, 10),

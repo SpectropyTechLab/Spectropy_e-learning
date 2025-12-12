@@ -8,7 +8,9 @@ const router = Router();
 
 router.get('/content/:id', authenticateToken, getStudentContentById);
 router.get('/enrolled-courses', authenticateToken, getStudentEnrolledCourses);
+
 router.get('/course/:courseId', authenticateToken, getStudentCourse);
+
 router.post("/item-attempt", authenticateToken, recordItemAttempt);
 
 export default router;

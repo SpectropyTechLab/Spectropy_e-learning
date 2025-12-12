@@ -11,11 +11,12 @@ interface Course {
   created_at: string;
 }
 
+
 export default function CoursesPage() {
   const [courses, setCourses] = useState<Course[]>([]);
 
  useEffect(() => {
-  fetch('http://localhost:5000/api/course/courses') // ← removed /admin
+  fetch('/api/course/courses') // ← removed /admin
     .then((res) => {
       if (!res.ok) throw new Error('Network response was not ok');
       return res.json();

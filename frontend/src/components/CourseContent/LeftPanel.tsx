@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useEffect } from "react";
 import {
     DragDropContext,
     Droppable,
@@ -56,6 +57,7 @@ interface Props {
     onReorderChapters: (newChapters: Chapter[]) => void;
     onReorderItems: (chapterId: number, newItems: CourseItem[]) => void;
     onUpdateFile: (item: CourseItem) => void;
+    selectedItemId?: number;
 }
 
 const LeftPanel: React.FC<Props> = ({
@@ -67,6 +69,7 @@ const LeftPanel: React.FC<Props> = ({
     onReorderChapters,
     onReorderItems,
     onUpdateFile,
+    selectedItemId,
 }) => {
     const [expanded, setExpanded] = useState<number | null>(null);
     const [openMenu, setOpenMenu] = useState<number | null>(null);
@@ -81,6 +84,17 @@ const LeftPanel: React.FC<Props> = ({
     };
 
 
+    useEffect(() => {
+        const handleClickOutside = () => {
+            setOpenMenu(null);
+            setOpenItemMenu(null);
+        };
+
+        // Close when clicking anywhere
+        window.addEventListener("click", handleClickOutside);
+
+        return () => window.removeEventListener("click", handleClickOutside);
+    }, []);
 
 
 
@@ -171,19 +185,6 @@ const LeftPanel: React.FC<Props> = ({
 
         onReorderChapters(updatedChapters);
     };
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     const getIconForType = (type: string) => {
         switch (type) {
@@ -357,7 +358,12 @@ const LeftPanel: React.FC<Props> = ({
                                                                             {...itemProvided.draggableProps}
                                                                             {...itemProvided.dragHandleProps}
                                                                             onClick={() => onSelectItem(item)}
-                                                                            className="flex justify-between items-center p-1 my-1  relative group hover:bg-blue-50 hover:rounded cursor-pointer t"
+                                                                            className={`flex justify-between items-center p-1 my-1 relative group cursor-pointer 
+                                                                                    ${selectedItemId === item.id
+                                                                                    ? "bg-blue-100 border border-blue-200 rounded"
+                                                                                    : "hover:bg-blue-50 hover:rounded"
+                                                                                }
+`}
                                                                         >
                                                                             <div className="flex items-center gap-2">
                                                                                 {getIconForType(item.item_type)}
@@ -403,14 +409,13 @@ const LeftPanel: React.FC<Props> = ({
                                                                                         onClick={(e) => {
                                                                                             e.stopPropagation();
                                                                                             setOpenItemMenu(null);
-                                                                                            alert("Here we will open Replace File Modal.");
                                                                                             onUpdateFile(item);
 
 
                                                                                             // TODO: build replace modal
                                                                                         }}
                                                                                     >
-                                                                                        🔄 Update File
+                                                                                        🔄 Update
                                                                                     </button>
 
                                                                                     {/* Delete */}
@@ -436,9 +441,9 @@ const LeftPanel: React.FC<Props> = ({
 
                                                             <button
                                                                 onClick={() => onAddItem(chapter.id)}
-                                                                className="text-blue-600 text-sm mt-2 hover:underline"
+                                                                className="text-blue-600 text-sm mt-2 hover:underline "
                                                             >
-                                                                + Add item
+                                                                + Add Topic
                                                             </button>
                                                         </div>
                                                     )}
