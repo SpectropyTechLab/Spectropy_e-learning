@@ -41,6 +41,11 @@ export default function CourseStudents() {
   const [showFilters, setShowFilters] = useState(false);
   const [statusFilter, setStatusFilter] = useState<'all' | 'published' | 'draft'>('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [openMenuId, setOpenMenuId] = useState<number | null>(null);
+  const menuRef = useRef<HTMLDivElement | null>(null);
+
+
+
 
   const filterRef = useRef<HTMLDivElement | null>(null);
 
@@ -59,6 +64,21 @@ export default function CourseStudents() {
   useEffect(() => {
     fetchCourses();
   }, []);
+  useEffect(() => {
+    const handleClickOutsideMenu = (event: MouseEvent) => {
+      if (
+        menuRef.current &&
+        !menuRef.current.contains(event.target as Node)
+      ) {
+        setOpenMenuId(null);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutsideMenu);
+    return () =>
+      document.removeEventListener('mousedown', handleClickOutsideMenu);
+  }, []);
+
 
   const fetchCourses = async () => {
     setFetching(true);
@@ -124,6 +144,18 @@ export default function CourseStudents() {
     }
   };
 
+  const handleCloneCourse = (id: number) => {
+    console.log('Clone course', id);
+  };
+
+  const handleDeleteCourse = (id: number) => {
+    if (confirm('Are you sure you want to delete this course?')) {
+      console.log('Delete course', id);
+    }
+  };
+
+
+
   // 🔍 Final filtered list (search + status filter)
   const filteredCourses = courses.filter((course) => {
     const matchesSearch = course.title.toLowerCase().includes(searchQuery.toLowerCase());
@@ -153,8 +185,8 @@ export default function CourseStudents() {
           <button
             onClick={() => setActiveTab('home')}
             className={`w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${activeTab === 'home'
-                ? 'bg-blue-50 text-blue-900 border-l-4 border-blue-900'
-                : 'text-gray-700 hover:bg-gray-100'
+              ? 'bg-blue-50 text-blue-900 border-l-4 border-blue-900'
+              : 'text-gray-700 hover:bg-gray-100'
               }`}
           >
             <RiHome2Line className="text-lg text-black mr-3" />
@@ -164,8 +196,8 @@ export default function CourseStudents() {
           <button
             onClick={() => setActiveTab('courses')}
             className={`w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${activeTab === 'courses'
-                ? 'bg-blue-50 text-blue-900 border-l-4 border-blue-900'
-                : 'text-gray-700 hover:bg-gray-100'
+              ? 'bg-blue-50 text-blue-900 border-l-4 border-blue-900'
+              : 'text-gray-700 hover:bg-gray-100'
               }`}
           >
             <BiBookOpen className="text-lg text-black mr-3" />
@@ -175,8 +207,8 @@ export default function CourseStudents() {
           <button
             onClick={() => setActiveTab('users')}
             className={`w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${activeTab === 'users'
-                ? 'bg-blue-50 text-blue-900 border-l-4 border-blue-900'
-                : 'text-gray-700 hover:bg-gray-100'
+              ? 'bg-blue-50 text-blue-900 border-l-4 border-blue-900'
+              : 'text-gray-700 hover:bg-gray-100'
               }`}
           >
             <PiUsersBold className="text-lg text-black mr-3" />
@@ -186,8 +218,8 @@ export default function CourseStudents() {
           <button
             onClick={() => setActiveTab('community')}
             className={`w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${activeTab === 'community'
-                ? 'bg-blue-50 text-blue-900 border-l-4 border-blue-900'
-                : 'text-gray-700 hover:bg-gray-100'
+              ? 'bg-blue-50 text-blue-900 border-l-4 border-blue-900'
+              : 'text-gray-700 hover:bg-gray-100'
               }`}
           >
             <PiChatsCircleBold className="text-lg text-black mr-3" />
@@ -217,7 +249,7 @@ export default function CourseStudents() {
       {/* Right Panel */}
       <div className="flex-1 overflow-y-auto">
         {/* Header */}
-        <div className="p-6 border-b border-gray-200">
+        <div className="sticky top-0 z-40 p-6 border-b border-gray-200 bg-white">
           <div className="flex justify-between items-center">
             <div>
               <h1 className="text-2xl font-bold">
@@ -314,8 +346,8 @@ export default function CourseStudents() {
                   <button
                     onClick={() => setViewMode('grid')}
                     className={`p-2 border rounded-lg ${viewMode === 'grid'
-                        ? 'bg-blue-900 text-white border-blue-900'
-                        : 'border-gray-300 hover:bg-gray-50'
+                      ? 'bg-blue-900 text-white border-blue-900'
+                      : 'border-gray-300 hover:bg-gray-50'
                       }`}
                     title="Grid view"
                   >
@@ -333,8 +365,8 @@ export default function CourseStudents() {
                   <button
                     onClick={() => setViewMode('list')}
                     className={`p-2 border rounded-lg ${viewMode === 'list'
-                        ? 'bg-blue-900 text-white border-blue-900'
-                        : 'border-gray-300 hover:bg-gray-50'
+                      ? 'bg-blue-900 text-white border-blue-900'
+                      : 'border-gray-300 hover:bg-gray-50'
                       }`}
                     title="List view"
                   >
@@ -451,111 +483,316 @@ export default function CourseStudents() {
                     {filteredCourses.map((course) => (
                       <div
                         key={course.id}
-                        className={`bg-white rounded-lg border shadow-sm hover:shadow-md transition-shadow ${viewMode === 'list' ? 'p-4 flex items-center justify-between gap-4' : 'overflow-hidden'
+                        className={`bg-white rounded-lg border shadow-sm hover:shadow-md transition-shadow ${viewMode === 'list' ? 'p-4 flex items-center justify-between gap-4' : ' flex flex-col justify-end'
                           }`}
                       >
                         {viewMode === 'list' ? (
                           // LIST VIEW
                           <>
-                            {/* Left Side: Title + Date + Status */}
-                            <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-                              <div>
-                                <h3 className="font-semibold text-base sm:text-lg">
-                                  {course.title}
+
+                            {/* LEFT: Title + Meta + Description */}
+                            <div className="flex-1 min-w-0">
+
+                              {/* Title + Status */}
+                              <div className="flex items-center gap-3">
+                                <h3 className="font-semibold text-sm sm:text-base truncate">
+                                  {course.title.toUpperCase()}
                                 </h3>
-                                {course.description && (
-                                  <p className="text-xs sm:text-sm text-gray-600 line-clamp-1">
+                                <div className="text-[11px] text-gray-500 mt-0.5">
+                                  Created: {new Date(course.created_at).toLocaleDateString()}
+                                </div>
+
+                                <span
+                                  onClick={() => openPublishModal(course.id)}
+                                  className={`text-[10px] px-2 py-0.5 rounded-full font-medium cursor-pointer
+          ${course.published
+                                      ? 'bg-green-100 text-green-700'
+                                      : 'bg-orange-100 text-orange-700'
+                                    }`}
+                                >
+                                  {course.published ? 'Published' : 'Draft'}
+                                </span>
+                                {/* Status Button */}
+
+                              </div>
+
+                              {/* Meta */}
+
+
+                              {/* Description (2 lines only) */}
+                              {course.description && (
+                                <div className="relative  group overflow-visible">
+                                  {/* Description */}
+                                  <p className="text-xs text-gray-600 line-clamp-2 cursor-default max-w-2xl">
                                     {course.description}
                                   </p>
-                                )}
-                              </div>
 
-                              <div className="flex items-center gap-4 text-xs text-gray-500">
-                                <span>
-                                  Created: {new Date(course.created_at).toLocaleDateString()}
-                                </span>
-                                {course.published && (
-                                  <span className="text-green-600 font-medium">● Published</span>
-                                )}
-                              </div>
+                                  {/* Tooltip */}
+                                  <div
+                                    className="
+        absolute left-0 top-full mt-2
+        hidden group-hover:block
+        bg-gray-500 text-white text-xs
+        rounded-md px-3 py-2
+        max-w-3xl shadow-xl
+        z-50
+      "
+                                  >
+                                    {course.description}
+                                    <span className="absolute -top-1 left-3 w-2 h-2 bg-gray-500 rotate-45" />
+                                  </div>
+                                </div>
+                              )}
                             </div>
 
-                            {/* Right Side: Buttons */}
-                            <div className="flex flex-wrap gap-2 justify-end">
-                              {!course.published && (
-                                <button
-                                  onClick={() => openPublishModal(course.id)}
-                                  className="px-3 py-1.5 text-xs border rounded hover:bg-gray-50 flex items-center gap-1"
-                                >
-                                  <FiUpload className="text-sm" />
-                                  <span>Publish</span>
-                                </button>
-                              )}
+                            {/* RIGHT: Actions */}
+                            <div className="flex items-center gap-2 shrink-0">
+                              {/* Update */}
+                              <button
+                                onClick={() => navigate(`/admin/courses/${course.id}/edit`)}
+                                className="flex items-center justify-center gap-1 px-2 py-1.5 text-[11px] border rounded-md hover:bg-gray-50"
+                              >
+                                ✏️ Update
+                              </button>
 
+                              {/* Add Content */}
                               <button
                                 onClick={() => navigate(`/admin/courses/${course.id}/content`)}
-                                className="px-3 py-1.5 text-xs border rounded hover:bg-gray-50 flex items-center gap-1"
+                                className="px-3 py-1.5 text-xs border rounded-md hover:bg-gray-50 flex items-center gap-1"
                               >
-                                <GrChapterAdd className="text-sm" />
-                                <span>Add Items</span>
+                                <GrChapterAdd className="text-xs" />
+                                Content
                               </button>
 
+                              {/* Enroll */}
                               <button
                                 onClick={() => navigate(`/admin/courses/${course.id}/enroll`)}
-                                className="px-3 py-1.5 text-xs border rounded hover:bg-gray-50 flex items-center gap-1"
+                                className="px-3 py-1.5 text-xs bg-blue-900 text-white rounded-md hover:bg-blue-700 flex items-center gap-1"
                               >
-                                <PiUsersBold className="text-sm" />
-                                <span>Enroll Users</span>
+                                <PiUsersBold className="text-xs" />
+                                Enroll
                               </button>
+
+                              {/* Three-dot Menu */}
+                              <div className="relative">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setOpenMenuId((prev) => (prev === course.id ? null : course.id));
+                                  }}
+                                  className="w-7 h-7 flex items-center justify-center text-gray-500 rounded-md hover:bg-gray-100"
+                                >
+                                  ⋮
+                                </button>
+
+                                {openMenuId === course.id && (
+                                  <div
+                                    className="absolute right-0 mt-1 w-36 bg-white border rounded-md shadow-lg text-xs z-50"
+                                    onClick={(e) => e.stopPropagation()}
+                                  >
+
+
+                                    <button
+                                      onClick={() => {
+                                        setOpenMenuId(null);
+                                        handleCloneCourse(course.id);
+                                      }}
+                                      className="w-full text-left px-3 py-2 hover:bg-gray-100"
+                                    >
+                                      📄 Clone
+                                    </button>
+
+                                    <button
+                                      onClick={() => {
+                                        setOpenMenuId(null);
+                                        handleDeleteCourse(course.id);
+                                      }}
+                                      className="w-full text-left px-3 py-2 text-red-600 hover:bg-red-50"
+                                    >
+                                      🗑 Delete
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
                             </div>
                           </>
+
+
                         ) : (
                           // GRID VIEW
-                          <div className="p-4">
-                            <h3 className="font-semibold text-lg mb-1">{course.title}</h3>
-                            {course.description && (
-                              <p className="text-sm text-gray-600 mb-2 line-clamp-2">
-                                {course.description}
-                              </p>
-                            )}
+                          <div className="bg-white rounded-lg shadow-sm hover:shadow-md transition flex flex-col h-80  relative">
 
-                            <div className="flex items-center justify-between text-xs text-gray-500 mb-3">
-                              <span>
-                                Created: {new Date(course.created_at).toLocaleDateString()}
-                              </span>
-                              {course.published && (
-                                <span className="text-green-600">● Published</span>
-                              )}
+                            {/* ===================== */}
+                            {/* 🔹 BANNER */}
+                            {/* ===================== */}
+                            <div className="relative h-44 bg-linear-to-r from-blue-900 via-indigo-800 to-blue-700 overflow-hidden rounded-t-lg">
+
+                              {/* Abstract shapes */}
+                              <span className="absolute -top-6 -left-6 w-24 h-24 bg-white/10 rounded-full" />
+                              <span className="absolute top-8 left-24 w-14 h-14 bg-white/10 rotate-45" />
+                              <span className="absolute -bottom-8 right-8 w-28 h-28 bg-white/10 rounded-full" />
+                              <span className="absolute top-4 right-24 w-10 h-10 bg-white/10 rotate-12" />
+
+                              {/* Status Button */}
+                              <button
+                                onClick={() => openPublishModal(course.id)}
+                                className={`absolute top-2 right-2 text-[10px] px-2 py-0.5 rounded-md font-medium
+        ${course.published
+                                    ? 'bg-green-600 text-white hover:bg-green-700'
+                                    : 'bg-orange-500 text-white hover:bg-orange-600'
+                                  }`}
+                              >
+                                {course.published ? 'Published' : 'Draft'}
+                              </button>
                             </div>
 
-                            <div className="flex gap-2 pt-2">
-                              {!course.published && (
-                                <button
-                                  onClick={() => openPublishModal(course.id)}
-                                  className="flex-1 text-xs px-3 py-1.5 border border-gray-300 rounded hover:bg-gray-50 flex items-center justify-center gap-1"
-                                >
-                                  <FiUpload className="text-sm" />
-                                  <span>Publish</span>
-                                </button>
+                            {/* ===================== */}
+                            {/* 🔹 CARD BODY */}
+                            {/* ===================== */}
+                            <div className="px-4 py-3 flex flex-col flex-1">
+
+                              {/* ===================== */}
+                              {/* 🔹 TITLE + MENU */}
+                              {/* ===================== */}
+                              <div className="flex items-start justify-between gap-2 relative">
+
+                                <h3 className="font-semibold text-[15px] leading-snug line-clamp-2 pr-8">
+                                  {course.title.toUpperCase()}
+                                </h3>
+
+                                {/* Three-dot menu (ALWAYS visible) */}
+                                <div className="relative" ref={menuRef}>
+
+                                  {/* Three-dot button */}
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation(); // 🔥 prevents instant close
+                                      setOpenMenuId((prev) =>
+                                        prev === course.id ? null : course.id
+                                      );
+                                    }}
+                                    className="
+      w-7 h-7 flex items-center justify-center
+      text-gray-500 rounded-md
+      transition-transform duration-150
+      hover:bg-gray-100 hover:text-gray-700 hover:scale-110
+      active:scale-95
+    "
+                                    aria-label="Course actions"
+                                  >
+                                    ⋮
+                                  </button>
+
+                                  {/* Dropdown */}
+                                  {openMenuId === course.id && (
+                                    <div
+                                      className="absolute right-0 mt-1 w-36 bg-white border rounded-md shadow-lg text-xs z-50 overflow-hidden"
+                                      onClick={(e) => e.stopPropagation()} // 🔥 keep open when clicking inside
+                                    >
+                                      <button
+                                        onClick={() => {
+                                          setOpenMenuId(null);
+                                          navigate(`/admin/courses/${course.id}/edit`);
+                                        }}
+                                        className="w-full text-left px-3 py-2 hover:bg-gray-100"
+                                      >
+                                        ✏️ Update
+                                      </button>
+
+                                      <button
+                                        onClick={() => {
+                                          setOpenMenuId(null);
+                                          handleCloneCourse(course.id);
+                                        }}
+                                        className="w-full text-left px-3 py-2 hover:bg-gray-100"
+                                      >
+                                        📄 Clone
+                                      </button>
+
+                                      <button
+                                        onClick={() => {
+                                          setOpenMenuId(null);
+                                          handleDeleteCourse(course.id);
+                                        }}
+                                        className="w-full text-left px-3 py-2 text-red-600 hover:bg-red-50"
+                                      >
+                                        🗑 Delete
+                                      </button>
+                                    </div>
+                                  )}
+                                </div>
+
+                              </div>
+
+                              {/* Meta */}
+                              <div className="text-[11px] text-gray-500 mb-1">
+                                Created: {new Date(course.created_at).toLocaleDateString()}
+                              </div>
+
+                              {/* ===================== */}
+                              {/* 🔹 DESCRIPTION (HOVER – NEVER HIDDEN) */}
+                              {/* ===================== */}
+                              {course.description && (
+                                <div className="relative  group overflow-visible">
+                                  {/* Description */}
+                                  <p className="text-xs text-gray-600 line-clamp-2 cursor-default">
+                                    {course.description}
+                                  </p>
+
+                                  {/* Tooltip */}
+                                  <div
+                                    className="
+        absolute left-0 top-full mt-2
+        hidden group-hover:block
+        bg-gray-500 text-white text-xs
+        rounded-md px-3 py-2
+        max-w-xs shadow-xl
+        z-50
+      "
+                                  >
+                                    {course.description}
+                                    <span className="absolute -top-1 left-3 w-2 h-2 bg-gray-500 rotate-45" />
+                                  </div>
+                                </div>
                               )}
 
-                              <button
-                                onClick={() => navigate(`/admin/courses/${course.id}/content`)}
-                                className="flex-1 text-xs px-3 py-1.5 border border-gray-300 rounded hover:bg-gray-50 flex items-center justify-center gap-1"
-                              >
-                                <GrChapterAdd className="text-sm" />
-                                <span>Add Items</span>
-                              </button>
 
-                              <button
-                                onClick={() => navigate(`/admin/courses/${course.id}/enroll`)}
-                                className="flex-1 text-xs px-3 py-1.5 border border-gray-300 rounded hover:bg-gray-50 flex items-center justify-center gap-1"
-                              >
-                                <PiUsersBold className="text-sm" />
-                                <span>Enroll Users</span>
-                              </button>
+
+
+
+
+                              {/* ===================== */}
+                              {/* 🔹 ACTION BUTTONS */}
+                              {/* ===================== */}
+                              <div className="mt-auto grid grid-cols-3 gap-2">
+
+                                <button
+                                  onClick={() => navigate(`/admin/courses/${course.id}/edit`)}
+                                  className="flex items-center justify-center gap-1 px-2 py-1.5 text-[11px] border rounded-md hover:bg-gray-50"
+                                >
+                                  ✏️ Update
+                                </button>
+
+                                <button
+                                  onClick={() => navigate(`/admin/courses/${course.id}/content`)}
+                                  className="flex items-center justify-center gap-1 px-2 py-1.5 text-[11px] border rounded-md hover:bg-gray-50"
+                                >
+                                  <GrChapterAdd className="text-xs" />
+                                  Content
+                                </button>
+
+                                <button
+                                  onClick={() => navigate(`/admin/courses/${course.id}/enroll`)}
+                                  className="flex items-center justify-center gap-1 px-2 py-1.5 text-[11px] bg-blue-900 text-white rounded-md hover:bg-blue-700"
+                                >
+                                  <PiUsersBold className="text-xs" />
+                                  Enroll
+                                </button>
+                              </div>
                             </div>
                           </div>
+
+
                         )}
                       </div>
                     ))}
