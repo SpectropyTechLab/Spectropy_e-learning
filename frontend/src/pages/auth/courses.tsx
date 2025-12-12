@@ -11,12 +11,18 @@ interface Course {
   created_at: string;
 }
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+
 
 export default function CoursesPage() {
   const [courses, setCourses] = useState<Course[]>([]);
 
  useEffect(() => {
-  fetch('/api/course/courses') // ← removed /admin
+  const url = API_BASE 
+      ? `${API_BASE}/api/course/courses` 
+      : '/api/course/courses';
+
+  fetch( url) // ← removed /admin
     .then((res) => {
       if (!res.ok) throw new Error('Network response was not ok');
       return res.json();
