@@ -8,7 +8,6 @@ import { PiUsersBold } from "react-icons/pi";
 import { RiHome2Line } from "react-icons/ri";
 import { BiBookOpen } from "react-icons/bi";
 import { PiChatsCircleBold } from "react-icons/pi";
-import { FiUpload } from 'react-icons/fi';
 import { GrChapterAdd } from "react-icons/gr";
 
 interface Course {
