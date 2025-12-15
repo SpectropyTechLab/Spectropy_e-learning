@@ -9,6 +9,7 @@ import { RiHome2Line } from "react-icons/ri";
 import { BiBookOpen } from "react-icons/bi";
 import { PiChatsCircleBold } from "react-icons/pi";
 import { GrChapterAdd } from "react-icons/gr";
+import UserManagement from './UserManagement';
 
 interface Course {
   id: number;
@@ -302,7 +303,7 @@ export default function CourseStudents() {
               <h1 className="text-2xl font-bold">
                 {activeTab === 'courses' && 'Courses'}
                 {activeTab === 'home' && 'Dashboard'}
-                {activeTab === 'users' && 'Users'}
+                {activeTab === 'users' && 'User Management'}
                 {activeTab === 'community' && 'Community'}
               </h1>
               <p className="text-gray-600 mt-1">
@@ -927,12 +928,7 @@ export default function CourseStudents() {
             </div>
           )}
 
-          {activeTab === 'users' && (
-            <div className="text-center py-10">
-              <h2 className="text-xl font-semibold mb-2">User Management</h2>
-              <p className="text-gray-600">This section is under development.</p>
-            </div>
-          )}
+          {activeTab === 'users' && <UserManagement />}
 
           {activeTab === 'community' && (
             <div className="text-center py-10">
