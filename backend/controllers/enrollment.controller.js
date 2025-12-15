@@ -1,5 +1,6 @@
 import pool from "../config/db.js"; // or your db connection
 
+// POST /admin/courses/:courseId/enrollments
 export const enrollUserByEmail = async (req, res) => {
   const { courseId } = req.params;
   const { email, role } = req.body;
@@ -70,9 +71,7 @@ export const enrollUserByEmail = async (req, res) => {
   }
 };
 
-/**
- * GET /admin/courses/:courseId/enrollments
- */
+// GET /admin/courses/:courseId/enrollments
 export const getCourseEnrollments = async (req, res) => {
   const { courseId } = req.params;
   const courseIdInt = parseInt(courseId, 10);
@@ -125,119 +124,7 @@ export const getCourseEnrollments = async (req, res) => {
   }
 };
 
-
 // For students: only published courses & enrolled users
-/*export const getStudentCourse = async (req, res) => {
-  const { courseId } = req.params;
-  const userId = req.user.id;
-
-  try {
-    // 1. Verify enrollment + course published
-    const enrollment = await pool.query(
-      `
-        SELECT e.role, c.published, c.title, c.description
-        FROM enrollments e
-        JOIN courses c ON e.course_id = c.id
-        WHERE e.user_id = $1 AND e.course_id = $2 AND e.role = 'student' AND c.published = true
-      `,
-      [userId, courseId]
-    );
-
-    if (enrollment.rows.length === 0) {
-      return res.status(403).json({ error: 'Access denied or course not published' });
-    }
-
-    const course = enrollment.rows[0];
-
-    // 2. Fetch top-level folders (chapters) for the course
-    const folders = await pool.query(
-      `
-        SELECT 
-          id, 
-          title, 
-          item_type,
-          order_index
-        FROM content_items
-        WHERE course_id = $1 AND parent_id IS NULL
-        ORDER BY order_index, id
-      `,
-      [courseId]
-    );
-
-    // 3. For each folder, fetch its children
-    const chaptersWithContent = [];
-    for (const folder of folders.rows) {
-      const children = await pool.query(
-        `
-          SELECT 
-            id,
-            title,
-            item_type AS type,
-            content_url,
-            order_index
-          FROM content_items
-          WHERE parent_id = $1
-          ORDER BY order_index, id
-        `,
-        [folder.id]
-      );
-
-      chaptersWithContent.push({
-        id: folder.id,
-        title: folder.title,
-        position: folder.order_index || 0,
-        content_items: children.rows.map(child => ({
-          id: child.id,
-          title: child.title,
-          type: child.type,
-          content_url: child.content_url,
-        })),
-      });
-    }
-
-    // 4. Also handle orphaned (non-folder) top-level items if needed
-    // (Optional: only if you allow direct course-level content)
-    const orphanedItems = await pool.query(
-      `
-        SELECT 
-          id,
-          title,
-          item_type AS type,
-          content_url,
-          order_index
-        FROM content_items
-        WHERE course_id = $1 AND parent_id IS NULL AND item_type != 'folder'
-        ORDER BY order_index, id
-      `,
-      [courseId]
-    );
-
-    if (orphanedItems.rows.length > 0) {
-      chaptersWithContent.push({
-        id: -1,
-        title: 'General Content',
-        position: -1,
-        content_items: orphanedItems.rows.map(item => ({
-          id: item.id,
-          title: item.title,
-          type: item.type,
-          content_url: item.content_url,
-        })),
-      });
-    }
-
-    res.json({
-      id: parseInt(courseId, 10),
-      title: course.title,
-      description: course.description,
-      chapters: chaptersWithContent,
-    });
-  } catch (err) {
-    console.error('Error loading student course:', err);
-    res.status(500).json({ error: 'Failed to load course content' });
-  }
-};*/
-
 export const getStudentCourse = async (req, res) => {
   const { courseId } = req.params;
   const userId = req.user.id;
@@ -451,5 +338,57 @@ export const getTeacherCourse = async (req, res) => {
   } catch (err) {
     console.error('Error loading teacher course:', err);
     res.status(500).json({ error: 'Failed to load course' });
+  }
+};
+
+// DELETE /admin/courses/:id/enrollments/:userId
+export const deleteEnrollment = async (req, res) => {
+  const { id: courseId, userId } = req.params;
+
+  try {
+    const result = await pool.query(
+      `DELETE FROM enrollments 
+       WHERE course_id = $1 AND user_id = $2 
+       RETURNING *`,
+      [courseId, userId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Enrollment not found' });
+    }
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Delete enrollment error:', err);
+    res.status(500).json({ error: 'Failed to remove user' });
+  }
+};
+
+// PATCH /admin/courses/:id/enrollments/:userId
+export const updateEnrollmentRole = async (req, res) => {
+  const { id: courseId, userId } = req.params;
+  const { role } = req.body;
+
+  if (!['student', 'teacher'].includes(role)) {
+    return res.status(400).json({ error: 'Invalid role' });
+  }
+
+  try {
+    const result = await pool.query(
+      `UPDATE enrollments 
+       SET role = $1, enrolled_at = NOW()  -- or add updated_at if you have it
+       WHERE course_id = $2 AND user_id = $3 
+       RETURNING *`,
+      [role, courseId, userId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Enrollment not found' });
+    }
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Update enrollment error:', err);
+    res.status(500).json({ error: 'Failed to update role' });
   }
 };

@@ -13,6 +13,11 @@ export default function EnrollUsers() {
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [showModal, setShowModal] = useState(false);
+  // For three-dot menu
+  const [openMenuUserId, setOpenMenuUserId] = useState<number | null>(null);
+  // For loading states (optional but nice)
+  const [removingUserId, setRemovingUserId] = useState<number | null>(null);
+  const [updatingUserId, setUpdatingUserId] = useState<number | null>(null);
 
   // Store full enrollment list
   const [allEnrollments, setAllEnrollments] = useState<Array<{
@@ -94,6 +99,50 @@ export default function EnrollUsers() {
       setSubmitting(false);
     }
   };
+  
+  // 🗑️ Remove user from course
+const handleRemoveUser = async (userId: number) => {
+  if (!confirm('Are you sure you want to remove this user from the course?')) return;
+
+  setRemovingUserId(userId);
+  try {
+    await api.delete(`/admin/courses/${courseId}/enrollments/${userId}`);
+    // Optimistically update UI
+    setAllEnrollments(prev => prev?.filter(e => e.user_id !== userId) || null);
+    setMessage({ type: 'success', text: 'User removed successfully!' });
+    setTimeout(() => setMessage(null), 2000);
+  } catch (err: any) {
+    const errorMsg = err.response?.data?.error || 'Failed to remove user.';
+    setMessage({ type: 'error', text: errorMsg });
+  } finally {
+    setRemovingUserId(null);
+    setOpenMenuUserId(null);
+  }
+};
+
+// 🔄 Update user role (student ↔ teacher)
+const handleUpdateRole = async (userId: number, currentRole: 'student' | 'teacher') => {
+  const newRole = currentRole === 'student' ? 'teacher' : 'student';
+  
+  if (!confirm(`Change this user's role to "${newRole}"?`)) return;
+
+  setUpdatingUserId(userId);
+  try {
+    await api.patch(`/admin/courses/${courseId}/enrollments/${userId}`, { role: newRole });
+    // Optimistically update UI
+    setAllEnrollments(prev =>
+      prev?.map(e => (e.user_id === userId ? { ...e, role: newRole } : e)) || null
+    );
+    setMessage({ type: 'success', text: `Role updated to "${newRole}"!` });
+    setTimeout(() => setMessage(null), 2000);
+  } catch (err: any) {
+    const errorMsg = err.response?.data?.error || 'Failed to update role.';
+    setMessage({ type: 'error', text: errorMsg });
+  } finally {
+    setUpdatingUserId(null);
+    setOpenMenuUserId(null);
+  }
+};
 
   const handleBack = () => {
     if (role) {
@@ -218,20 +267,62 @@ export default function EnrollUsers() {
             </p>
           ) : (
             <div className="space-y-3">
-              {displayedEnrollments.map((enrollment) => (
-                <div
-                  key={enrollment.user_id}
-                  className="flex justify-between items-center p-4 bg-white rounded-lg border border-gray-200"
-                >
-                  <div>
-                    <p className="font-medium">{enrollment.name}</p>
-                    <p className="text-sm text-gray-600">{enrollment.email}</p>
-                  </div>
-                  <span className="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 capitalize">
-                    {enrollment.role}
-                  </span>
-                </div>
-              ))}
+               {displayedEnrollments.map((enrollment) => (
+  <div
+    key={enrollment.user_id}
+    className="flex justify-between items-center p-4 bg-white rounded-lg border border-gray-200 relative"
+  >
+    {/* User Info */}
+    <div className="flex-1 min-w-0">
+      <p className="font-medium truncate">{enrollment.name}</p>
+      <p className="text-sm text-gray-600 truncate">{enrollment.email}</p>
+    </div>
+
+    {/* Role Badge + Menu */}
+    <div className="flex items-center gap-2 ml-4">
+      <span className="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 capitalize">
+        {enrollment.role}
+      </span>
+
+      {/* Three-dot menu */}
+      <div className="relative">
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            setOpenMenuUserId((prev) => (prev === enrollment.user_id ? null : enrollment.user_id));
+          }}
+          className="w-6 h-6 flex items-center justify-center text-gray-500 rounded hover:bg-gray-100"
+          aria-label="User actions"
+        >
+          ⋮
+        </button>
+
+        {/* Dropdown */}
+        {openMenuUserId === enrollment.user_id && (
+          <div
+            className="absolute right-0 mt-1 w-44 bg-white border border-gray-200 rounded-md shadow-lg py-1 z-10"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => handleUpdateRole(enrollment.user_id, enrollment.role)}
+              disabled={updatingUserId === enrollment.user_id}
+              className="w-full text-left px-3 py-1.5 text-sm hover:bg-gray-100 flex items-center gap-2 disabled:opacity-50"
+            >
+              🔄 Change Role
+            </button>
+            <button
+              onClick={() => handleRemoveUser(enrollment.user_id)}
+              disabled={removingUserId === enrollment.user_id}
+              className="w-full text-left px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 disabled:opacity-50"
+            >
+              🗑️ Remove
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  </div>
+))}
             </div>
           )}
         </div>
