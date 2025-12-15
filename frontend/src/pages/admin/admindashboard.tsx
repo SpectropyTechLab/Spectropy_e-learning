@@ -43,6 +43,11 @@ export default function CourseStudents() {
   const [openMenuId, setOpenMenuId] = useState<number | null>(null);
   //const menuRef = useRef<HTMLDivElement | null>(null);
   const filterRef = useRef<HTMLDivElement | null>(null);
+  
+  const [editingCourseId, setEditingCourseId] = useState<number | null>(null);
+  const [editTitle, setEditTitle] = useState('');
+  const [editDescription, setEditDescription] = useState('');
+  const [editPublished, setEditPublished] = useState(false);
 
 
   // Close filter dropdown on click outside
@@ -74,7 +79,6 @@ export default function CourseStudents() {
     return () =>
       document.removeEventListener('mousedown', handleClickOutsideMenu);
   }, []);*/
-
 
   const fetchCourses = async () => {
     setFetching(true);
@@ -140,9 +144,6 @@ export default function CourseStudents() {
     }
   };
 
-  const handleCloneCourse = (id: number) => {
-    console.log('Clone course', id);
-  };
 
   const handleDeleteCourse = async (id: number) => {
   if (!confirm('Are you sure you want to delete this course? This action cannot be undone.')) {
@@ -159,6 +160,47 @@ export default function CourseStudents() {
     const errorMsg = err.response?.data?.error || 'Failed to delete course. Please try again.';
     alert(errorMsg);
   }
+};
+
+  const handleEditCourse = (course: Course) => {
+  setEditingCourseId(course.id);
+  setEditTitle(course.title);
+  setEditDescription(course.description || '');
+  setEditPublished(course.published);
+};
+ 
+  const handleSaveEdit = async (id: number) => {
+  if (!editTitle.trim()) {
+    alert('Title is required');
+    return;
+  }
+
+  try {
+    await api.patch(`/admin/courses/${id}`, {
+      title: editTitle.trim(),
+      description: editDescription.trim() || null,
+      published: editPublished,
+    });
+
+    // Optimistically update local state
+    setCourses(prev =>
+      prev.map(course =>
+        course.id === id
+          ? { ...course, title: editTitle.trim(), description: editDescription.trim() || null, published: editPublished }
+          : course
+      )
+    );
+
+    setEditingCourseId(null);
+    alert('Course updated successfully!');
+  } catch (err: any) {
+    const errorMsg = err.response?.data?.error || 'Failed to update course';
+    alert(errorMsg);
+  }
+};
+  
+  const handleCancelEdit = () => {
+  setEditingCourseId(null);
 };
 
   // 🔍 Final filtered list (search + status filter)
@@ -495,70 +537,98 @@ export default function CourseStudents() {
                           // LIST VIEW
                           <>
 
-                            {/* LEFT: Title + Meta + Description */}
-                            <div className="flex-1 min-w-0">
+                            {/* LEFT: Title + Meta + Description */}                             
+<div className="flex-1 min-w-0">
+  {editingCourseId === course.id ? (
+    // ✏️ EDIT MODE
+    <div className="space-y-2">
+      <input
+        value={editTitle}
+        onChange={(e) => setEditTitle(e.target.value)}
+        className="w-full p-1 text-sm border border-gray-300 rounded"
+        placeholder="Course title"
+        autoFocus
+      />
+      <textarea
+        value={editDescription}
+        onChange={(e) => setEditDescription(e.target.value)}
+        className="w-full p-1 text-xs border border-gray-300 rounded"
+        placeholder="Description"
+        rows={2}
+      />
+      <div className="flex items-center gap-2">
+        <span className="text-[10px]">Published:</span>
+        <button
+          type="button"
+          onClick={() => setEditPublished(!editPublished)}
+          className={`relative inline-flex h-4 w-8 items-center rounded-full ${editPublished ? 'bg-green-500' : 'bg-gray-300'}`}
+        >
+          <span className={`h-3 w-3 rounded-full bg-white transform transition ${editPublished ? 'translate-x-4' : 'translate-x-0.5'}`} />
+        </button>
+      </div>
+      <div className="flex gap-1 mt-1">
+        <button
+          onClick={() => handleSaveEdit(course.id)}
+          className="text-[10px] bg-green-600 text-white px-2 py-0.5 rounded"
+        >
+          Save
+        </button>
+        <button
+          onClick={handleCancelEdit}
+          className="text-[10px] bg-gray-300 text-gray-700 px-2 py-0.5 rounded"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  ) : (
+    // 👁️ VIEW MODE
+    <>
+      {/* Title + Status */}
+      <div className="flex items-center gap-3">
+        <h3 className="font-semibold text-sm sm:text-base truncate">
+          {course.title.toUpperCase()}
+        </h3>
+        <div className="text-[11px] text-gray-500 mt-0.5">
+          Created: {new Date(course.created_at).toLocaleDateString()}
+        </div>
 
-                              {/* Title + Status */}
-                              <div className="flex items-center gap-3">
-                                <h3 className="font-semibold text-sm sm:text-base truncate">
-                                  {course.title.toUpperCase()}
-                                </h3>
-                                <div className="text-[11px] text-gray-500 mt-0.5">
-                                  Created: {new Date(course.created_at).toLocaleDateString()}
-                                </div>
+        {course.published ? (
+  <span
+    title="Already published"
+    className="text-[10px] px-2 py-0.5 rounded-full font-medium bg-green-100 text-green-700 cursor-default"
+  >
+    Published
+  </span>
+) : (
+  <span
+    onClick={() => openPublishModal(course.id)}
+    className="text-[10px] px-2 py-0.5 rounded-full font-medium bg-orange-100 text-orange-700 cursor-pointer"
+    title="Click to publish this course"
+  >
+    Draft
+  </span>
+)}
+      </div>
 
-                                <span
-                                  onClick={() => openPublishModal(course.id)}
-                                  className={`text-[10px] px-2 py-0.5 rounded-full font-medium cursor-pointer
-          ${course.published
-                                      ? 'bg-green-100 text-green-700'
-                                      : 'bg-orange-100 text-orange-700'
-                                    }`}
-                                >
-                                  {course.published ? 'Published' : 'Draft'}
-                                </span>
-                                {/* Status Button */}
-
-                              </div>
-
-                              {/* Meta */}
-
-
-                              {/* Description (2 lines only) */}
-                              {course.description && (
-                                <div className="relative  group overflow-visible">
-                                  {/* Description */}
-                                  <p className="text-xs text-gray-600 line-clamp-2 cursor-default max-w-2xl">
-                                    {course.description}
-                                  </p>
-
-                                  {/* Tooltip */}
-                                  <div
-                                    className="
-        absolute left-0 top-full mt-2
-        hidden group-hover:block
-        bg-gray-500 text-white text-xs
-        rounded-md px-3 py-2
-        max-w-3xl shadow-xl
-        z-50
-      "
-                                  >
-                                    {course.description}
-                                    <span className="absolute -top-1 left-3 w-2 h-2 bg-gray-500 rotate-45" />
-                                  </div>
-                                </div>
-                              )}
-                            </div>
+      {course.description && (
+        <div className="relative group overflow-visible">
+          <p className="text-xs text-gray-600 line-clamp-2 cursor-default max-w-2xl">
+            {course.description}
+          </p>
+          <div className="absolute left-0 top-full mt-2 hidden group-hover:block bg-gray-500 text-white text-xs rounded-md px-3 py-2 max-w-3xl shadow-xl z-50">
+            {course.description}
+            <span className="absolute -top-1 left-3 w-2 h-2 bg-gray-500 rotate-45" />
+          </div>
+        </div>
+      )}
+    </>
+  )}
+</div>
 
                             {/* RIGHT: Actions */}
                             <div className="flex items-center gap-2 shrink-0">
                               {/* Update */}
-                              <button
-                                onClick={() => navigate(`/admin/courses/${course.id}/edit`)}
-                                className="flex items-center justify-center gap-1 px-2 py-1.5 text-[11px] border rounded-md hover:bg-gray-50"
-                              >
-                                ✏️ Update
-                              </button>
 
                               {/* Add Content */}
                               <button
@@ -578,6 +648,13 @@ export default function CourseStudents() {
                                 Enroll
                               </button>
 
+                              <button
+                                onClick={() => navigate(`/admin/courses/${course.id}/edit`)}
+                                className="flex items-center justify-center gap-1 px-2 py-1.5 text-[11px] border rounded-md hover:bg-gray-50"
+                              >
+                                course discussion
+                              </button>
+
                               {/* Three-dot Menu */}
                               <div className="relative">
                                 <button
@@ -595,15 +672,15 @@ export default function CourseStudents() {
                                     className="absolute right-0 mt-1 w-36 bg-white border rounded-md shadow-lg text-xs z-50"
                                     onClick={(e) => e.stopPropagation()}
                                   >
-                                    <button
-                                      onClick={() => {
-                                        setOpenMenuId(null);
-                                        handleCloneCourse(course.id);
-                                      }}
-                                      className="w-full text-left px-3 py-2 hover:bg-gray-100"
-                                    >
-                                      📄 Clone
-                                    </button>
+                                  <button
+                                    onClick={() => {
+                                      setOpenMenuId(null);
+                                      handleEditCourse(course); // ✅ pass full course
+                                    }}
+                                    className="w-full text-left px-3 py-2 hover:bg-gray-100"
+                                     >
+                                      ✏️ Update
+                                   </button>
 
                                     <button
                                       onClick={() => {
@@ -636,165 +713,179 @@ export default function CourseStudents() {
                               <span className="absolute -bottom-8 right-8 w-28 h-28 bg-white/10 rounded-full" />
                               <span className="absolute top-4 right-24 w-10 h-10 bg-white/10 rotate-12" />
 
-                              {/* Status Button */}
-                              <button
-                                onClick={() => openPublishModal(course.id)}
-                                className={`absolute top-2 right-2 text-[10px] px-2 py-0.5 rounded-md font-medium
-        ${course.published
-                                    ? 'bg-green-600 text-white hover:bg-green-700'
-                                    : 'bg-orange-500 text-white hover:bg-orange-600'
-                                  }`}
-                              >
-                                {course.published ? 'Published' : 'Draft'}
-                              </button>
+                              {/* Status Button */}{/* Status Indicator */}
+{course.published ? (
+  <span
+    title="Already published"
+    className="absolute top-2 right-2 text-[10px] px-2 py-0.5 rounded-md font-medium bg-green-600 text-white cursor-default"
+  >
+    Published
+  </span>
+) : (
+  <button
+    onClick={() => openPublishModal(course.id)}
+    className="absolute top-2 right-2 text-[10px] px-2 py-0.5 rounded-md font-medium bg-orange-500 text-white hover:bg-orange-600"
+    title="Click to publish"
+  >
+    Draft
+  </button>
+)}
                             </div>
 
                             {/* ===================== */}
                             {/* 🔹 CARD BODY */}
                             {/* ===================== */}
                             <div className="px-4 py-3 flex flex-col flex-1">
-
                               {/* ===================== */}
-                              {/* 🔹 TITLE + MENU */}
-                              {/* ===================== */}
-                              <div className="flex items-start justify-between gap-2 relative">
+{/* 🔹 DYNAMIC CONTENT: View or Edit */}
+{/* ===================== */}
+{editingCourseId === course.id ? (
+  // ✏️ EDIT MODE
+  <div className="flex flex-col flex-1">
+    <div className="space-y-2 mb-2">
+      <input
+        value={editTitle}
+        onChange={(e) => setEditTitle(e.target.value)}
+        className="w-full p-1.5 text-[13px] border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-900"
+        placeholder="Course title"
+        autoFocus
+      />
+      <textarea
+        value={editDescription}
+        onChange={(e) => setEditDescription(e.target.value)}
+        className="w-full p-1.5 text-[12px] border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-900"
+        placeholder="Description"
+        rows={2}
+      />
+      <div className="flex items-center gap-2">
+        <span className="text-[11px] font-medium">Published:</span>
+        <button
+          type="button"
+          onClick={() => setEditPublished(!editPublished)}
+          className={`relative inline-flex h-5 w-9 items-center rounded-full ${editPublished ? 'bg-green-500' : 'bg-gray-300'}`}
+        >
+          <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition ${editPublished ? 'translate-x-4' : 'translate-x-1'}`} />
+        </button>
+      </div>
+    </div>
 
-                                <h3 className="font-semibold text-[15px] leading-snug line-clamp-2 pr-8">
-                                  {course.title.toUpperCase()}
-                                </h3>
+    {/* Meta (keep it in edit mode too) */}
+    <div className="text-[11px] text-gray-500 mb-2">
+      Created: {new Date(course.created_at).toLocaleDateString()}
+    </div>
 
-                                {/* Three-dot menu (ALWAYS visible) */}
-                                <div className="relative" >
+    {/* Save / Cancel buttons */}
+    <div className="mt-auto flex gap-2">
+      <button
+        onClick={() => handleSaveEdit(course.id)}
+        className="flex-1 bg-green-600 text-white text-[11px] py-1.5 rounded-md hover:bg-green-700"
+      >
+        Save
+      </button>
+      <button
+        onClick={handleCancelEdit}
+        className="flex-1 bg-gray-200 text-gray-700 text-[11px] py-1.5 rounded-md hover:bg-gray-300"
+      >
+        Cancel
+      </button>
+    </div>
+  </div>
+) : (
+  // 👁️ VIEW MODE (your original code, unchanged)
+  <>
+    {/* ===================== */}
+    {/* 🔹 TITLE + MENU */}
+    {/* ===================== */}
+    <div className="flex items-start justify-between gap-2 relative">
+      <h3 className="font-semibold text-[15px] leading-snug line-clamp-2 pr-8">
+        {course.title.toUpperCase()}
+      </h3>
 
-                                  {/* Three-dot button */}
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation(); // 🔥 prevents instant close
-                                      setOpenMenuId((prev) =>
-                                        prev === course.id ? null : course.id
-                                      );
-                                    }}
-                                    className="
-      w-7 h-7 flex items-center justify-center
-      text-gray-500 rounded-md
-      transition-transform duration-150
-      hover:bg-gray-100 hover:text-gray-700 hover:scale-110
-      active:scale-95
-    "
-                                    aria-label="Course actions"
-                                  >
-                                    ⋮
-                                  </button>
+      {/* Three-dot menu (ALWAYS visible) */}
+      <div className="relative">
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            setOpenMenuId((prev) => (prev === course.id ? null : course.id));
+          }}
+          className="w-7 h-7 flex items-center justify-center text-gray-500 rounded-md hover:bg-gray-100 transition"
+          aria-label="Course actions"
+        >
+          ⋮
+        </button>
 
-                                  {/* Dropdown */}
-                                  {openMenuId === course.id && (
-                                    <div
-                                      className="absolute right-0 mt-1 w-36 bg-white border rounded-md shadow-lg text-xs z-50 overflow-hidden"
-                                      //onClick={(e) => e.stopPropagation()} // 🔥 keep open when clicking inside
-                                    >
-                                      <button
-                                        onClick={() => {
-                                          setOpenMenuId(null);
-                                          navigate(`/admin/courses/${course.id}/edit`);
-                                        }}
-                                        className="w-full text-left px-3 py-2 hover:bg-gray-100"
-                                      >
-                                        ✏️ Update
-                                      </button>
+        {openMenuId === course.id && (
+          <div className="absolute right-0 mt-1 w-36 bg-white border rounded-md shadow-lg text-xs z-50 overflow-hidden">
+            <button
+              onClick={() => {
+                setOpenMenuId(null);
+                handleEditCourse(course);
+              }}
+              className="w-full text-left px-3 py-2 hover:bg-gray-100"
+            >
+              ✏️ Update
+            </button>
+            <button
+              onClick={() => {
+                setOpenMenuId(null);
+                handleDeleteCourse(course.id);
+              }}
+              className="w-full text-left px-3 py-2 text-red-600 hover:bg-red-50"
+            >
+              🗑 Delete
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
 
-                                      <button
-                                        onClick={() => {
-                                          setOpenMenuId(null);
-                                          handleCloneCourse(course.id);
-                                        }}
-                                        className="w-full text-left px-3 py-2 hover:bg-gray-100"
-                                      >
-                                        📄 Clone
-                                      </button>
+    {/* Meta */}
+    <div className="text-[11px] text-gray-500 mb-1">
+      Created: {new Date(course.created_at).toLocaleDateString()}
+    </div>
 
-                                      <button
-                                        onClick={() => {
-                                          setOpenMenuId(null);
-                                          handleDeleteCourse(course.id);
-                                        }}
-                                        className="w-full text-left px-3 py-2 text-red-600 hover:bg-red-50"
-                                      >
-                                        🗑 Delete
-                                      </button>
-                                    </div>
-                                  )}
-                                </div>
+    {/* Description */}
+    {course.description && (
+      <div className="relative group overflow-visible">
+        <p className="text-xs text-gray-600 line-clamp-2 cursor-default">
+          {course.description}
+        </p>
+        <div className="absolute left-0 top-full mt-2 hidden group-hover:block bg-gray-500 text-white text-xs rounded-md px-3 py-2 max-w-xs shadow-xl z-50">
+          {course.description}
+          <span className="absolute -top-1 left-3 w-2 h-2 bg-gray-500 rotate-45" />
+        </div>
+      </div>
+    )}
 
-                              </div>
+    {/* Action Buttons */}
+    <div className="mt-auto grid grid-cols-3 gap-2">
+      <button
+        onClick={() => navigate(`/admin/courses/${course.id}/content`)}
+        className="flex items-center justify-center gap-1 px-2 py-1.5 text-[11px] border rounded-md hover:bg-gray-50"
+      >
+        <GrChapterAdd className="text-xs" />
+        Content
+      </button>
 
-                              {/* Meta */}
-                              <div className="text-[11px] text-gray-500 mb-1">
-                                Created: {new Date(course.created_at).toLocaleDateString()}
-                              </div>
+      <button
+        onClick={() => navigate(`/admin/courses/${course.id}/enroll`)}
+        className="flex items-center justify-center gap-1 px-2 py-1.5 text-[11px] border rounded-md hover:bg-gray-50">
+        <PiUsersBold className="text-xs" />
+        Enroll
+      </button>
 
-                              {/* ===================== */}
-                              {/* 🔹 DESCRIPTION (HOVER – NEVER HIDDEN) */}
-                              {/* ===================== */}
-                              {course.description && (
-                                <div className="relative  group overflow-visible">
-                                  {/* Description */}
-                                  <p className="text-xs text-gray-600 line-clamp-2 cursor-default">
-                                    {course.description}
-                                  </p>
-
-                                  {/* Tooltip */}
-                                  <div
-                                    className="
-        absolute left-0 top-full mt-2
-        hidden group-hover:block
-        bg-gray-500 text-white text-xs
-        rounded-md px-3 py-2
-        max-w-xs shadow-xl
-        z-50
-      "
-                                  >
-                                    {course.description}
-                                    <span className="absolute -top-1 left-3 w-2 h-2 bg-gray-500 rotate-45" />
-                                  </div>
-                                </div>
-                              )}
-
-
-
-
-
-
-                              {/* ===================== */}
-                              {/* 🔹 ACTION BUTTONS */}
-                              {/* ===================== */}
-                              <div className="mt-auto grid grid-cols-3 gap-2">
-
-                                <button
-                                  onClick={() => navigate(`/admin/courses/${course.id}/edit`)}
-                                  className="flex items-center justify-center gap-1 px-2 py-1.5 text-[11px] border rounded-md hover:bg-gray-50"
-                                >
-                                  ✏️ Update
-                                </button>
-
-                                <button
-                                  onClick={() => navigate(`/admin/courses/${course.id}/content`)}
-                                  className="flex items-center justify-center gap-1 px-2 py-1.5 text-[11px] border rounded-md hover:bg-gray-50"
-                                >
-                                  <GrChapterAdd className="text-xs" />
-                                  Content
-                                </button>
-
-                                <button
-                                  onClick={() => navigate(`/admin/courses/${course.id}/enroll`)}
-                                  className="flex items-center justify-center gap-1 px-2 py-1.5 text-[11px] border rounded-md hover:bg-gray-50">
-                                  <PiUsersBold className="text-xs" />
-                                  Enroll
-                                </button>
-                              </div>
+      <button
+        onClick={() => navigate(`/admin/courses/${course.id}/edit`)}
+        className="flex items-center justify-center gap-1 px-2 py-1.5 text-[11px] border rounded-md hover:bg-gray-50"
+      >
+        course discussions
+      </button>
+    </div>
+  </>
+)}
+                              
                             </div>
                           </div>
-
-
                         )}
                       </div>
                     ))}

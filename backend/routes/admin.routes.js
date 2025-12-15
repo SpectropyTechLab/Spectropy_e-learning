@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { createCourse, getAllCourses, getCourseContent, createContentItem, publishCourse, deleteCourse} from '../controllers/admin.controller.js';
+import { createCourse, getAllCourses, getCourseContent, createContentItem, publishCourse, deleteCourse ,updateCourse} from '../controllers/admin.controller.js';
 import { authenticateToken } from '../middleware/auth.js';
 import { upload, uploadContentFile, viewScormFile, updateContentFile } from '../controllers/scorm.controller.js';
 import helmet from "helmet";
@@ -12,6 +12,8 @@ const router = Router();
 router.get('/courses', authenticateToken, getAllCourses);
 
 router.delete('/courses/:id', authenticateToken, deleteCourse);
+
+router.patch('/courses/:id', authenticateToken, updateCourse);
 
 router.post('/courses', authenticateToken, createCourse);
 router.patch('/courses/:id/publish', authenticateToken, publishCourse); // ← ADD THIS
