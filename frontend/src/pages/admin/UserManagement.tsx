@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import api from '../../services/api';
 
 // Define the user roles as a union type
 type UserRole = 'student' | 'teacher' | 'admin' | 'super_admin';
@@ -28,10 +29,8 @@ const UserManagement: React.FC = () => {
     const fetchUsers = async () => {
       try {
         setLoading(true);
-        const response = await fetch('/api/users');
-        if (!response.ok) throw new Error('Failed to fetch users');
-        const data: User[] = await response.json();
-        setUsers(data);
+        const res = await api.get('/users');
+        setUsers(res.data);
       } catch (err) {
         setError((err as Error).message || 'An unknown error occurred');
       } finally {
