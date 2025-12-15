@@ -41,12 +41,9 @@ export default function CourseStudents() {
   const [statusFilter, setStatusFilter] = useState<'all' | 'published' | 'draft'>('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [openMenuId, setOpenMenuId] = useState<number | null>(null);
-  const menuRef = useRef<HTMLDivElement | null>(null);
-
-
-
-
+  //const menuRef = useRef<HTMLDivElement | null>(null);
   const filterRef = useRef<HTMLDivElement | null>(null);
+
 
   // Close filter dropdown on click outside
   useEffect(() => {
@@ -63,7 +60,7 @@ export default function CourseStudents() {
   useEffect(() => {
     fetchCourses();
   }, []);
-  useEffect(() => {
+  /*useEffect(() => {
     const handleClickOutsideMenu = (event: MouseEvent) => {
       if (
         menuRef.current &&
@@ -76,7 +73,7 @@ export default function CourseStudents() {
     document.addEventListener('mousedown', handleClickOutsideMenu);
     return () =>
       document.removeEventListener('mousedown', handleClickOutsideMenu);
-  }, []);
+  }, []);*/
 
 
   const fetchCourses = async () => {
@@ -147,13 +144,22 @@ export default function CourseStudents() {
     console.log('Clone course', id);
   };
 
-  const handleDeleteCourse = (id: number) => {
-    if (confirm('Are you sure you want to delete this course?')) {
-      console.log('Delete course', id);
-    }
-  };
-
-
+  const handleDeleteCourse = async (id: number) => {
+  if (!confirm('Are you sure you want to delete this course? This action cannot be undone.')) {
+    return;
+  }
+  console.log('🗑️ Attempting to delete course ID:', id);
+  try {
+    await api.delete(`/admin/courses/${id}`);
+    // Remove the deleted course from the local state
+    setCourses((prev) => prev.filter((course) => course.id !== id));
+    alert('Course deleted successfully!');
+  } catch (err: any) {
+    console.error('Failed to delete course:', err);
+    const errorMsg = err.response?.data?.error || 'Failed to delete course. Please try again.';
+    alert(errorMsg);
+  }
+};
 
   // 🔍 Final filtered list (search + status filter)
   const filteredCourses = courses.filter((course) => {
@@ -566,7 +572,7 @@ export default function CourseStudents() {
                               {/* Enroll */}
                               <button
                                 onClick={() => navigate(`/admin/courses/${course.id}/enroll`)}
-                                className="px-3 py-1.5 text-xs bg-blue-900 text-white rounded-md hover:bg-blue-700 flex items-center gap-1"
+                                className="px-3 py-1.5 text-xs border rounded-md hover:bg-gray-50 flex items-center gap-1"
                               >
                                 <PiUsersBold className="text-xs" />
                                 Enroll
@@ -589,8 +595,6 @@ export default function CourseStudents() {
                                     className="absolute right-0 mt-1 w-36 bg-white border rounded-md shadow-lg text-xs z-50"
                                     onClick={(e) => e.stopPropagation()}
                                   >
-
-
                                     <button
                                       onClick={() => {
                                         setOpenMenuId(null);
@@ -660,7 +664,7 @@ export default function CourseStudents() {
                                 </h3>
 
                                 {/* Three-dot menu (ALWAYS visible) */}
-                                <div className="relative" ref={menuRef}>
+                                <div className="relative" >
 
                                   {/* Three-dot button */}
                                   <button
@@ -686,7 +690,7 @@ export default function CourseStudents() {
                                   {openMenuId === course.id && (
                                     <div
                                       className="absolute right-0 mt-1 w-36 bg-white border rounded-md shadow-lg text-xs z-50 overflow-hidden"
-                                      onClick={(e) => e.stopPropagation()} // 🔥 keep open when clicking inside
+                                      //onClick={(e) => e.stopPropagation()} // 🔥 keep open when clicking inside
                                     >
                                       <button
                                         onClick={() => {
@@ -782,8 +786,7 @@ export default function CourseStudents() {
 
                                 <button
                                   onClick={() => navigate(`/admin/courses/${course.id}/enroll`)}
-                                  className="flex items-center justify-center gap-1 px-2 py-1.5 text-[11px] bg-blue-900 text-white rounded-md hover:bg-blue-700"
-                                >
+                                  className="flex items-center justify-center gap-1 px-2 py-1.5 text-[11px] border rounded-md hover:bg-gray-50">
                                   <PiUsersBold className="text-xs" />
                                   Enroll
                                 </button>

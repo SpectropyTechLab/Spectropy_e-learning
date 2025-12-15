@@ -1,4 +1,5 @@
 // app/courses/page.tsx
+import { useNavigate } from 'react-router-dom';
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -16,6 +17,7 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
 
 export default function CoursesPage() {
   const [courses, setCourses] = useState<Course[]>([]);
+  const navigate = useNavigate(); 
 
  useEffect(() => {
   const url = API_BASE 
@@ -46,7 +48,27 @@ export default function CoursesPage() {
   
    return (
   <div className="p-6">
-    <h1 className="text-2xl font-bold mb-6">Available Courses</h1>
+    <div className="flex items-center gap-4 mb-6">
+        <button
+          onClick={() => navigate(-1)} // or navigate('/student/dashboard') for specific route
+          className="flex items-center text-gray-700 hover:text-gray-900 transition-colors"
+          aria-label="Go back"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-5 w-5"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
+            <path
+              fillRule="evenodd"
+              d="M9.707 16.707a1 1 0 01-1.414 0L2.586 11l5.707-5.707a1 1 0 011.414 1.414L5.414 11l4.293 4.293a1 1 0 010 1.414z"
+              clipRule="evenodd"
+            />
+          </svg>
+        </button>
+        <h1 className="text-2xl font-bold">Available Courses</h1>
+      </div>
     
     {publishedCourses.length === 0 ? (
       <p>No published courses available.</p>
@@ -57,7 +79,7 @@ export default function CoursesPage() {
             key={course.id}
             className="border border-gray-200 rounded-lg p-5 hover:shadow-md transition-shadow"
           >
-            <h2 className="font-bold text-lg text-gray-900 mb-2">
+            <h2 className="font-bold text-lg text-gray-900 mb-3 line-clamp-3">
               {course.title.toUpperCase()}
             </h2>
            {course.description ? (

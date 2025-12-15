@@ -142,3 +142,28 @@ export const publishCourse = async (req, res) => {
     res.status(500).json({ error: 'Failed to publish course' });
   }
 };
+
+// DELETE /admin/courses/:id
+export const deleteCourse = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const result = await pool.query(
+      'DELETE FROM courses WHERE id = $1 RETURNING id',
+      [id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Course not found' });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Course and all associated content deleted successfully',
+      deletedCourseId: result.rows[0].id
+    });
+  } catch (err) {
+    console.error('Failed to delete course:', err);
+    res.status(500).json({ error: 'Failed to delete course' });
+  }
+};
