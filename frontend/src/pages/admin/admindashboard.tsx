@@ -23,6 +23,11 @@ interface Course {
 export default function CourseStudents() {
   const navigate = useNavigate();
   const { logout } = useAuth();
+  const { user } = useAuth();
+  
+  // 👇 Add these lines
+  const userFullName = user?.full_name || 'Super Administrator';
+  const userEmail = user?.email || 'super@lms.com';
 
   const [activeTab, setActiveTab] = useState<'courses' | 'home' | 'users' | 'community'>('courses');
   const [title, setTitle] = useState('');
@@ -274,6 +279,18 @@ export default function CourseStudents() {
             Community
           </button>
         </nav>
+        {/* User Info */}
+  <div className="mb-3 flex items-center">
+    <div className="flex-shrink:0 h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center ml-1">
+      <span className="text-blue-900 font-medium text-xl">
+        {userFullName?.charAt(0).toUpperCase() || 'U'}
+      </span>
+    </div>
+    <div className="ml-3">
+      <p className="text-m font-medium text-gray-900 truncate">{userFullName}</p>
+      <p className="text-xs text-gray-500 truncate">{userEmail}</p>
+    </div>
+  </div>
 
         <div className="p-4 border-t border-gray-200">
           <button
