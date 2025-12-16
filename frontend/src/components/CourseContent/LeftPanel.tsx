@@ -15,8 +15,6 @@ import { AiOutlineArrowLeft } from "react-icons/ai";
 import CourseProgressBar from "../CourseContent/CourseProgressBar";
 import api from "../../services/api";
 
-
-
 //import { useNavigate } from "react-router-dom";
 
 import {

@@ -10,6 +10,7 @@ import { BiBookOpen } from "react-icons/bi";
 import { PiChatsCircleBold } from "react-icons/pi";
 import { GrChapterAdd } from "react-icons/gr";
 import UserManagement from './UserManagement';
+import DashboardHome from './Home';
 
 interface Course {
   id: number;
@@ -319,13 +320,13 @@ export default function CourseStudents() {
             <div>
               <h1 className="text-2xl font-bold">
                 {activeTab === 'courses' && 'Courses'}
-                {activeTab === 'home' && 'Dashboard'}
+                {activeTab === 'home' && 'Welcome to the Admin Dashboard'}
                 {activeTab === 'users' && 'User Management'}
                 {activeTab === 'community' && 'Community'}
               </h1>
               <p className="text-gray-600 mt-1">
                 {activeTab === 'courses' && 'Set up your courses and share your knowledge.'}
-                {activeTab === 'home' && 'Welcome to your admin dashboard.'}
+                {activeTab === 'home' && 'Key metrics at a glance'}
                 {activeTab === 'users' && 'Manage your users and their activities.'}
                 {activeTab === 'community' && 'Monitor community interactions and content.'}
               </p>
@@ -938,12 +939,7 @@ export default function CourseStudents() {
             </div>
           )}
 
-          {activeTab === 'home' && (
-            <div className="text-center py-10">
-              <h2 className="text-xl font-semibold mb-2">Welcome to the Admin Dashboard</h2>
-              <p className="text-gray-600">Select a section from the left menu to get started.</p>
-            </div>
-          )}
+          {activeTab === 'home' && <DashboardHome />}
 
           {activeTab === 'users' && <UserManagement />}
 
