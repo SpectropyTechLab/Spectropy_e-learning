@@ -5,7 +5,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import Header from '../../components/Header';
 
 export default function LoginForm() {
-  const [isLogin, setIsLogin] = useState(true); // Toggle between login/register
+  //const [isLogin, setIsLogin] = useState(true); // Toggle between login/register
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState(''); // Only used in registration
@@ -20,6 +20,7 @@ export default function LoginForm() {
 
   const selectedRole = location.state?.role || '';
   const CAN_REGISTER = ['student', 'teacher'].includes(selectedRole);
+  const [isLogin, setIsLogin] = useState(!CAN_REGISTER);
 
   // Redirect after login
   useEffect(() => {
@@ -191,34 +192,16 @@ export default function LoginForm() {
         </form>
 
         {/* Toggle between Login and Register */}
-        <div className="mt-4 text-center">
-          {isLogin ? (
-            CAN_REGISTER ? (
-              <button
-                onClick={() => setIsLogin(false)}
-                className="text-spectropy-blue hover:text-blue-800 text-sm"
-              >
-                Don't have an account? Register
-              </button>
-            ) : (
-              <p className="text-spectropy-gray text-sm">
-                Registration is not available for this role.
-              </p>
-            )
-          ) : (
-            <button
-              onClick={() => setIsLogin(true)}
-              className="text-spectropy-blue hover:text-blue-800 text-sm"
-            >
-              Already have an account? Login
-            </button>
-          )}
-        </div>
+       {!isLogin && CAN_REGISTER && (
+  <div className="mt-4 text-center text-spectropy-gray text-sm">
+    New user? Complete registration below.
+  </div>
+)}
 
         {isLogin && (
           <div className="mt-2 text-center">
             <a href="#" className="text-spectropy-blue hover:text-blue-800 text-sm">
-              Forgot password?
+              {/*Forgot password?*/}
             </a>
           </div>
         )}
@@ -229,7 +212,7 @@ export default function LoginForm() {
             onClick={() => navigate('/login', { replace: true })}
             className="text-spectropy-blue hover:text-blue-800 text-sm flex items-center justify-center mx-auto"
           >
-            ← Back to Role Selection
+            ← Back to home
           </button>
         </div>
       </main>

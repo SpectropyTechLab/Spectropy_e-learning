@@ -62,7 +62,7 @@ const MainLoginPage = () => {
           </div>
         </div>
 
-        {/* RIGHT SECTION */}
+        {/* RIGHT SECTION }
         <div className="md:w-1/2 flex items-center justify-center p-10 flex-col grow-1">
 
 
@@ -71,7 +71,7 @@ const MainLoginPage = () => {
             <p className="text-gray-600">Personalized portal for every user</p>
           </div>
 
-          {/* Creative Role Cards */}
+          {/* Creative Role Cards }
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             {roles.map((role) => (
               <button
@@ -90,16 +90,17 @@ const MainLoginPage = () => {
                 </p>
               </button>
             ))}
-          </div>
+          </div>*/}
+          
 
-          {/* Help Link */}
+          {/* Help Link }
           <div className="mt-10 text-center text-gray-500 text-sm">
             Need help? Contact{" "}
             <a href="mailto:support@spectropy.com" className="text-blue-600 hover:underline">
               support@spectropy.com
             </a>
-          </div>
-        </div>
+          </div>*/}
+        {/*</div>*/}
       </div>
 
       {/* Footer */}
