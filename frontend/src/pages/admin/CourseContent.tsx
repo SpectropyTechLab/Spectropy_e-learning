@@ -317,7 +317,6 @@ export default function CourseContent() {
             allItems={items}
             selectedItemId={selectedItem?.id}
             onSelectItem={(item: ContentItem) => {
-              console.log("Selected item:", item);
               setSelectedItem(item);        // ✅ store the entire item
             }}
 
