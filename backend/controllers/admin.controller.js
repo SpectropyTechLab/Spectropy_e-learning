@@ -81,7 +81,7 @@ export const getCourseContent = async (req, res) => {
     }
 
     const result = await pool.query(query, params);
-    console.log("Fetched content items:", result.rows);
+
     res.json(result.rows);
   } catch (err) {
     console.error('Failed to fetch content:', err);

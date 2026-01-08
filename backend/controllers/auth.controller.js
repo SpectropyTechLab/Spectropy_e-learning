@@ -38,10 +38,15 @@ export const register = async (req, res) => {
 // ✅ Login (supports all roles)
 export const login = async (req, res) => {
 
+  const start = Date.now(); // API start time
+
+  console.log("LOGIN START");
   const { email, password } = req.body;
 
+  const dbStart = Date.now();
+
   try {
-    const userQueryResult = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+    const userQueryResult = await pool.query('SELECT id, password_hash FROM users WHERE email = $1', [email]);
 
     if (userQueryResult.rows.length === 0) {
       return res.status(401).json({ error: 'Invalid credentials' });
@@ -57,12 +62,26 @@ export const login = async (req, res) => {
     await pool.query('UPDATE users SET last_login_at = NOW() WHERE id = $1', [user.id]);
 
     const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '7d' });
+    const dbEnd = Date.now();
+
+
+
+    console.log("DB QUERY TIME:", dbEnd - dbStart, "ms");
+
     res.json({ token, user });
   } catch (err) {
     console.error('Login error:', err);
     res.status(500).json({ error: 'Login failed' });
   }
+
+
+
+
+
+
 };
+
+
 
 // ✅ Super Admin registers admins
 export const registerAdmin = async (req, res) => {

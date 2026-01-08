@@ -15,14 +15,14 @@ import {
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 // ===== Metric Card Component =====
-function MetricCard({ 
-  title, 
-  subtitle, 
-  value 
-}: { 
-  title: string; 
-  subtitle: string; 
-  value: string | number; 
+function MetricCard({
+  title,
+  subtitle,
+  value
+}: {
+  title: string;
+  subtitle: string;
+  value: string | number;
 }) {
   return (
     <div className="bg-white p-5 rounded-lg shadow text-center">
@@ -41,11 +41,11 @@ interface DailyBarChartProps {
   unit?: string;
 }
 
-function DailyBarChart({ 
-  title, 
-  labels, 
+function DailyBarChart({
+  title,
+  labels,
   data, // ✅ CORRECT
-  unit = 'count' 
+  unit = 'count'
 }: DailyBarChartProps) {
   const chartData = {
     labels,
@@ -68,8 +68,8 @@ function DailyBarChart({
       tooltip: {
         callbacks: {
           label: (context: any) =>
-            unit === 'hrs' 
-              ? `${context.raw} hrs` 
+            unit === 'hrs'
+              ? `${context.raw} hrs`
               : `${context.raw} ${unit}`,
         },
       },
