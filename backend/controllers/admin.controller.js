@@ -88,25 +88,40 @@ export const getCourseContent = async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch course content' });
   }
 };
-;
+
 
 // POST /admin/courses/:courseId/content
 export const createContentItem = async (req, res) => {
   const { courseId } = req.params;
   const { item_type, title, parent_id = null, content_url = null } = req.body;
 
-  const validTypes = ['folder', 'video', 'text', 'pdf', 'scorm', 'audio']; // added 'audio'
+  // ✅ Only NON-FILE types are allowed here
+  const validTypes = ['folder', 'link'];
+
   if (!validTypes.includes(item_type)) {
-    return res.status(400).json({ error: 'Invalid item type' });
+    return res.status(400).json({
+      error: `Invalid item type for this endpoint: ${item_type}`
+    });
   }
 
   if (!title?.trim()) {
     return res.status(400).json({ error: 'Title is required' });
   }
 
-  // Optional: validate URL if provided
-  if (content_url !== null && typeof content_url !== 'string') {
-    return res.status(400).json({ error: 'content_url must be a string or null' });
+  // ✅ Link MUST have a URL
+  if (item_type === 'link') {
+    if (!content_url || typeof content_url !== 'string') {
+      return res.status(400).json({
+        error: 'content_url is required for link type'
+      });
+    }
+  }
+
+  // ✅ Folder MUST NOT have a URL
+  if (item_type === 'folder' && content_url !== null) {
+    return res.status(400).json({
+      error: 'Folders cannot have content_url'
+    });
   }
 
   try {
@@ -116,12 +131,14 @@ export const createContentItem = async (req, res) => {
        RETURNING *`,
       [courseId, parent_id, item_type, title.trim(), content_url]
     );
+
     res.status(201).json(result.rows[0]);
   } catch (err) {
     console.error('Content creation error:', err);
     res.status(500).json({ error: 'Failed to create content item' });
   }
 };
+
 
 // PATCH /api/courses/:id/publish
 export const publishCourse = async (req, res) => {

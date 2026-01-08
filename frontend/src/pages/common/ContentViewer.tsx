@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import api from "../../services/api";
 import ScormPlayer from "../../components/ScormPlayer";
 import PdfViewer from "../../components/CourseContent/PdfViewer";
+import UniversalContentViewer from "../../components/CourseContent/UniversalContentViewer";
 
 
 interface ContentItem {
@@ -23,6 +24,7 @@ export default function ContentViewer({ item }: ContentViewerProps) {
     const [content, setContent] = useState<ContentItem | null>(item || null);
     const [mediaUrl, setMediaUrl] = useState<string | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
+    const [textContent, setTextContent] = useState<string | null>(null);
 
     useEffect(() => {
         // If item is passed directly (from a list), do NOT fetch
@@ -63,13 +65,18 @@ export default function ContentViewer({ item }: ContentViewerProps) {
      * ---------------------------------------------------- */
     const handleSignedUrl = async (content: ContentItem) => {
         console.log("generated content url for:", content.content_url);
-        if (!content.content_url) return;
-
+        if (!content.content_url || content.item_type === "link") return;
 
 
         try {
             const signedRes = await api.get(`/scorm/signed-url?path=${encodeURIComponent(content.content_url)}`);
             setMediaUrl(signedRes.data.url);
+            if (content.item_type === "text") {
+                const textRes = await fetch(signedRes.data.url);
+                const text = await textRes.text();
+                setTextContent(text);
+            }
+
         } catch (err) {
             console.error("❌ Failed to get signed URL:", err);
         } finally {
@@ -128,6 +135,41 @@ export default function ContentViewer({ item }: ContentViewerProps) {
                 </div>
             );
             break;
+        case "link":
+            viewerElement = (
+                <UniversalContentViewer
+                    type="link"
+                    title={title}
+                    url={content.content_url!}
+                />
+            );
+            break;
+
+        case "html":
+            viewerElement = mediaUrl ? (
+                <UniversalContentViewer
+                    type="html"
+                    title={title}
+                    url={mediaUrl}
+                />
+            ) : (
+                <p>Loading HTML...</p>
+            );
+            break;
+
+        case "text":
+            viewerElement = mediaUrl ? (
+                <UniversalContentViewer
+                    type="text"
+                    title={title}
+                    url={mediaUrl}
+                />
+            ) : (
+                <p>Loading text...</p>
+            );
+            break;
+
+
 
         default:
             viewerElement = (
@@ -141,7 +183,7 @@ export default function ContentViewer({ item }: ContentViewerProps) {
      *  FINAL RENDER
      * ---------------------------------------------------- */
     return (
-        <div className="flex-1 p-2 w-   full mx-auto flex flex-col justify-center items-center ">
+        <div className="flex-1 p-2 w-full mx-auto flex flex-col justify-center items-center ">
             {viewerElement}
         </div>
     );

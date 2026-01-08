@@ -8,6 +8,7 @@ import ContentViewer from "../common/ContentViewer";
 import { SlControlPlay, SlControlRewind } from "react-icons/sl";
 import toast from "react-hot-toast";
 
+
 interface ContentItem {
   id: number;
   course_id: number;
@@ -24,23 +25,31 @@ interface ContentItem {
 const ITEM_TYPES = [
   { value: "folder", label: "Chapter (Folder)" },
   { value: "video", label: "Video" },
-  { value: "text", label: "Text/Lesson" },
+  { value: "audio", label: "Audio File" },
   { value: "pdf", label: "PDF Document" },
   { value: "scorm", label: "SCORM Package" },
-  { value: "audio", label: "Audio File" },
+  { value: "html", label: "HTML Lesson" },
+  { value: "text", label: "Text File" },
+  { value: "link", label: "External Link" },
 ];
+
+interface Chapter {
+  id: number;
+  title: string;
+  items: ContentItem[];
+}
+
 
 export default function CourseContent() {
   const { courseId } = useParams<{ courseId: string }>();
-
-  const [chapters, setChapters] = useState<any[]>([]);
+  const [chapters, setChapters] = useState<Chapter[]>([]);
   const [selectedChapter, setSelectedChapter] = useState<number | null>(null);
 
   // ✅ Add Item Modal
   const [showAddItemModal, setShowAddItemModal] = useState(false);
   const [itemType, setItemType] = useState("video");
   const [itemTitle, setItemTitle] = useState("");
-  const [uploadMethod, setUploadMethod] = useState<"upload" | "url">("upload");
+
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [publicUrl, setPublicUrl] = useState("");
   const [selectedItem, setSelectedItem] = useState<ContentItem | null>(null);
@@ -135,6 +144,9 @@ export default function CourseContent() {
   // ✅ Add Chapter Modal
   const [chapterTitle, setChapterTitle] = useState("");
   const [addingChapter, setAddingChapter] = useState(false);
+  const FILE_UPLOAD_TYPES = ["video", "audio", "pdf", "scorm", "html", "text"];
+  const URL_ONLY_TYPES = ["link"];
+
 
   useEffect(() => {
     fetchContent();
@@ -151,7 +163,7 @@ export default function CourseContent() {
 
       // ✅ Build chapters → items mapping
       const topChapters = items.filter((i: ContentItem) => i.parent_id === null);//sets the top chapters with no parent id
-      const chapterMap: any[] = topChapters.map((chapter: ContentItem) => ({
+      const chapterMap: Chapter[] = topChapters.map((chapter: ContentItem) => ({
         id: chapter.id,
         title: chapter.title,
         items: items.filter((i: ContentItem) => i.parent_id === chapter.id),
@@ -205,7 +217,7 @@ export default function CourseContent() {
     }
     // 🔥 Update chapters state
     setChapters(prev =>
-      prev.map((ch: any) => ({
+      prev.map((ch) => ({
         ...ch,
         items: ch.items.map((i: ContentItem) =>
           i.id === selectedItem?.id
@@ -244,22 +256,27 @@ export default function CourseContent() {
 
   // ✅ ADD ITEM TO CHAPTER
   const handleAddItem = async (chapterId: number) => {
-    if (!itemTitle.trim()) return alert("Enter a title");
-
-
-    // Close modal immediately (UI becomes free)
+    if (!itemTitle.trim()) {
+      toast.error("Enter a title");
+      return;
+    }
     setShowAddItemModal(false);
-
-    // Show uploading toast
-    const uploadToast = toast.loading("Uploading content...");
-
     try {
-      const formData = new FormData();
-      formData.append("item_type", itemType);
-      formData.append("title", itemTitle);
-      formData.append("parent_id", chapterId.toString());
+      // ===============================
+      // FILE-BASED CONTENT
+      // ===============================
+      if (FILE_UPLOAD_TYPES.includes(itemType)) {
+        if (!selectedFile) {
+          toast.error("Please select a file");
+          return;
+        }
 
-      if (uploadMethod === "upload" && selectedFile) {
+        const uploadToast = toast.loading("Uploading content...");
+
+        const formData = new FormData();
+        formData.append("item_type", itemType);
+        formData.append("title", itemTitle);
+        formData.append("parent_id", chapterId.toString());
         formData.append("file", selectedFile);
 
         await api.post(
@@ -267,36 +284,55 @@ export default function CourseContent() {
           formData,
           { headers: { "Content-Type": "multipart/form-data" } }
         );
-      } else {
+
+        toast.success("Item added successfully!", { id: uploadToast });
+      }
+
+      // ===============================
+      // LINK CONTENT
+      // ===============================
+      else if (URL_ONLY_TYPES.includes(itemType)) {
+        if (!publicUrl.trim()) {
+          toast.error("Please enter a valid URL");
+          return;
+        }
+
+        const uploadToast = toast.loading("Adding link...");
+
         await api.post(`/admin/courses/${courseId}/content`, {
           item_type: itemType,
           title: itemTitle,
           parent_id: chapterId,
           content_url: publicUrl.trim(),
         });
+
+        toast.success("Link added successfully!", { id: uploadToast });
       }
 
-      toast.success("Item added successfully!", { id: uploadToast });
-
+      // ===============================
+      // RESET STATE (SUCCESS ONLY)
+      // ===============================
       setItemTitle("");
       setSelectedFile(null);
       setPublicUrl("");
-      setShowAddItemModal(false);
+
       fetchContent();
+
     } catch (err) {
       console.error("❌ Failed to add item:", err);
-      toast.error("Failed to add item", { id: uploadToast });
+      toast.error("Failed to add item");
     }
   };
 
+
   // ✅ DRAG & DROP — REORDER CHAPTERS
-  const handleReorderChapters = async (newOrder: any[]) => {
+  const handleReorderChapters = async (newOrder: Chapter[]) => {
     setChapters(newOrder);
     // TODO: send reordered array to backend
   };
 
   // ✅ DRAG & DROP — REORDER ITEMS
-  const handleReorderItems = async (chapterId: number, newItems: any[]) => {
+  const handleReorderItems = async (chapterId: number, newItems: ContentItem[]) => {
     setChapters((prev) =>
       prev.map((ch) =>
         ch.id === chapterId ? { ...ch, items: newItems } : ch
@@ -403,52 +439,27 @@ export default function CourseContent() {
               type="text"
               value={itemTitle}
               onChange={(e) => setItemTitle(e.target.value)}
-              placeholder="Item title"
+              placeholder="Topic Name"
               className="w-full p-2 border rounded mb-3"
             />
 
-            {["video", "audio", "pdf", "scorm"].includes(itemType) && (
-              <>
-                <div className="flex gap-4 mb-3">
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      checked={uploadMethod === "upload"}
-                      onChange={() => setUploadMethod("upload")}
-                      className="mr-2"
-                    />
-                    Upload
-                  </label>
+            {URL_ONLY_TYPES.includes(itemType) && (
+              <input
+                type="url"
+                value={publicUrl}
+                onChange={(e) => setPublicUrl(e.target.value)}
+                placeholder="Enter external link (https://...)"
+                className="w-full p-2 border rounded mb-3"
+              />
+            )}
 
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      checked={uploadMethod === "url"}
-                      onChange={() => setUploadMethod("url")}
-                      className="mr-2"
-                    />
-                    Public URL
-                  </label>
-                </div>
 
-                {uploadMethod === "upload" ? (
-                  <input
-                    type="file"
-                    onChange={(e) =>
-                      setSelectedFile(e.target.files?.[0] || null)
-                    }
-                    className="w-full p-2 border rounded mb-3"
-                  />
-                ) : (
-                  <input
-                    type="url"
-                    value={publicUrl}
-                    onChange={(e) => setPublicUrl(e.target.value)}
-                    placeholder="Enter URL"
-                    className="w-full p-2 border rounded mb-3"
-                  />
-                )}
-              </>
+            {FILE_UPLOAD_TYPES.includes(itemType) && (
+              <input
+                type="file"
+                onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+                className="w-full p-2 border rounded mb-3"
+              />
             )}
 
             <div className="flex justify-end gap-3 mt-4">
@@ -529,11 +540,18 @@ export default function CourseContent() {
 
             {/* ⭐ Replace File */}
             <label className="block text-sm font-medium mb-1">Select New File</label>
+            <div className="mb-3 text-sm text-gray-600">
+              Current Type: <span className="font-medium">{itemToUpdate?.item_type}</span>
+            </div>
+
             <input
               type="file"
               onChange={(e) => setNewFile(e.target.files?.[0] || null)}
               className="w-full p-2 border rounded mb-4"
             />
+            <p className="text-xs text-gray-500 mt-1">
+              Uploading a different file type will automatically change the content type.
+            </p>
 
             <div className="flex justify-end gap-3 mt-4">
               <button
