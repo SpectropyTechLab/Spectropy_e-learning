@@ -15,6 +15,9 @@ import { viewScormFile } from './controllers/scorm.controller.js';
 import EnrollmentRouter from './routes/enrollment.routes.js';
 import CourseRouter from './routes/course.routes.js';
 import userRoutes from './routes/user.routes.js';
+import communityRoutes from './routes/community.routes.js';
+import uploadRoutes from './routes/upload.routes.js';
+
 
 dotenv.config();
 
@@ -60,6 +63,9 @@ app.use('/api/course', CourseRouter);
 
 app.use('/api/users', userRoutes);
 
+app.use('/api/community', communityRoutes);
+
+app.use('/api/upload', uploadRoutes);
 
 app.get('/', (req, res) => res.json({ status: 'OK' }));
 

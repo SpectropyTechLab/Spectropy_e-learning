@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ChevronLeft, 
@@ -8,76 +8,22 @@ import {
   Search, 
   PlayCircle, 
   X,
-  School
+  School,
+  Youtube,
+  FileText,
+  Link as LinkIcon
 } from 'lucide-react';
 
 // Define Event interface
 interface Event {
-  id: number;
+  id: string;
   school: string;
   date: string;
   title: string;
-  type: 'image' | 'video';
+  type: 'image' | 'video' | 'pdf' | 'youtube' | 'link';
   src: string;
   description: string;
 }
-
-// --- MOCK DATA ---
-const schools = [
-  "All Schools",
-  "Spectropy Academy (Hyd)",
-  "Greenwood High",
-  "Oakridge International",
-  "Delhi Public School"
-];
-
-const eventsData: Event[] = [
-  {
-    id: 1,
-    school: "Spectropy Academy (Hyd)",
-    date: "2026-01-15",
-    title: "Science Fair 2026",
-    type: "image",
-    src: "https://images.unsplash.com/photo-1564951434112-64d74cc2a2d7?auto=format&fit=crop&q=80&w=800",
-    description: "Annual science fair showcasing student innovations in robotics and physics."
-  },
-  {
-    id: 2,
-    school: "Greenwood High",
-    date: "2026-01-16",
-    title: "Inter-School Sports Meet",
-    type: "video",
-    src: "https://assets.mixkit.co/videos/preview/mixkit-group-of-friends-running-joyfully-34664-large.mp4", // Free stock video link
-    description: "Highlights of the track and field events."
-  },
-  {
-    id: 3,
-    school: "Oakridge International",
-    date: "2026-01-18",
-    title: "Math Olympiad Prep",
-    type: "image",
-    src: "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?auto=format&fit=crop&q=80&w=800",
-    description: "Advanced calculus workshop for senior students."
-  },
-  {
-    id: 4,
-    school: "Spectropy Academy (Hyd)",
-    date: "2026-01-20",
-    title: "Chemistry Lab Inauguration",
-    type: "image",
-    src: "https://images.unsplash.com/photo-1532094349884-543bc11b234d?auto=format&fit=crop&q=80&w=800",
-    description: "Opening of our new state-of-the-art organic chemistry facility."
-  },
-  {
-    id: 5,
-    school: "Delhi Public School",
-    date: "2026-01-22",
-    title: "Physics of Sound",
-    type: "video",
-    src: "https://assets.mixkit.co/videos/preview/mixkit-teacher-showing-an-experiment-to-his-students-42998-large.mp4",
-    description: "Interactive seminar on wave mechanics and acoustics."
-  }
-];
 
 const EventsPage = () => {
   // --- STATE ---
@@ -86,23 +32,70 @@ const EventsPage = () => {
   const [selectedDate, setSelectedDate] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  
+  // Real data state
+  const [events, setEvents] = useState<Event[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [schoolSearch, setSchoolSearch] = useState("");
 
+  // --- FETCH REAL DATA ---
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch('/api/community/content'); // Adjust if using full URL
+        if (!response.ok) throw new Error('Failed to fetch');
+        const result = await response.json();
+
+        if (result.success && Array.isArray(result.data)) {
+          setEvents(result.data);
+        } else {
+          setError('Unexpected response format');
+        }
+      } catch (err) {
+        console.error('Fetch error:', err);
+        setError('Unable to load events. Please try again later.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEvents();
+  }, []);
+
+  // --- DYNAMIC SCHOOLS LIST ---
+  /*const schools = useMemo(() => {
+    const unique = Array.from(new Set(events.map(e => e.school)));
+    return ['All Schools', ...unique.sort()];
+  }, [events]);*/
+  // Replace your existing `schools` useMemo with this
+const allSchools = useMemo(() => {
+  return Array.from(new Set(events.map(e => e.school))).sort();
+}, [events]);
+
+const filteredSchools = useMemo(() => {
+  if (!schoolSearch.trim()) return allSchools;
+  const term = schoolSearch.toLowerCase();
+  return allSchools.filter(school => school.toLowerCase().includes(term));
+}, [allSchools, schoolSearch]);
+  
   // --- FILTER LOGIC ---
   const filteredEvents = useMemo(() => {
-    return eventsData.filter(event => {
+    return events.filter(event => {
       const matchSchool = selectedSchool === "All Schools" || event.school === selectedSchool;
       const matchDate = selectedDate ? event.date === selectedDate : true;
       const matchSearch = event.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
                           event.school.toLowerCase().includes(searchQuery.toLowerCase());
       return matchSchool && matchDate && matchSearch;
     });
-  }, [selectedSchool, selectedDate, searchQuery]);
+  }, [events, selectedSchool, selectedDate, searchQuery]);
 
   // --- ANIMATION VARIANTS ---
   const sidebarVariants = {
     open: { width: "25%", opacity: 1, x: 0 },
     closed: { width: "0%", opacity: 0, x: -50 },
-    mobileOpen: { width: "85%", opacity: 1, x: 0 }, // Mobile drawer style
+    mobileOpen: { width: "85%", opacity: 1, x: 0 },
   };
 
   return (
@@ -121,7 +114,6 @@ const EventsPage = () => {
             <h2 className="text-2xl font-bold bg-linear-to-r from-indigo-600 to-blue-500 bg-clip-text text-transparent">
               Spectropy
             </h2>
-            {/* Mobile Close Button */}
             <button 
               onClick={() => setSidebarOpen(false)} 
               className="md:hidden p-2 rounded-full hover:bg-slate-100"
@@ -131,27 +123,82 @@ const EventsPage = () => {
           </div>
 
           {/* School Selector */}
-          <div className="mb-8">
-            <label className="block text-sm font-semibold text-slate-500 mb-2 uppercase tracking-wider">
-              Select Campus
-            </label>
-            <div className="space-y-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
-              {schools.map((school) => (
-                <button
-                  key={school}
-                  onClick={() => setSelectedSchool(school)}
-                  className={`w-full text-left px-4 py-3 rounded-xl transition-all duration-200 flex items-center gap-3 ${
-                    selectedSchool === school
-                      ? "bg-indigo-50 text-indigo-700 shadow-sm border border-indigo-100"
-                      : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-                  }`}
-                >
-                  <School size={18} className={selectedSchool === school ? "text-indigo-600" : "text-slate-400"} />
-                  <span className="truncate text-sm font-medium">{school}</span>
-                </button>
-              ))}
-            </div>
+          {/* School Selector */}
+<div className="mb-8">
+  <label className="block text-sm font-semibold text-slate-500 mb-2 uppercase tracking-wider">
+    Select Campus
+  </label>
+  
+  {loading ? (
+    <div className="text-sm text-slate-400">Loading schools...</div>
+  ) : error ? (
+    <div className="text-sm text-red-500">Failed to load schools</div>
+  ) : (
+    <>
+      {/* Search Input */}
+      <div className="relative mb-2">
+        <input
+          type="text"
+          placeholder="Type to search schools..."
+          value={schoolSearch}
+          onChange={(e) => setSchoolSearch(e.target.value)}
+          className="w-full p-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500"
+        />
+        {schoolSearch && (
+          <button
+            onClick={() => setSchoolSearch('')}
+            className="absolute right-2 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600"
+          >
+            <X size={16} />
+          </button>
+        )}
+      </div>
+
+      {/* School List */}
+      <div className="space-y-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+        <button
+          key="all"
+          onClick={() => {
+            setSelectedSchool("All Schools");
+            setSchoolSearch(""); // optional: clear search on select
+          }}
+          className={`w-full text-left px-4 py-3 rounded-xl transition-all duration-200 flex items-center gap-3 ${
+            selectedSchool === "All Schools"
+              ? "bg-indigo-50 text-indigo-700 shadow-sm border border-indigo-100"
+              : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+          }`}
+        >
+          <School size={18} className={selectedSchool === "All Schools" ? "text-indigo-600" : "text-slate-400"} />
+          <span className="truncate text-sm font-medium">All Schools</span>
+        </button>
+        
+        {filteredSchools.map((school) => (
+          <button
+            key={school}
+            onClick={() => {
+              setSelectedSchool(school);
+              setSchoolSearch(""); // optional: clear after selection
+            }}
+            className={`w-full text-left px-4 py-3 rounded-xl transition-all duration-200 flex items-center gap-3 ${
+              selectedSchool === school
+                ? "bg-indigo-50 text-indigo-700 shadow-sm border border-indigo-100"
+                : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+            }`}
+          >
+            <School size={18} className={selectedSchool === school ? "text-indigo-600" : "text-slate-400"} />
+            <span className="truncate text-sm font-medium">{school}</span>
+          </button>
+        ))}
+        
+        {filteredSchools.length === 0 && schoolSearch && (
+          <div className="text-sm text-slate-500 px-4 py-2 text-center">
+            No schools found
           </div>
+        )}
+      </div>
+    </>
+  )}
+</div>
 
           <hr className="border-slate-100 mb-8" />
 
@@ -181,14 +228,6 @@ const EventsPage = () => {
             )}
           </div>
           
-          <div className="mt-auto bg-indigo-900 rounded-2xl p-4 text-white relative overflow-hidden">
-            <div className="relative z-10">
-              <h4 className="font-bold mb-1">Upcoming Exams?</h4>
-              <p className="text-xs text-indigo-200 mb-3">Check the schedule for IIT-JEE prep.</p>
-              <button className="text-xs bg-white text-indigo-900 px-3 py-1.5 rounded-lg font-bold">View Schedule</button>
-            </div>
-            <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-indigo-700 rounded-full opacity-50 blur-xl"></div>
-          </div>
         </div>
       </motion.aside>
 
@@ -204,7 +243,7 @@ const EventsPage = () => {
             >
               {isSidebarOpen ? <ChevronLeft size={20} /> : <ChevronRight size={20} />}
             </button>
-            <h1 className="text-xl font-bold text-slate-800">Campus Events</h1>
+            <h1 className="text-xl font-bold text-slate-800">Client Services</h1>
           </div>
           
           <div className="flex items-center gap-4">
@@ -226,7 +265,21 @@ const EventsPage = () => {
 
         {/* Scrollable Event Grid */}
         <div className="flex-1 overflow-y-auto p-4 md:p-8 bg-slate-50">
-          {filteredEvents.length === 0 ? (
+          {loading ? (
+            <div className="flex items-center justify-center h-full">
+              <div className="text-slate-500">Loading events...</div>
+            </div>
+          ) : error ? (
+            <div className="flex flex-col items-center justify-center h-full text-red-500">
+              <p>{error}</p>
+              <button 
+                onClick={() => window.location.reload()} 
+                className="mt-2 text-indigo-600 underline"
+              >
+                Retry
+              </button>
+            </div>
+          ) : filteredEvents.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-slate-400">
               <Search size={48} className="mb-4 opacity-50" />
               <p className="text-lg">No events found for this criteria.</p>
@@ -239,45 +292,94 @@ const EventsPage = () => {
               <AnimatePresence>
                 {filteredEvents.map((event) => (
                   <motion.div
-                    layout
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.9 }}
-                    key={event.id}
-                    onClick={() => setSelectedEvent(event)}
-                    className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer border border-slate-100 hover:-translate-y-1"
-                  >
+  layout
+  initial={{ opacity: 0, y: 20 }}
+  animate={{ opacity: 1, y: 0 }}
+  exit={{ opacity: 0, scale: 0.9 }}
+  key={event.id}
+  onClick={() => {
+    if (event.type === 'pdf' || event.type === 'youtube' || event.type === 'link') {
+      window.open(event.src, '_blank');
+      setSelectedEvent(null);
+    } else {
+      setSelectedEvent(event);
+    }
+  }}
+  className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer border border-slate-100 hover:-translate-y-1"
+>
+                    
                     {/* Thumbnail */}
-                    <div className="relative h-48 bg-slate-200 overflow-hidden">
-                      {event.type === 'video' ? (
-                        <>
-                           <video 
-                              src={event.src} 
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
-                              muted 
-                              loop 
-                              onMouseOver={e => (e.target as HTMLVideoElement).play()} 
-                              onMouseOut={e => (e.target as HTMLVideoElement).pause()}
-                           />
-                           <div className="absolute inset-0 bg-black/20 flex items-center justify-center group-hover:bg-black/10 transition-colors">
-                             <PlayCircle className="text-white w-12 h-12 opacity-90 drop-shadow-lg" />
-                           </div>
-                           <span className="absolute top-3 right-3 bg-black/60 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-md font-medium">Video</span>
-                        </>
-                      ) : (
-                        <img 
-                          src={event.src} 
-                          alt={event.title} 
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                        />
-                      )}
-                      <div className="absolute bottom-0 left-0 right-0 bg-linear-to-t from-black/60 to-transparent p-4 pt-12">
-                        <span className="text-white/90 text-xs font-medium flex items-center gap-1">
-                          <MapPin size={12} /> {event.school.split(' ')[0]}
-                        </span>
-                      </div>
-                    </div>
-
+<div className="relative h-48 bg-slate-200 overflow-hidden">
+  {event.type === 'video' ? (
+    <>
+      <video 
+        src={event.src} 
+        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+        muted 
+        loop 
+        onMouseOver={e => (e.target as HTMLVideoElement).play()} 
+        onMouseOut={e => (e.target as HTMLVideoElement).pause()}
+      />
+      <div className="absolute inset-0 bg-black/20 flex items-center justify-center group-hover:bg-black/10 transition-colors">
+        <PlayCircle className="text-white w-12 h-12 opacity-90 drop-shadow-lg" />
+      </div>
+      <span className="absolute top-3 right-3 bg-black/60 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-md font-medium">Video</span>
+      
+      {/* ✅ Overlay for video */}
+      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4 pt-12">
+        <span className="text-white/90 text-xs font-medium flex items-center gap-1">
+          <MapPin size={12} /> {event.school}
+        </span>
+      </div>
+    </>
+  ) : event.type === 'youtube' ? (
+    <a href={event.src} target="_blank" rel="noopener noreferrer" className="w-full h-full">
+      {event.src.includes('v=') ? (
+        <img 
+          src={`https://img.youtube.com/vi/${event.src.split('v=')[1].split('&')[0]}/0.jpg`}
+          alt="YouTube thumbnail"
+          className="w-full h-full object-cover"
+        />
+      ) : (
+        <div className="w-full h-full flex flex-col items-center justify-center bg-red-100">
+          <Youtube size={48} className="text-red-600" />
+          <span className="text-xs mt-1">YouTube</span>
+        </div>
+      )}
+    </a>
+  ) : event.type === 'pdf' ? (
+    <a 
+      href={event.src} 
+      target="_blank" 
+      rel="noopener noreferrer"
+      className="w-full h-full flex flex-col items-center justify-center bg-red-50 text-red-600 hover:bg-red-100 transition"
+    >
+      <FileText size={48} />
+      <span className="text-xs mt-2 font-medium underline">View PDF</span>
+    </a>
+  ) : event.type === 'link' ? (
+    <div className="w-full h-full flex flex-col items-center justify-center bg-blue-50">
+      <LinkIcon size={48} className="text-blue-600" />
+      <span className="text-xs mt-2">External Link</span>
+    </div>
+  ) : (
+    // image
+    <>
+      <img 
+        src={event.src} 
+        alt={event.title} 
+        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+      />
+      
+      {/* ✅ Overlay for image */}
+      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4 pt-12">
+        <span className="text-white/90 text-xs font-medium flex items-center gap-1">
+          <MapPin size={12} /> {event.school}
+        </span>
+      </div>
+    </>
+  )}
+</div>
                     {/* Content */}
                     <div className="p-5">
                       <div className="flex justify-between items-start mb-2">
@@ -359,7 +461,7 @@ const EventsPage = () => {
                     <School size={20} />
                   </div>
                   <div>
-                    <p className="text-xs text-slate-400 font-bold uppercase">Location</p>
+                    <p className="text-xs text-slate-400 font-bold uppercase">School</p>
                     <p className="text-sm font-semibold text-slate-700">{selectedEvent.school}</p>
                   </div>
                 </div>
@@ -368,11 +470,6 @@ const EventsPage = () => {
                   {selectedEvent.description}
                 </p>
 
-                <div className="mt-auto">
-                   <button className="w-full bg-indigo-600 text-white font-bold py-3 rounded-xl shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all hover:-translate-y-1 active:translate-y-0">
-                     Register / View Details
-                   </button>
-                </div>
               </div>
             </motion.div>
           </motion.div>

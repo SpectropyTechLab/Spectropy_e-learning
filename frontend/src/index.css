@@ -5,3 +5,21 @@
     --color-maincolor: #0b285d;
     --color-lightmain: #153d8a;
 }
+
+/* Auto-scroller animation for HappyClientsSlider */
+@keyframes infinite-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-infinite-scroll {
+  animation: infinite-scroll 5s linear infinite;
+}
+
+.animate-infinite-scroll:hover {
+  animation-play-state: paused;
+}

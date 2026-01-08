@@ -11,6 +11,7 @@ import { PiChatsCircleBold } from "react-icons/pi";
 import { GrChapterAdd } from "react-icons/gr";
 import UserManagement from './UserManagement';
 import DashboardHome from './Home';
+import Community from './Community';
 
 interface Course {
   id: number;
@@ -943,12 +944,7 @@ export default function CourseStudents() {
 
           {activeTab === 'users' && <UserManagement />}
 
-          {activeTab === 'community' && (
-            <div className="text-center py-10">
-              <h2 className="text-xl font-semibold mb-2">Community Management</h2>
-              <p className="text-gray-600">This section is under development.</p>
-            </div>
-          )}
+          {activeTab === 'community' && <Community />}
         </div>
       </div>
     </div>

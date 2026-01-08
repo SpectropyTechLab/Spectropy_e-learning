@@ -23,17 +23,15 @@ const HappyClientsSlider: React.FC = () => {
     const fetchData = async () => {
       try {
         const response = await fetch(GOOGLE_SHEET_CSV_URL);
+        console.log('response *****=', response);
         const csvText = await response.text();
-        console.log('[HappyClientsSlider] fetched CSV length:', csvText.length);
+        console.log('[HappyClientsSlider] fetched CSV length:********', csvText);
 
         Papa.parse(csvText, {
           header: true,
           skipEmptyLines: true,
           complete: (results: any) => {
             const parsedClients: ClientData[] = [];
-
-            console.log('[HappyClientsSlider] parsed rows:', results?.data?.length);
-            console.log('[HappyClientsSlider] csv headers:', Object.keys(results.data[0] || {}));
 
             // Robust key detection for fields (handle header case/name variations)
             const firstRowKeys = Object.keys(results.data[0] || {});
@@ -62,9 +60,7 @@ const HappyClientsSlider: React.FC = () => {
                 });
               }
             });
-
-            console.log('[HappyClientsSlider] clients found:', parsedClients.length);
-            console.log('[HappyClientsSlider] sample clients:', parsedClients.slice(0,5));
+  
             setClients(parsedClients);
             setLoading(false);
           },
@@ -80,6 +76,7 @@ const HappyClientsSlider: React.FC = () => {
 
   if (loading) return null; 
   if (clients.length === 0) return null;
+  console.log('clients images urls=', clients.map(c => c.logoUrl));   
 
   return (
     <section className="w-full bg-slate-50 py-16 overflow-hidden">
@@ -99,10 +96,7 @@ const HappyClientsSlider: React.FC = () => {
           {clients.map((client) => (
             <ClientCard key={client.id} client={client} />
           ))}
-          {/* Duplicate List for Loop */}
-          {clients.map((client) => (
-            <ClientCard key={`${client.id}-duplicate`} client={client} />
-          ))}
+          
         </div>
       </div>
     </section>
@@ -116,22 +110,24 @@ const ClientCard = ({ client }: { client: ClientData }) => (
       w-40 h-40 md:w-48 md:h-48 
       bg-white rounded-xl shadow-sm border border-slate-100 
       p-4 transition-all duration-300
-      grayscale hover:grayscale-0 hover:scale-105 hover:shadow-md
+       hover:grayscale-0 hover:scale-105 hover:shadow-md
       flex-shrink-0 cursor-pointer
     "
     title={`${client.name} - ${client.city}`}
   >
-    <img 
-      src={client.logoUrl} 
-      alt={client.name} 
-      className="max-w-full max-h-24 object-contain mb-3"
-      loading="lazy"
-      onError={(e) => {
-        (e.target as HTMLImageElement).src = 'https://via.placeholder.com/150?text=Client'; 
-      }}
-    />
+    
+    <img
+  src={client.logoUrl}
+  alt={client.name}
+  loading="lazy"
+  decoding="async"
+  referrerPolicy="no-referrer"
+  className="max-w-full max-h-24 object-contain mb-3"
+/>
+
     <div className="text-center">
-      <h4 className="text-xs font-bold text-slate-800 line-clamp-1">{client.name}</h4>
+      
+      <h4 className=" text-xs font-bold text-slate-800 line-clamp-1">{client.name}</h4>
       <p className="text-[10px] text-slate-500 uppercase">{client.city}</p>
     </div>
   </div>
