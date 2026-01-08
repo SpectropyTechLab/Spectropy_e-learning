@@ -13,6 +13,7 @@ import {
   FileText,
   Link as LinkIcon
 } from 'lucide-react';
+import api from '../../services/api';
 
 // Define Event interface
 interface Event {
@@ -39,30 +40,28 @@ const EventsPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [schoolSearch, setSchoolSearch] = useState("");
 
+
   // --- FETCH REAL DATA ---
   useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch('/api/community/content'); // Adjust if using full URL
-        if (!response.ok) throw new Error('Failed to fetch');
-        const result = await response.json();
-
-        if (result.success && Array.isArray(result.data)) {
-          setEvents(result.data);
-        } else {
-          setError('Unexpected response format');
-        }
-      } catch (err) {
-        console.error('Fetch error:', err);
-        setError('Unable to load events. Please try again later.');
-      } finally {
-        setLoading(false);
+  const fetchEvents = async () => {
+    try {
+      setLoading(true);
+      const response = await api.get('/community/content'); // uses correct base URL and auth
+      if (response.data.success && Array.isArray(response.data.data)) {
+        setEvents(response.data.data);
+      } else {
+        setError('Unexpected response format');
       }
-    };
+    } catch (err) {
+      console.error('Fetch error:', err);
+      setError('Unable to load events. Please try again later.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    fetchEvents();
-  }, []);
+  fetchEvents();
+}, []);
 
   // --- DYNAMIC SCHOOLS LIST ---
   /*const schools = useMemo(() => {

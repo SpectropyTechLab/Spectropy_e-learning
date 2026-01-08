@@ -24,7 +24,6 @@ const upload = multer({
 });
 
 // POST /api/upload/media
-// POST /api/upload/media
 router.post('/media', authenticateToken, upload.single('file'), async (req, res) => {
   try {
     if (!req.file) {
