@@ -107,7 +107,7 @@ export default function UniversalContentViewer({
        FINAL RENDER (60% A- 50%)
     -------------------------------- */
     return (
-        <div className="w-full flex-1 flex items-center justify-center p-4">
+        <div className="w-full h-full flex-1 flex items-center justify-center p-4">
             <div
                 ref={containerRef}
                 className="
@@ -130,8 +130,8 @@ export default function UniversalContentViewer({
       z-50
       p-1.5
       text-yellow-400
-      hover:bg-blue-50
-      rounded"
+      hover:bg-blue-900
+      rounded-4xl"
                     title="Fullscreen"
                 >
                     <AiOutlineExpand size={20} />

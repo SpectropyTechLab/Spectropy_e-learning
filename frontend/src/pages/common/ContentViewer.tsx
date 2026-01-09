@@ -183,7 +183,7 @@ export default function ContentViewer({ item }: ContentViewerProps) {
      *  FINAL RENDER
      * ---------------------------------------------------- */
     return (
-        <div className="flex-1 p-2 w-full mx-auto flex flex-col justify-center items-center ">
+        <div className="flex-1 p-2 w-full mx-auto flex flex-col justify-center items-center h-full">
             {viewerElement}
         </div>
     );

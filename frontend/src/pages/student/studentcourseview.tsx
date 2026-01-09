@@ -123,19 +123,19 @@ export default function StudentCourseView() {
     item => item.completion_status === 'completed'
   ).length;
 
-  console.log("complete item",completedItems);
+  console.log("complete item", completedItems);
 
   // ✅ Mark item as completed via API
-const markItemCompleted = async (itemId: number) => {
-  try {
-    await api.post(`/student/item-attempt`, {
-      content_item_id: itemId,
-      completion_status: "completed"
-    });
-  } catch (err) {
-    console.error("❌ Failed to mark item completed", err);
-  }
-};
+  const markItemCompleted = async (itemId: number) => {
+    try {
+      await api.post(`/student/item-attempt`, {
+        content_item_id: itemId,
+        completion_status: "completed"
+      });
+    } catch (err) {
+      console.error("❌ Failed to mark item completed", err);
+    }
+  };
 
   // Find current content ID from URL (if any)
   const currentPath = window.location.pathname;
@@ -176,33 +176,33 @@ const markItemCompleted = async (itemId: number) => {
   };*/
 
   const goToNext = async () => {
-  if (currentIndex < 0 || currentIndex >= allContentItems.length - 1) return;
+    if (currentIndex < 0 || currentIndex >= allContentItems.length - 1) return;
 
-  const currentItem = allContentItems[currentIndex];
-  
-  // ✅ Mark current item as completed
-  await markItemCompleted(currentItem.id);
+    const currentItem = allContentItems[currentIndex];
 
-  // ✅ Optimistically update local course state
-  setCourse(prev => {
-    if (!prev) return prev;
-    return {
-      ...prev,
-      chapters: prev.chapters.map(chapter => ({
-        ...chapter,
-        content_items: chapter.content_items.map(item =>
-          item.id === currentItem.id
-            ? { ...item, completion_status: 'completed' }
-            : item
-        )
-      }))
-    };
-  });
+    // ✅ Mark current item as completed
+    await markItemCompleted(currentItem.id);
 
-  // ✅ Navigate to next
-  const nextItem = allContentItems[currentIndex + 1];
-  navigate(`content/${nextItem.id}`);
-};
+    // ✅ Optimistically update local course state
+    setCourse(prev => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        chapters: prev.chapters.map(chapter => ({
+          ...chapter,
+          content_items: chapter.content_items.map(item =>
+            item.id === currentItem.id
+              ? { ...item, completion_status: 'completed' }
+              : item
+          )
+        }))
+      };
+    });
+
+    // ✅ Navigate to next
+    const nextItem = allContentItems[currentIndex + 1];
+    navigate(`content/${nextItem.id}`);
+  };
 
   return (
     <div className="flex h-screen bg-gray-50">
@@ -224,7 +224,7 @@ const markItemCompleted = async (itemId: number) => {
         <div className="px-4 pb-3 border-b border-gray-200">
           <CourseProgressBar completed={completedItems} total={totalItems} />
         </div>
-        
+
         {/* Chapters & Content Items List */}
         <div className="flex-1 overflow-y-auto pr-2">
           {course.chapters.map((chapter) => (
@@ -251,7 +251,7 @@ const markItemCompleted = async (itemId: number) => {
                     >
                       {/* ✅ Completion Tick */}
                       {item.completion_status === 'completed' && (
-                      <span className="text-green-500 text-sm">✓</span>
+                        <span className="text-green-500 text-sm">✓</span>
                       )}
 
                       <span className="text-sm flex-1">{item.title}</span>
@@ -303,29 +303,27 @@ const markItemCompleted = async (itemId: number) => {
               <button
                 onClick={goToPrevious}
                 disabled={currentIndex <= 0}
-                className={`px-4 py-2 text-sm rounded ${
-                  currentIndex <= 0
-                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                    : 'bg-gray-200 hover:bg-gray-300'
-                }`}
+                className={`px-4 py-2 text-sm rounded ${currentIndex <= 0
+                  ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                  : 'bg-gray-200 hover:bg-gray-300'
+                  }`}
               >
                 <div className="flex items-center">
-                <TbPlayerTrackPrevFilled  className="mr-1"/>
-                <span>Previous</span>
+                  <TbPlayerTrackPrevFilled className="mr-1" />
+                  <span>Previous</span>
                 </div>
               </button>
               <button
                 onClick={goToNext}
                 disabled={currentIndex >= allContentItems.length - 1}
-                className={`px-4 py-2 text-sm rounded ${
-                  currentIndex >= allContentItems.length - 1
-                    ? 'bg-indigo-300 text-white cursor-not-allowed'
-                    : 'bg-blue-900 text-white hover:bg-indigo-700'
-                }`}
+                className={`px-4 py-2 text-sm rounded ${currentIndex >= allContentItems.length - 1
+                  ? 'bg-indigo-300 text-white cursor-not-allowed'
+                  : 'bg-blue-900 text-white hover:bg-indigo-700'
+                  }`}
               >
                 <div className="flex items-center">
                   <span className="mr-1" >Next</span>
-                <TbPlayerTrackNextFilled />
+                  <TbPlayerTrackNextFilled />
                 </div>
               </button>
             </div>
@@ -333,7 +331,7 @@ const markItemCompleted = async (itemId: number) => {
         </div>
 
         {/* Content Area */}
-        <div className="flex-1 overflow-auto bg-white">
+        <div className="flex-1 overflow-auto bg-white h-full">
           <Outlet />
         </div>
       </div>
