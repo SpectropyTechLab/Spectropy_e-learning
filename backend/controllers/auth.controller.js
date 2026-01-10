@@ -46,13 +46,14 @@ export const login = async (req, res) => {
   const dbStart = Date.now();
 
   try {
-    const userQueryResult = await pool.query('SELECT id, password_hash FROM users WHERE email = $1', [email]);
+    const userQueryResult = await pool.query('SELECT id, password_hash, role FROM users WHERE email = $1', [email]);
 
     if (userQueryResult.rows.length === 0) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
     const user = userQueryResult.rows[0];
+    console.log("***************backend user data***************\ndata: ", user);
     const isValid = await comparePassword(password, user.password_hash);
 
     if (!isValid) {
