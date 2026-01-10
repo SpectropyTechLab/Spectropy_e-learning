@@ -45,6 +45,7 @@ const GraphicBasics = () => (
     </svg>
 );
 
+
 const GraphicTeachers = () => (
     <svg viewBox="0 0 300 200" className="w-full h-auto max-h-[220px] drop-shadow-xl">
         <g transform="translate(160, 50)">
@@ -113,7 +114,7 @@ interface ChallengesFlowProps {
     onClose?: () => void; // Kept for type safety, but effectively optional now
 }
 
-const ChallengesFlowFinal: React.FC<ChallengesFlowProps> = ({ activeModal, onClose }) => {
+const ChallengesFlowFinal: React.FC<ChallengesFlowProps> = ({ activeModal }) => {
     // 1. INTERNAL STATE TO MANAGE VISIBILITY INDEPENDENTLY
     const [showModal, setShowModal] = useState(false);
 
@@ -122,6 +123,7 @@ const ChallengesFlowFinal: React.FC<ChallengesFlowProps> = ({ activeModal, onClo
 
     const lastScrollTime = useRef(0);
     const touchStartY = useRef(0);
+
 
     // 2. SYNC PROP TO INTERNAL STATE
     // This ensures if the parent opens it, we open. 
@@ -137,11 +139,7 @@ const ChallengesFlowFinal: React.FC<ChallengesFlowProps> = ({ activeModal, onClo
         }
     }, [activeModal]);
 
-    // 3. INTERNAL CLOSE HANDLER
-    const handleInternalClose = () => {
-        setShowModal(false); // Immediate visual close
-        if (onClose) onClose(); // Optional: Tell parent if they care
-    };
+
 
     // Timer: Auto transition from Intro to Split
     useEffect(() => {
@@ -192,6 +190,8 @@ const ChallengesFlowFinal: React.FC<ChallengesFlowProps> = ({ activeModal, onClo
             window.removeEventListener('touchend', handleTouchEnd);
         };
     }, [viewMode, showModal]);
+    // --- KEYBOARD & PRESENTER REMOTE SUPPORT ---
+
 
     // --- DATA & CONFIG ---
     const contentData: Record<ChallengeId, ChallengeContent> = {
@@ -238,20 +238,13 @@ const ChallengesFlowFinal: React.FC<ChallengesFlowProps> = ({ activeModal, onClo
             {/* 4. RENDER CONDITION CHANGED TO INTERNAL STATE */}
             {showModal && (
                 <motion.div
-                    className="absolute inset-0 z-50 flex items-center justify-center p-4"
+                    className="h-full w-full inset-0 z-50 flex items-center justify-center p-4"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.3 }}
                 >
-                    {/* BACKDROP */}
-                    <motion.div
-                        className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        onClick={handleInternalClose} // Uses internal handler
-                    />
+
 
                     {/* MODAL CONTAINER */}
                     <motion.div
@@ -265,9 +258,14 @@ const ChallengesFlowFinal: React.FC<ChallengesFlowProps> = ({ activeModal, onClo
                         {/* === LEFT PANEL === */}
                         <motion.div
                             layout
-                            className="relative border-r border-slate-100 bg-slate-50/80 hidden md:flex items-center justify-center overflow-hidden shrink-0"
+                            className="relative border-r border-slate-100 bg-slate-50/80 flex flex-col items-center overflow-hidden shrink-0"
                             animate={{
-                                width: viewMode === 'split' ? "450px" : "100%",
+                                // Responsive Width Logic:
+                                // Mobile: Always 100% width (stacked)
+                                // Desktop (split mode): 45% width
+                                // Desktop (intro mode): 100% width
+                                width: window.innerWidth < 768 ? "100%" : (viewMode === 'split' ? "40%" : "100%"),
+                                height: window.innerWidth < 768 && viewMode === 'split' ? "300px" : "100%" // Shrink height on mobile split view
                             }}
                             transition={{ duration: 0.8, ease: "easeInOut" }}
                         >
@@ -281,21 +279,27 @@ const ChallengesFlowFinal: React.FC<ChallengesFlowProps> = ({ activeModal, onClo
                                 </button>
                             )}
 
-                            {/* Header */}
-                            <div className="absolute top-8 left-0 right-0 text-center z-20 pointer-events-none px-4">
-                                <h2 className="text-2xl font-black text-slate-800 leading-none uppercase tracking-tight">
+                            {/* Header - Stacks naturally at the top */}
+                            <div className="w-full pt-8 pb-2 px-4 text-center z-20 shrink-0">
+                                <h2 className="text-xl md:text-2xl font-black text-slate-800 leading-none uppercase tracking-tight">
                                     The Core <span className="text-blue-600">Challenges</span>
                                 </h2>
-                                <p className="text-slate-400 text-xs mt-2 font-medium tracking-wide">
+                                <p className="text-slate-400 text-[10px] md:text-xs mt-2 font-medium tracking-wide">
                                     Why Traditional Schooling Falls Short
                                 </p>
                             </div>
 
-                            {/* SVG CONTAINER */}
-                            <div className="flex items-center justify-center p-8">
-                                <div className="relative w-[400px] h-[560px] shrink-0 select-none">
+                            {/* SVG CONTAINER - Fills remaining space */}
+                            <div className="flex-1 w-full flex items-center justify-center relative min-h-0 p-4">
 
-                                    <svg className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-visible" viewBox="0 0 500 700" preserveAspectRatio="xMidYMid meet">
+                                {/* RESPONSIVE WRAPPER:
+                                    - max-h-full: prevents overflowing vertically
+                                    - aspect-[5/7]: maintains the aspect ratio of the snake path (500x700)
+                                    - w-auto / h-auto: lets it scale based on whichever dimension is tighter
+                                */}
+                                <div className="relative w-full max-w-[400px] aspect-[500/700] max-h-full">
+
+                                    <svg className="w-full h-full overflow-visible" viewBox="0 0 500 700">
                                         <defs>
                                             <linearGradient id="splitGradient" x1="0%" y1="0%" x2="0%" y2="100%">
                                                 <stop offset="0%" stopColor="#3b82f6" />
@@ -303,6 +307,8 @@ const ChallengesFlowFinal: React.FC<ChallengesFlowProps> = ({ activeModal, onClo
                                                 <stop offset="100%" stopColor="#ef4444" />
                                             </linearGradient>
                                         </defs>
+
+                                        {/* BACKGROUND PATH */}
                                         <path
                                             d={`M ${steps[0].x} ${steps[0].y} 
                                             C ${steps[0].x} ${steps[0].y + tension}, ${steps[1].x} ${steps[1].y - tension}, ${steps[1].x} ${steps[1].y}
@@ -311,6 +317,8 @@ const ChallengesFlowFinal: React.FC<ChallengesFlowProps> = ({ activeModal, onClo
                                             C ${steps[3].x} ${steps[3].y + tension}, ${steps[4].x} ${steps[4].y - tension}, ${steps[4].x} ${steps[4].y}`}
                                             fill="none" stroke="#e2e8f0" strokeWidth="6" strokeLinecap="round" strokeDasharray="12 12"
                                         />
+
+                                        {/* ANIMATED PATH */}
                                         <motion.path
                                             d={`M ${steps[0].x} ${steps[0].y} 
                                             C ${steps[0].x} ${steps[0].y + tension}, ${steps[1].x} ${steps[1].y - tension}, ${steps[1].x} ${steps[1].y}
@@ -326,12 +334,13 @@ const ChallengesFlowFinal: React.FC<ChallengesFlowProps> = ({ activeModal, onClo
                                         />
                                     </svg>
 
-                                    {/* NODES & LABELS */}
+                                    {/* NODES (Overlay on top of SVG) */}
                                     {steps.map((step, index) => {
                                         const isActive = activeStep === step.id && viewMode === 'split';
                                         const isIntro = viewMode === 'intro';
                                         const theme = contentData[step.id];
 
+                                        // Calculate position as percentages
                                         const leftPos = `${(step.x / 500) * 100}%`;
                                         const topPos = `${(step.y / 700) * 100}%`;
                                         const isRightEdge = step.x > 350;
@@ -348,30 +357,30 @@ const ChallengesFlowFinal: React.FC<ChallengesFlowProps> = ({ activeModal, onClo
                                                 >
                                                     {/* CIRCLE NODE */}
                                                     <motion.div
-                                                        className={`absolute -translate-x-1/2 -translate-y-1/2 w-14 h-14 rounded-full ${step.color} shadow-lg shadow-slate-300/50 border-4 ${isActive ? `border-slate-800` : 'border-white'} flex items-center justify-center transition-all duration-300
+                                                        className={`absolute -translate-x-1/2 -translate-y-1/2 w-10 h-10 md:w-14 md:h-14 rounded-full ${step.color} shadow-lg shadow-slate-300/50 border-2 md:border-4 ${isActive ? `border-slate-800` : 'border-white'} flex items-center justify-center transition-all duration-300
                                                             ${(!isActive && !isIntro) ? 'opacity-80 hover:opacity-100' : 'opacity-100'}`}
                                                         initial={{ scale: 0 }}
                                                         animate={{ scale: isActive ? 1.2 : 1 }}
                                                         transition={{ delay: index * 0.8, type: "spring", stiffness: 200 }}
                                                     >
-                                                        <span className="text-white font-bold text-lg">{step.id}</span>
+                                                        <span className="text-white font-bold text-sm md:text-lg">{step.id}</span>
                                                         {isActive && (
-                                                            <motion.div layoutId="activeRing" className={`absolute -inset-3 rounded-full border-[3px] ${theme.accent} border-dashed animate-spin-slow opacity-60`} />
+                                                            <motion.div layoutId="activeRing" className={`absolute -inset-2 md:-inset-3 rounded-full border-[3px] ${theme.accent} border-dashed animate-spin-slow opacity-60`} />
                                                         )}
                                                     </motion.div>
 
-                                                    {/* LABEL - ALWAYS VISIBLE */}
+                                                    {/* LABEL */}
                                                     <motion.div
-                                                        className={`absolute top-1/2 -translate-y-1/2 w-36 px-4 py-2.5 rounded-lg shadow-sm border transition-all duration-300
-                                                            ${isRightEdge ? 'right-10 text-right origin-right' : 'left-10 text-left origin-left'}
+                                                        className={`absolute top-1/2 -translate-y-1/2 w-28 md:w-36 px-2 md:px-4 py-1.5 md:py-2.5 rounded-lg shadow-sm border transition-all duration-300 pointer-events-none md:pointer-events-auto
+                                                            ${isRightEdge ? 'right-8 md:right-10 text-right origin-right' : 'left-8 md:left-10 text-left origin-left'}
                                                             ${isActive
                                                                 ? `${theme.bg} ${theme.text} ${theme.accent} opacity-100 scale-100 z-30`
-                                                                : 'bg-white/70 text-slate-400 border-slate-100 opacity-80 scale-95 z-10 grayscale hover:grayscale-0 hover:scale-100 hover:opacity-100 hover:bg-white hover:text-slate-600 hover:shadow-md'}`}
+                                                                : 'bg-white/70 text-slate-400 border-slate-100 opacity-0 md:opacity-80 scale-95 z-10 grayscale hover:grayscale-0 hover:scale-100 hover:opacity-100 hover:bg-white hover:text-slate-600 hover:shadow-md'}`}
                                                         initial={{ scale: 0.8, opacity: 0 }}
-                                                        animate={{ scale: isActive ? 1.05 : 0.95, opacity: 1 }}
+                                                        animate={{ scale: isActive ? 1.05 : 0.95, opacity: window.innerWidth < 768 && !isActive ? 0 : 1 }}
                                                         transition={{ delay: (index * 0.8) + 0.3 }}
                                                     >
-                                                        <span className="text-[10px] font-extrabold uppercase tracking-wider block leading-tight">{step.title}</span>
+                                                        <span className="text-[8px] md:text-[10px] font-extrabold uppercase tracking-wider block leading-tight">{step.title}</span>
                                                     </motion.div>
                                                 </div>
                                             </div>
@@ -384,22 +393,14 @@ const ChallengesFlowFinal: React.FC<ChallengesFlowProps> = ({ activeModal, onClo
                         {/* === RIGHT PANEL (Content) === */}
                         <motion.div
                             layout
-                            className="flex-1 bg-white relative p-8 md:p-12 flex flex-col items-center justify-center overflow-hidden"
+                            // CHANGE 1: Added 'overflow-y-auto' for safety on small screens
+                            // CHANGE 2: Reduced padding (p-6 vs p-12)
+                            className="flex-1 bg-white relative p-6 md:p-12 flex flex-col items-center justify-center overflow-y-auto md:overflow-hidden"
                             initial={{ opacity: 0 }}
                             animate={{ opacity: viewMode === 'split' ? 1 : 0 }}
                             transition={{ delay: 0.2, duration: 0.4 }}
                         >
-                            {/* CLOSE BUTTON - Uses internal handleInternalClose */}
-                            <button
-                                onClick={handleInternalClose}
-                                className="absolute top-5 right-5 p-2 bg-slate-100 hover:bg-slate-200 rounded-full text-slate-500 hover:text-slate-800 transition-colors z-50 shadow-sm"
-                                aria-label="Close"
-                            >
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                                </svg>
-                            </button>
+
 
                             <AnimatePresence mode='wait'>
                                 {viewMode === 'split' && (
@@ -409,30 +410,36 @@ const ChallengesFlowFinal: React.FC<ChallengesFlowProps> = ({ activeModal, onClo
                                         animate={{ opacity: 1, x: 0 }}
                                         exit={{ opacity: 0, x: -20 }}
                                         transition={{ duration: 0.3, ease: "easeOut" }}
-                                        className="w-full max-w-md text-center"
+                                        className="w-full max-w-md text-center flex flex-col h-full md:h-auto justify-center"
                                     >
-                                        <div className={`mb-8 p-8 rounded-3xl ${contentData[activeStep].bg} border-2 ${contentData[activeStep].accent} shadow-sm flex justify-center items-center relative overflow-hidden h-48`}>
+                                        {/* GRAPHIC CONTAINER */}
+                                        {/* CHANGE 3: Responsive Height (h-32 vs h-48) */}
+                                        <div className={`mb-4 md:mb-8 p-4 md:p-8 rounded-3xl ${contentData[activeStep].bg} border-2 ${contentData[activeStep].accent} shadow-sm flex justify-center items-center relative overflow-hidden h-32 md:h-48 shrink-0`}>
                                             <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-current to-transparent" style={{ color: contentData[activeStep].text.replace('text-', '') }}></div>
-                                            <div className="relative z-10 w-full flex justify-center">
+                                            {/* CHANGE 4: Internal Graphic Scale (scale-75 on mobile) */}
+                                            <div className="relative z-10 w-full flex justify-center scale-75 md:scale-100 origin-center">
                                                 {contentData[activeStep].graphic}
                                             </div>
                                         </div>
 
-                                        <div className="flex flex-col items-center gap-2 mb-4">
-                                            <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${contentData[activeStep].bg} ${contentData[activeStep].text} ${contentData[activeStep].accent}`}>
+                                        <div className="flex flex-col items-center gap-1 md:gap-2 mb-2 md:mb-4">
+                                            <span className={`px-2 py-0.5 md:px-3 md:py-1 rounded-full text-[8px] md:text-[10px] font-black uppercase tracking-widest border ${contentData[activeStep].bg} ${contentData[activeStep].text} ${contentData[activeStep].accent}`}>
                                                 Challenge 0{activeStep}
                                             </span>
-                                            <h3 className="text-3xl md:text-4xl font-black text-slate-800 leading-none uppercase tracking-tight">
+
+                                            {/* CHANGE 5: Responsive Text Sizes */}
+                                            <h3 className="text-2xl md:text-4xl font-black text-slate-800 leading-none uppercase tracking-tight mt-1">
                                                 {contentData[activeStep].title}
                                             </h3>
+
                                             {contentData[activeStep].subtitle && (
-                                                <h4 className={`text-sm font-bold ${contentData[activeStep].text} opacity-80 uppercase tracking-widest`}>
+                                                <h4 className={`text-xs md:text-sm font-bold ${contentData[activeStep].text} opacity-80 uppercase tracking-widest`}>
                                                     {contentData[activeStep].subtitle}
                                                 </h4>
                                             )}
                                         </div>
 
-                                        <p className="text-slate-600 leading-relaxed text-sm md:text-base font-medium mx-auto max-w-sm">
+                                        <p className="text-slate-600 leading-relaxed text-xs md:text-base font-medium mx-auto max-w-sm px-2 md:px-0">
                                             {contentData[activeStep].desc}
                                         </p>
                                     </motion.div>
@@ -441,20 +448,21 @@ const ChallengesFlowFinal: React.FC<ChallengesFlowProps> = ({ activeModal, onClo
 
                             {/* MANUAL CONTROLS */}
                             {viewMode === 'split' && (
-                                <div className="absolute bottom-8 right-8 flex gap-3">
+                                // CHANGE 6: Adjusted positioning and button size for mobile
+                                <div className="absolute bottom-4 right-4 md:bottom-8 md:right-8 flex gap-3 z-40">
                                     <button
                                         onClick={handlePrev}
                                         disabled={activeStep === 1}
-                                        className="w-10 h-10 flex items-center justify-center rounded-full border border-slate-200 hover:bg-slate-50 hover:border-slate-300 disabled:opacity-30 disabled:cursor-not-allowed transition-all text-slate-600"
+                                        className="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center rounded-full border border-slate-200 hover:bg-slate-50 hover:border-slate-300 disabled:opacity-30 disabled:cursor-not-allowed transition-all text-slate-600 bg-white shadow-sm"
                                     >
-                                        <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7" /></svg>
+                                        <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7" /></svg>
                                     </button>
                                     <button
                                         onClick={handleNext}
                                         disabled={activeStep === 5}
-                                        className="w-10 h-10 flex items-center justify-center rounded-full border border-slate-200 hover:bg-slate-50 hover:border-slate-300 disabled:opacity-30 disabled:cursor-not-allowed transition-all text-slate-600"
+                                        className="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center rounded-full border border-slate-200 hover:bg-slate-50 hover:border-slate-300 disabled:opacity-30 disabled:cursor-not-allowed transition-all text-slate-600 bg-white shadow-sm"
                                     >
-                                        <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" /></svg>
+                                        <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" /></svg>
                                     </button>
                                 </div>
                             )}
