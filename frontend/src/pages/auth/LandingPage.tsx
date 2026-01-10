@@ -5,8 +5,10 @@ import EventsPage from './Eventspage';
 import BlogPage from './BlogPage';
 import FutureFoundationSlider from './FutureFoundationSlider';
 import HappyClientsSlider from './HappyClientsSlider';
+
 import ChallengesModal from '../../components/Landingpage/challenges'
 import SolutionFlow from '../../components/Landingpage/SolutionFlow'
+
 // --- SVGs for Icons ---
 const MenuIcon = () => (
     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
@@ -1382,12 +1384,6 @@ const LandingPage: React.FC = () => {
                                             Join the partner network transforming academic ecosystems. Let's discuss your school's vision today.
                                         </p>
                                         <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start pt-4">
-                                            <button className="bg-white text-blue-900 hover:bg-blue-50 px-8 py-4 rounded-full font-bold text-lg shadow-lg transition-transform transform hover:-translate-y-1">
-                                                Contact Us
-                                            </button>
-                                            <button className="px-8 py-4 rounded-full font-bold text-white border border-white/20 hover:bg-white/10 transition-all backdrop-blur-sm">
-                                                Partner Login
-                                            </button>
                                         </div>
                                     </div>
 
@@ -1403,7 +1399,7 @@ const LandingPage: React.FC = () => {
                                                 <div>
                                                     <h4 className="text-white font-bold text-sm uppercase tracking-wide mb-1 opacity-80">Headquarters</h4>
                                                     <p className="text-blue-100 text-sm leading-relaxed">
-                                                        G94H+MJP, Beside Krishnaveni Talent School, <br />Hyderabad, Telangana 500085
+                                                        G94H+MJP, Beside Guru Global School, <br />Hyderabad, Telangana 500085
                                                     </p>
                                                 </div>
                                             </div>
@@ -1419,7 +1415,6 @@ const LandingPage: React.FC = () => {
                                                 <div>
                                                     <h4 className="text-white font-bold text-sm uppercase tracking-wide mb-1 opacity-80">Call Us</h4>
                                                     <p className="text-blue-100 text-sm font-mono tracking-wide">
-                                                        +91 93912 94429 <br />
                                                         +91 90143 412377
                                                     </p>
                                                 </div>
