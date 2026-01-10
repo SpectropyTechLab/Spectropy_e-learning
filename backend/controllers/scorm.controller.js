@@ -34,7 +34,15 @@ const storage = multer.diskStorage({
 
 // Allow only videos, pdfs, and zip (SCORM)
 const fileFilter = (req, file, cb) => {
-  const allowed = ["video", "audio", "pdf", "zip", "application/zip"];
+  const allowed = [
+    "video",
+    "audio",
+    "pdf",
+    "zip",
+    "application/zip",
+    "text/plain",
+    "text/html"
+  ];
   const typeOk = allowed.some((t) => file.mimetype.includes(t));
   typeOk ? cb(null, true) : cb(new Error("Invalid file type"));
 };
@@ -175,12 +183,29 @@ export const updateContentFile = async (req, res) => {
     if (newFile) {
       const mimeType = newFile.mimetype;
 
-      if (mimeType.includes("zip")) newType = "scorm";
-      else if (mimeType.includes("pdf")) newType = "pdf";
-      else if (mimeType.includes("video")) newType = "video";
-      else if (mimeType.includes("audio")) newType = "audio";
-      else newType = "file"; // fallback
+      if (mimeType.includes("zip")) {
+        newType = "scorm";
+      }
+      else if (mimeType === "application/pdf") {
+        newType = "pdf";
+      }
+      else if (mimeType.startsWith("video/")) {
+        newType = "video";
+      }
+      else if (mimeType.startsWith("audio/")) {
+        newType = "audio";
+      }
+      else if (mimeType === "text/html") {
+        newType = "html";
+      }
+      else if (mimeType === "text/plain") {
+        newType = "text";
+      }
+      else {
+        throw new Error(`Unsupported file type: ${mimeType}`);
+      }
     }
+
 
     // -------------------------------------------------
     // 3️⃣ IF NEW FILE UPLOADED → Process it
