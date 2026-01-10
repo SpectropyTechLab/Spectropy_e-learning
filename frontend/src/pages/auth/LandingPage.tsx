@@ -5,7 +5,8 @@ import EventsPage from './Eventspage';
 import BlogPage from './BlogPage';
 import FutureFoundationSlider from './FutureFoundationSlider';
 import HappyClientsSlider from './HappyClientsSlider';
-import ChallengesModal from '../../components/Landingpage/challenges'
+import ChallengesModal from '../../components/Landingpage/challenges';
+import Programfuturefoundation from './programff';
 // --- SVGs for Icons ---
 const MenuIcon = () => (
     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
@@ -260,214 +261,7 @@ const LandingPage: React.FC = () => {
                                 {/* Content for Programs Modal */}
                                 {/* --- 1. FUTURE FOUNDATION MODAL (Detailed View) --- */}
                                 {activeModal === 'program-future' && (
-                                    <div className="w-full max-w-6xl mx-auto pb-12">
-                                        {/* Header */}
-                                        <div className="text-center mb-10 relative">
-                                            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-1 bg-blue-500 rounded-full"></div>
-                                            <div className="pt-6">
-                                                <h2 className="text-3xl md:text-5xl font-extrabold text-slate-900 mb-2">FUTURE FOUNDATION</h2>
-                                                <div className="inline-block bg-blue-900 text-white px-4 py-1 rounded-md text-sm md:text-lg font-bold shadow-md mb-2">
-                                                    A Comprehensive Blueprint for Academic & Competitive Success
-                                                </div>
-                                                <p className="text-slate-600 font-medium italic">"Bridging School Curriculum with Advanced Competitive Excellence"</p>
-                                            </div>
-                                        </div>
-
-                                        <div className="space-y-8">
-
-                                            {/* SECTION 1: FOUNDATION & TARGETS */}
-                                            <div className="bg-white border-t-4 border-blue-600 rounded-xl shadow-lg p-6 md:p-8 transition-transform duration-300 hover:scale-[1.01] hover:shadow-2xl">
-                                                <h3 className="text-xl md:text-2xl font-bold text-blue-900 mb-6 flex items-center border-b pb-4">
-                                                    <span className="bg-blue-600 text-white w-10 h-10 rounded-full flex items-center justify-center mr-3 text-lg shadow-md">1</span>
-                                                    FOUNDATION & TARGETS (Core & Goals)
-                                                </h3>
-
-                                                <div className="grid md:grid-cols-2 gap-8 items-center">
-                                                    {/* Left: Curriculum & Materials */}
-                                                    <div className="space-y-6">
-                                                        <div className="flex items-start gap-4 p-4 bg-blue-50 rounded-xl border border-blue-100">
-                                                            <div className="text-5xl">📖</div>
-                                                            <div>
-                                                                <h4 className="font-bold text-slate-800 text-lg">CURRICULUM</h4>
-                                                                <p className="text-xs text-slate-600 font-semibold">NCERT / SCERT / STATE BOARD Content </p>
-                                                                <div className="mt-3 flex gap-1">
-                                                                    <span className="px-1 py-1 bg-white rounded border border-blue-200 text-xs font-bold text-blue-800">Conceptual Synopsis</span>
-                                                                    <span className="px-1 py-1 bg-white rounded border border-blue-200 text-xs font-bold text-blue-800">Class Worksheet</span>
-                                                                    <span className="px-1 py-1 bg-white rounded border border-blue-200 text-xs font-bold text-blue-800">Home Worksheet</span>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                    {/* Right: Targets Visual */}
-                                                    <div className="relative p-6 bg-gradient-to-br from-slate-50 to-blue-50 rounded-xl border border-blue-200 text-center group">
-                                                        <div className="absolute top-2 right-2 text-2xl animate-bounce">🚩</div>
-                                                        <div className="mb-4">
-                                                            <div className="w-full h-24 flex items-end justify-center gap-1">
-                                                                <div className="w-8 h-12 bg-blue-300 rounded-t-sm"></div>
-                                                                <div className="w-10 h-16 bg-blue-500 rounded-t-sm"></div>
-                                                                <div className="w-12 h-20 bg-blue-700 rounded-t-sm relative">
-                                                                    <span className="absolute -top-6 left-1/2 -translate-x-1/2 text-xl">🏆</span>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        <h4 className="font-bold text-slate-800 text-lg mb-2">TARGET EXAMS</h4>
-                                                        <div className="flex flex-wrap justify-center gap-2">
-                                                            {['JEE Advanced', 'JEE Main', 'NEET', 'EAPCET', 'Olympiads'].map(exam => (
-                                                                <span key={exam} className="px-3 py-1 bg-white border border-blue-300 rounded-full text-xs font-extrabold text-blue-900 shadow-sm">{exam}</span>
-                                                            ))}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            {/* SECTION 2: PEDAGOGY & SKILL DEVELOPMENT */}
-                                            <div className="bg-white border-t-4 border-indigo-600 rounded-xl shadow-lg p-6 md:p-8 transition-transform duration-300 hover:scale-[1.01] hover:shadow-2xl">
-                                                <h3 className="text-xl md:text-2xl font-bold text-indigo-900 mb-6 flex items-center border-b pb-4">
-                                                    <span className="bg-indigo-600 text-white w-10 h-10 rounded-full flex items-center justify-center mr-3 text-lg shadow-md">2</span>
-                                                    PEDAGOGY & SKILL DEVELOPMENT
-                                                </h3>
-
-                                                <div className="grid md:grid-cols-3 gap-6 text-center">
-                                                    {/* DITP */}
-                                                    <div className="p-4 rounded-xl border-2 border-indigo-50 hover:border-indigo-200 transition-colors bg-white">
-                                                        <div className="w-16 h-16 mx-auto bg-indigo-100 rounded-full flex items-center justify-center text-3xl mb-3">💻</div>
-                                                        <h5 className="font-bold text-indigo-900 mb-1">DITP</h5>
-                                                        <p className="text-xs font-bold text-indigo-500 mb-2">Digital Interactive Teaching Product</p>
-                                                        <p className="text-xs text-slate-500">Digital Teaching Content, Teacher Login & Teach </p>
-                                                    </div>
-
-                                                    {/* Skills */}
-                                                    <div className="p-4 rounded-xl border-2 border-pink-50 hover:border-pink-200 transition-colors bg-white">
-                                                        <div className="w-16 h-16 mx-auto bg-pink-100 rounded-full flex items-center justify-center text-3xl mb-3">🧠</div>
-                                                        <h5 className="font-bold text-pink-900 mb-1">SKILLS TARGET</h5>
-                                                        <div className="flex flex-wrap justify-center gap-1 mt-2">
-                                                            {['Remember', 'Understand', 'Apply', 'Analyse', 'Evaluate', 'Create'].map(skill => (
-                                                                <span key={skill} className="text-[10px] bg-pink-50 text-pink-700 px-2 py-0.5 rounded-full">{skill}</span>
-                                                            ))}
-                                                        </div>
-                                                    </div>
-
-                                                    {/* Workshops */}
-                                                    <div className="p-4 rounded-xl border-2 border-purple-50 hover:border-purple-200 transition-colors bg-white flex flex-col justify-center gap-3">
-                                                        <div className="flex items-center gap-3 text-left">
-                                                            <div className="bg-purple-100 p-2 rounded-lg text-xl">👨‍🏫</div>
-                                                            <div>
-                                                                <p className="font-bold text-xs text-slate-800">Teacher Training</p>
-                                                                <p className="text-[10px] text-slate-500">Workshop</p>
-                                                            </div>
-                                                        </div>
-                                                        <div className="flex items-center gap-3 text-left">
-                                                            <div className="bg-purple-100 p-2 rounded-lg text-xl">🔬</div>
-                                                            <div>
-                                                                <p className="font-bold text-xs text-slate-800">Subject Enrichment</p>
-                                                                <p className="text-[10px] text-slate-500">Sessions</p>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            {/* SECTION 3: ASSESSMENT ARCHITECTURE */}
-                                            <div className="bg-white border-t-4 border-orange-500 rounded-xl shadow-lg p-6 md:p-8 transition-transform duration-300 hover:scale-[1.01] hover:shadow-2xl">
-                                                <h3 className="text-xl md:text-2xl font-bold text-orange-900 mb-6 flex items-center border-b pb-4">
-                                                    <span className="bg-orange-500 text-white w-10 h-10 rounded-full flex items-center justify-center mr-3 text-lg shadow-md">3</span>
-                                                    ASSESSMENT ARCHITECTURE (Testing Regime)
-                                                </h3>
-
-                                                <div className="grid md:grid-cols-12 gap-8">
-                                                    {/* Structure - Pyramid */}
-                                                    <div className="md:col-span-3 flex flex-col items-center justify-center">
-                                                        <div className="space-y-1 w-full max-w-[180px] text-center">
-                                                            <div className="bg-orange-500 text-white text-xs font-bold py-2 rounded-t-xl shadow-sm">Grand Test - 1 (Top)</div>
-                                                            <div className="bg-orange-400 text-white text-xs font-bold py-2 shadow-sm">Unit Tests - 2 (Middle)</div>
-                                                            <div className="bg-orange-300 text-white text-xs font-bold py-2 rounded-b-xl shadow-sm">Part Tests - 8 (Base)</div>
-                                                        </div>
-                                                        <p className="text-xs font-bold text-slate-400 mt-2 uppercase">Exam Structure</p>
-                                                    </div>
-
-                                                    {/* Modes */}
-                                                    <div className="md:col-span-3 flex flex-col justify-center gap-4">
-                                                        <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg border border-slate-200">
-                                                            <span className="text-2xl">📝</span>
-                                                            <div>
-                                                                <p className="text-xs font-bold text-slate-800">Offline</p>
-                                                                <p className="text-[10px] text-slate-500">OMR Based</p>
-                                                            </div>
-                                                        </div>
-                                                        <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg border border-slate-200">
-                                                            <span className="text-2xl">📱</span>
-                                                            <div>
-                                                                <p className="text-xs font-bold text-slate-800">Online</p>
-                                                                <p className="text-[10px] text-slate-500">Tab Exams</p>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                    {/* Question Types */}
-                                                    <div className="md:col-span-6 bg-orange-50/50 rounded-xl p-4 border border-orange-100">
-                                                        <h5 className="font-bold text-sm text-orange-900 mb-3 text-center uppercase">Question Types (JEE/Olympiad Focus)</h5>
-                                                        <div className="grid grid-cols-2 gap-2">
-                                                            {['MCQ Single Correct', 'MCQ Multiple Correct', 'Numerical Type', 'Assertion & Reasoning', 'Comprehension', 'Matrix Matching'].map(type => (
-                                                                <div key={type} className="bg-white px-3 py-2 rounded border border-orange-200 text-center shadow-sm">
-                                                                    <p className="text-[10px] font-bold text-slate-700">{type}</p>
-                                                                </div>
-                                                            ))}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            {/* SECTION 4: ANALYTICS & SUPPORT */}
-                                            <div className="bg-white border-t-4 border-teal-500 rounded-xl shadow-lg p-6 md:p-8 transition-transform duration-300 hover:scale-[1.01] hover:shadow-2xl">
-                                                <h3 className="text-xl md:text-2xl font-bold text-teal-900 mb-6 flex items-center border-b pb-4">
-                                                    <span className="bg-teal-500 text-white w-10 h-10 rounded-full flex items-center justify-center mr-3 text-lg shadow-md">4</span>
-                                                    ANALYTICS & HOLISTIC SUPPORT
-                                                </h3>
-
-                                                <div className="flex flex-col md:flex-row gap-8 items-center">
-                                                    {/* Dashboard Image Placeholder */}
-                                                    <div className="w-full md:w-1/3 bg-slate-900 rounded-lg p-4 text-white shadow-xl relative overflow-hidden group">
-                                                        <div className="absolute inset-0 bg-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                                                        <div className="flex justify-between border-b border-slate-700 pb-2 mb-2">
-                                                            <span className="text-xs font-bold text-teal-400">RA DASHBOARD</span>
-                                                            <div className="flex gap-1"><div className="w-2 h-2 bg-red-500 rounded-full"></div><div className="w-2 h-2 bg-yellow-500 rounded-full"></div></div>
-                                                        </div>
-                                                        <div className="flex items-end gap-2 h-20 px-2 pb-2">
-                                                            <div className="w-1/4 h-3/4 bg-blue-500 rounded-t"></div>
-                                                            <div className="w-1/4 h-1/2 bg-teal-500 rounded-t"></div>
-                                                            <div className="w-1/4 h-full bg-purple-500 rounded-t"></div>
-                                                            <div className="w-1/4 h-2/3 bg-orange-500 rounded-t"></div>
-                                                        </div>
-                                                        <p className="text-center text-[10px] text-slate-400">Results & Analysis</p>
-                                                    </div>
-
-                                                    {/* Reports Tree */}
-                                                    <div className="flex-grow grid grid-cols-2 md:grid-cols-4 gap-4">
-                                                        {[
-                                                            { name: 'School Report', icon: '🏫' },
-                                                            { name: 'Class Report', icon: '📋' },
-                                                            { name: 'Student Report', icon: '🧑‍🎓' },
-                                                            { name: 'Teacher Report', icon: '👩‍🏫' }
-                                                        ].map(item => (
-                                                            <div key={item.name} className="flex flex-col items-center justify-center p-3 bg-teal-50 rounded-xl border border-teal-100">
-                                                                <span className="text-2xl mb-1">{item.icon}</span>
-                                                                <span className="text-[10px] font-bold text-teal-900 text-center">{item.name}</span>
-                                                            </div>
-                                                        ))}
-                                                    </div>
-
-                                                    {/* Parent Seminar */}
-                                                    <div className="w-full md:w-1/5 flex flex-col items-center justify-center p-4 bg-yellow-50 rounded-xl border border-yellow-100 text-center">
-                                                        <div className="text-3xl mb-2">👪</div>
-                                                        <p className="font-bold text-xs text-slate-800">Parent Seminar</p>
-                                                        <span className="mt-2 text-[9px] bg-white border border-slate-200 px-2 py-1 rounded-full text-slate-500">All Students</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                        </div>
-                                    </div>
+                                    <Programfuturefoundation/>
                                 )}
 
                                 {/* --- 2. CATALYST PROGRAM MODAL (Detailed View) --- */}
@@ -1525,12 +1319,6 @@ const LandingPage: React.FC = () => {
                                             Join the partner network transforming academic ecosystems. Let's discuss your school's vision today.
                                         </p>
                                         <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start pt-4">
-                                            <button className="bg-white text-blue-900 hover:bg-blue-50 px-8 py-4 rounded-full font-bold text-lg shadow-lg transition-transform transform hover:-translate-y-1">
-                                                Contact Us
-                                            </button>
-                                            <button className="px-8 py-4 rounded-full font-bold text-white border border-white/20 hover:bg-white/10 transition-all backdrop-blur-sm">
-                                                Partner Login
-                                            </button>
                                         </div>
                                     </div>
 
@@ -1546,7 +1334,7 @@ const LandingPage: React.FC = () => {
                                                 <div>
                                                     <h4 className="text-white font-bold text-sm uppercase tracking-wide mb-1 opacity-80">Headquarters</h4>
                                                     <p className="text-blue-100 text-sm leading-relaxed">
-                                                        G94H+MJP, Beside Krishnaveni Talent School, <br />Hyderabad, Telangana 500085
+                                                        G94H+MJP, Beside Guru Global School, <br />Hyderabad, Telangana 500085
                                                     </p>
                                                 </div>
                                             </div>
@@ -1562,7 +1350,6 @@ const LandingPage: React.FC = () => {
                                                 <div>
                                                     <h4 className="text-white font-bold text-sm uppercase tracking-wide mb-1 opacity-80">Call Us</h4>
                                                     <p className="text-blue-100 text-sm font-mono tracking-wide">
-                                                        +91 93912 94429 <br />
                                                         +91 90143 412377
                                                     </p>
                                                 </div>
