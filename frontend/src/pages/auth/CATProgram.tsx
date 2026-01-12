@@ -384,7 +384,7 @@ const Programcatalyst = () => {
   ];
 
   return (
-    <div className="w-full max-w-6xl mx-auto h-[500px] bg-white rounded-xl shadow-2xl overflow-hidden flex font-sans border border-slate-200">
+    <div className="w-full max-w-8xl mx-auto h-[500px] bg-white rounded-xl shadow-2xl overflow-hidden flex font-sans border border-slate-200">
       
       {/* --- LEFT PANEL (Navigation) --- */}
       <div className="w-1/4 bg-slate-50 border-r border-slate-200 flex flex-col z-20">

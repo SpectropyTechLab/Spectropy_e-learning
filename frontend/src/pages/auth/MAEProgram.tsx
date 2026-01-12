@@ -299,7 +299,7 @@ const MaestroPresentation = () => {
   ];
 
   return (
-    <div className="w-full max-w-6xl mx-auto h-[500px] bg-white rounded-3xl shadow-2xl overflow-hidden flex font-sans border-4 border-purple-100">
+    <div className="w-full max-w-8xl mx-auto h-[500px] bg-white rounded-3xl shadow-2xl overflow-hidden flex font-sans border-4 border-purple-100">
       
       {/* --- LEFT PANEL (Navigation) --- */}
       <div className="w-1/4 bg-purple-50/50 border-r border-purple-100 flex flex-col z-20">

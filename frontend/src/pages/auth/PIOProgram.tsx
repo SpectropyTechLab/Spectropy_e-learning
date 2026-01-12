@@ -380,7 +380,7 @@ const PioneerPresentation = () => {
   ];
 
   return (
-    <div className="w-full max-w-6xl mx-auto h-[500px] bg-white rounded-3xl shadow-2xl overflow-hidden flex font-sans border-4 border-indigo-50">
+    <div className="w-full max-w-8xl mx-auto h-[500px] bg-white rounded-3xl shadow-2xl overflow-hidden flex font-sans border-4 border-indigo-50">
       
       {/* --- LEFT PANEL (Navigation) --- */}
       <div className="w-1/4 bg-slate-50 border-r border-indigo-100 flex flex-col z-20">
