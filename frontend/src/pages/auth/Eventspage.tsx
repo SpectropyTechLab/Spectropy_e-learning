@@ -92,13 +92,13 @@ const filteredSchools = useMemo(() => {
 
   // --- ANIMATION VARIANTS ---
   const sidebarVariants = {
-    open: { width: "25%", opacity: 1, x: 0 },
-    closed: { width: "0%", opacity: 0, x: -50 },
+    open: { width: 320, x: 0, opacity: 1 },
+    closed: { width: 0, x: -320, opacity: 0 },
     mobileOpen: { width: "85%", opacity: 1, x: 0 },
   };
 
   return (
-    <div className="flex h-screen bg-slate-50 overflow-hidden font-sans text-slate-800">
+    <div className="flex w-screen h-screen bg-slate-50 overflow-hidden font-sans text-slate-800">
       
       {/* --- LEFT PANEL (SIDEBAR) --- */}
       <motion.aside
@@ -108,7 +108,7 @@ const filteredSchools = useMemo(() => {
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
         className={`bg-white border-r border-slate-200 shadow-xl z-20 flex flex-col h-full absolute md:relative ${!isSidebarOpen && 'hidden md:block'}`}
       >
-        <div className="p-6 h-full flex flex-col">
+        <div className="p-10 h-full flex flex-col">
           <div className="flex items-center justify-between mb-8">
             <h2 className="text-2xl font-bold bg-linear-to-r from-indigo-600 to-blue-500 bg-clip-text text-transparent">
               Spectropy

@@ -79,8 +79,8 @@ const HappyClientsSlider: React.FC = () => {
   console.log('clients images urls=', clients.map(c => c.logoUrl));   
 
   return (
-    <section className="w-full h-full bg-slate-900 py-16 overflow-hidden">
-      <div className="container mx-auto px-6 mb-10 text-center">
+    <section className="w-full h-full bg-slate-900 py-30 overflow-hidden">
+      <div className="container mx-auto px-10 mb-30 text-center">
         <h2 className="text-3xl font-bold text-slate-50 ">Our Happy Clients</h2>
         <p className="text-slate-500 mt-2 mb-6">Trusted by {clients.length}+ future-ready institutions</p>
         
