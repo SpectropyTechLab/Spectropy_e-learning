@@ -112,11 +112,10 @@ const UserManagement: React.FC = () => {
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`py-2 px-4 font-medium ${
-                activeTab === tab
+              className={`py-2 px-4 font-medium ${activeTab === tab
                   ? 'border-b-2 border-black text-black'
                   : 'text-gray-500 hover:text-gray-700'
-              }`}
+                }`}
             >
               {tab}
             </button>

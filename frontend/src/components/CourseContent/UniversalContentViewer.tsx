@@ -17,12 +17,56 @@ export default function UniversalContentViewer({
     const [htmlContent, setHtmlContent] = useState<string>("");
     const resolvedUrl = normalizeUrl(url);
 
+
+    const lockLandscape = async () => {
+        try {
+            if (screen.orientation && screen.orientation.lock) {
+                await screen.orientation.lock("landscape");
+            }
+        } catch (err) {
+            console.warn("Landscape lock not supported", err);
+        }
+    };
+
+    const unlockOrientation = () => {
+        try {
+            if (screen.orientation && screen.orientation.unlock) {
+                screen.orientation.unlock();
+            }
+        } catch (err) {
+            console.warn("Orientation unlock not supported", err);
+        }
+    };
+
+    useEffect(() => {
+        const onFullscreenChange = () => {
+            const isFullscreen =
+                document.fullscreenElement ||
+                (document as any).webkitFullscreenElement;
+
+            if (isFullscreen) {
+                lockLandscape();
+            } else {
+                unlockOrientation();
+            }
+        };
+
+        document.addEventListener("fullscreenchange", onFullscreenChange);
+        document.addEventListener("webkitfullscreenchange", onFullscreenChange);
+
+        return () => {
+            document.removeEventListener("fullscreenchange", onFullscreenChange);
+            document.removeEventListener("webkitfullscreenchange", onFullscreenChange);
+        };
+    }, []);
+
     /* -------------------------------
        Fullscreen toggle
     -------------------------------- */
     const toggleFullscreen = () => {
         if (!document.fullscreenElement) {
-            containerRef.current?.requestFullscreen();
+            containerRef.current?.requestFullscreen?.();
+
         } else {
             document.exitFullscreen();
         }

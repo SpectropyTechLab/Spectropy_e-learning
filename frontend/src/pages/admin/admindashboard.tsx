@@ -26,7 +26,7 @@ export default function CourseStudents() {
   const navigate = useNavigate();
   const { logout } = useAuth();
   const { user } = useAuth();
-  
+
   // 👇 Add these lines
   const userFullName = user?.full_name || 'Super Administrator';
   const userEmail = user?.email || 'super@lms.com';
@@ -51,11 +51,12 @@ export default function CourseStudents() {
   const [openMenuId, setOpenMenuId] = useState<number | null>(null);
   //const menuRef = useRef<HTMLDivElement | null>(null);
   const filterRef = useRef<HTMLDivElement | null>(null);
-  
+
   const [editingCourseId, setEditingCourseId] = useState<number | null>(null);
   const [editTitle, setEditTitle] = useState('');
   const [editDescription, setEditDescription] = useState('');
   const [editPublished, setEditPublished] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
 
   // Close filter dropdown on click outside
@@ -154,62 +155,62 @@ export default function CourseStudents() {
 
 
   const handleDeleteCourse = async (id: number) => {
-  if (!confirm('Are you sure you want to delete this course? This action cannot be undone.')) {
-    return;
-  }
-  console.log('🗑️ Attempting to delete course ID:', id);
-  try {
-    await api.delete(`/admin/courses/${id}`);
-    // Remove the deleted course from the local state
-    setCourses((prev) => prev.filter((course) => course.id !== id));
-    alert('Course deleted successfully!');
-  } catch (err: any) {
-    console.error('Failed to delete course:', err);
-    const errorMsg = err.response?.data?.error || 'Failed to delete course. Please try again.';
-    alert(errorMsg);
-  }
-};
+    if (!confirm('Are you sure you want to delete this course? This action cannot be undone.')) {
+      return;
+    }
+    console.log('🗑️ Attempting to delete course ID:', id);
+    try {
+      await api.delete(`/admin/courses/${id}`);
+      // Remove the deleted course from the local state
+      setCourses((prev) => prev.filter((course) => course.id !== id));
+      alert('Course deleted successfully!');
+    } catch (err: any) {
+      console.error('Failed to delete course:', err);
+      const errorMsg = err.response?.data?.error || 'Failed to delete course. Please try again.';
+      alert(errorMsg);
+    }
+  };
 
   const handleEditCourse = (course: Course) => {
-  setEditingCourseId(course.id);
-  setEditTitle(course.title);
-  setEditDescription(course.description || '');
-  setEditPublished(course.published);
-};
- 
+    setEditingCourseId(course.id);
+    setEditTitle(course.title);
+    setEditDescription(course.description || '');
+    setEditPublished(course.published);
+  };
+
   const handleSaveEdit = async (id: number) => {
-  if (!editTitle.trim()) {
-    alert('Title is required');
-    return;
-  }
+    if (!editTitle.trim()) {
+      alert('Title is required');
+      return;
+    }
 
-  try {
-    await api.patch(`/admin/courses/${id}`, {
-      title: editTitle.trim(),
-      description: editDescription.trim() || null,
-      published: editPublished,
-    });
+    try {
+      await api.patch(`/admin/courses/${id}`, {
+        title: editTitle.trim(),
+        description: editDescription.trim() || null,
+        published: editPublished,
+      });
 
-    // Optimistically update local state
-    setCourses(prev =>
-      prev.map(course =>
-        course.id === id
-          ? { ...course, title: editTitle.trim(), description: editDescription.trim() || null, published: editPublished }
-          : course
-      )
-    );
+      // Optimistically update local state
+      setCourses(prev =>
+        prev.map(course =>
+          course.id === id
+            ? { ...course, title: editTitle.trim(), description: editDescription.trim() || null, published: editPublished }
+            : course
+        )
+      );
 
-    setEditingCourseId(null);
-    alert('Course updated successfully!');
-  } catch (err: any) {
-    const errorMsg = err.response?.data?.error || 'Failed to update course';
-    alert(errorMsg);
-  }
-};
-  
+      setEditingCourseId(null);
+      alert('Course updated successfully!');
+    } catch (err: any) {
+      const errorMsg = err.response?.data?.error || 'Failed to update course';
+      alert(errorMsg);
+    }
+  };
+
   const handleCancelEdit = () => {
-  setEditingCourseId(null);
-};
+    setEditingCourseId(null);
+  };
 
   // 🔍 Final filtered list (search + status filter)
   const filteredCourses = courses.filter((course) => {
@@ -227,8 +228,30 @@ export default function CourseStudents() {
 
   return (
     <div className="flex h-screen bg-gray-50">
+      {/* Mobile sidebar overlay */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/40 z-40 md:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       {/* Left Sidebar */}
-      <div className="w-64 bg-white border-r border-gray-200 flex flex-col">
+      <div
+        className={`
+    fixed md:static
+    inset-y-0 left-0
+    z-50
+    w-64
+    bg-white
+    border-r border-gray-200
+    flex flex-col
+    transform transition-transform duration-300 ease-in-out
+    ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+    md:translate-x-0
+  `}
+      >
+
         <div className="p-6 border-b border-gray-200">
           <div className="flex items-center space-x-2 cursor-pointer">
             <img src={logo} alt="Spectropy Logo" className="h-10 w-auto md:h-10 lg:h-12 rounded-md" />
@@ -238,7 +261,7 @@ export default function CourseStudents() {
 
         <nav className="flex-1 p-4 space-y-1">
           <button
-            onClick={() => setActiveTab('home')}
+            onClick={() => { setActiveTab('home'); setSidebarOpen(false); }}
             className={`w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${activeTab === 'home'
               ? 'bg-blue-50 text-blue-900 border-l-4 border-blue-900'
               : 'text-gray-700 hover:bg-gray-100'
@@ -249,7 +272,7 @@ export default function CourseStudents() {
           </button>
 
           <button
-            onClick={() => setActiveTab('courses')}
+            onClick={() => { setActiveTab('courses'); setSidebarOpen(false); }}
             className={`w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${activeTab === 'courses'
               ? 'bg-blue-50 text-blue-900 border-l-4 border-blue-900'
               : 'text-gray-700 hover:bg-gray-100'
@@ -260,7 +283,7 @@ export default function CourseStudents() {
           </button>
 
           <button
-            onClick={() => setActiveTab('users')}
+            onClick={() => { setActiveTab('users'); setSidebarOpen(false); }}
             className={`w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${activeTab === 'users'
               ? 'bg-blue-50 text-blue-900 border-l-4 border-blue-900'
               : 'text-gray-700 hover:bg-gray-100'
@@ -271,7 +294,7 @@ export default function CourseStudents() {
           </button>
 
           <button
-            onClick={() => setActiveTab('community')}
+            onClick={() => { setActiveTab('community'); setSidebarOpen(false); }}
             className={`w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${activeTab === 'community'
               ? 'bg-blue-50 text-blue-900 border-l-4 border-blue-900'
               : 'text-gray-700 hover:bg-gray-100'
@@ -282,17 +305,17 @@ export default function CourseStudents() {
           </button>
         </nav>
         {/* User Info */}
-  <div className="mb-3 flex items-center">
-    <div className="flex-shrink:0 h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center ml-1">
-      <span className="text-blue-900 font-medium text-xl">
-        {userFullName?.charAt(0).toUpperCase() || 'U'}
-      </span>
-    </div>
-    <div className="ml-3">
-      <p className="text-m font-medium text-gray-900 truncate">{userFullName}</p>
-      <p className="text-xs text-gray-500 truncate">{userEmail}</p>
-    </div>
-  </div>
+        <div className="mb-3 flex items-center">
+          <div className="flex-shrink:0 h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center ml-1">
+            <span className="text-blue-900 font-medium text-xl">
+              {userFullName?.charAt(0).toUpperCase() || 'U'}
+            </span>
+          </div>
+          <div className="ml-3">
+            <p className="text-m font-medium text-gray-900 truncate">{userFullName}</p>
+            <p className="text-xs text-gray-500 truncate">{userEmail}</p>
+          </div>
+        </div>
 
         <div className="p-4 border-t border-gray-200">
           <button
@@ -317,15 +340,26 @@ export default function CourseStudents() {
       <div className="flex-1 overflow-y-auto">
         {/* Header */}
         <div className="sticky top-0 z-40 p-6 border-b border-gray-200 bg-white">
-          <div className="flex justify-between items-center">
+
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="md:hidden mr-3 p-2 rounded-lg border border-gray-300"
+            aria-label="Open menu"
+          >
+            ☰
+          </button>
+          <div className="flex flex-col gap-4 md:flex-row md:justify-between md:items-center">
+
+
             <div>
-              <h1 className="text-2xl font-bold">
+              <h1 className="text-xl md:text-2xl font-bold">
                 {activeTab === 'courses' && 'Courses'}
                 {activeTab === 'home' && 'Welcome to the Admin Dashboard'}
                 {activeTab === 'users' && 'User Management'}
                 {activeTab === 'community' && 'Community'}
               </h1>
-              <p className="text-gray-600 mt-1">
+
+              <p className="text-gray-600 mt-1 text-sm md:text-base">
                 {activeTab === 'courses' && 'Set up your courses and share your knowledge.'}
                 {activeTab === 'home' && 'Key metrics at a glance'}
                 {activeTab === 'users' && 'Manage your users and their activities.'}
@@ -333,10 +367,11 @@ export default function CourseStudents() {
               </p>
             </div>
 
+
             {activeTab === 'courses' && (
               <button
                 onClick={() => setShowCreateForm(true)}
-                className="bg-blue-900 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2"
+                className="bg-blue-900 md:w-auto text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2"
               >
                 Create Course
               </button>
@@ -550,101 +585,103 @@ export default function CourseStudents() {
                     {filteredCourses.map((course) => (
                       <div
                         key={course.id}
-                        className={`bg-white rounded-lg border shadow-sm hover:shadow-md transition-shadow ${viewMode === 'list' ? 'p-4 flex items-center justify-between gap-4' : ' flex flex-col justify-end'
+                        className={`bg-white rounded-lg border shadow-sm hover:shadow-md transition-shadow ${viewMode === 'list' ? 'p-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between md:gap-4'
+                          : ' flex flex-col justify-end'
                           }`}
                       >
                         {viewMode === 'list' ? (
                           // LIST VIEW
                           <>
 
-                            {/* LEFT: Title + Meta + Description */}                             
-<div className="flex-1 min-w-0">
-  {editingCourseId === course.id ? (
-    // ✏️ EDIT MODE
-    <div className="space-y-2">
-      <input
-        value={editTitle}
-        onChange={(e) => setEditTitle(e.target.value)}
-        className="w-full p-1 text-sm border border-gray-300 rounded"
-        placeholder="Course title"
-        autoFocus
-      />
-      <textarea
-        value={editDescription}
-        onChange={(e) => setEditDescription(e.target.value)}
-        className="w-full p-1 text-xs border border-gray-300 rounded"
-        placeholder="Description"
-        rows={2}
-      />
-      <div className="flex items-center gap-2">
-        <span className="text-[10px]">Published:</span>
-        <button
-          type="button"
-          onClick={() => setEditPublished(!editPublished)}
-          className={`relative inline-flex h-4 w-8 items-center rounded-full ${editPublished ? 'bg-green-500' : 'bg-gray-300'}`}
-        >
-          <span className={`h-3 w-3 rounded-full bg-white transform transition ${editPublished ? 'translate-x-4' : 'translate-x-0.5'}`} />
-        </button>
-      </div>
-      <div className="flex gap-1 mt-1">
-        <button
-          onClick={() => handleSaveEdit(course.id)}
-          className="text-[10px] bg-green-600 text-white px-2 py-0.5 rounded"
-        >
-          Save
-        </button>
-        <button
-          onClick={handleCancelEdit}
-          className="text-[10px] bg-gray-300 text-gray-700 px-2 py-0.5 rounded"
-        >
-          Cancel
-        </button>
-      </div>
-    </div>
-  ) : (
-    // 👁️ VIEW MODE
-    <>
-      {/* Title + Status */}
-      <div className="flex items-center gap-3">
-        <h3 className="font-semibold text-sm sm:text-base truncate">
-          {course.title.toUpperCase()}
-        </h3>
-        <div className="text-[11px] text-gray-500 mt-0.5">
-          Created: {new Date(course.created_at).toLocaleDateString()}
-        </div>
+                            {/* LEFT: Title + Meta + Description */}
+                            <div className="flex-1 min-w-0">
+                              {editingCourseId === course.id ? (
+                                // ✏️ EDIT MODE
+                                <div className="space-y-2">
+                                  <input
+                                    value={editTitle}
+                                    onChange={(e) => setEditTitle(e.target.value)}
+                                    className="w-full p-1 text-sm border border-gray-300 rounded"
+                                    placeholder="Course title"
+                                    autoFocus
+                                  />
+                                  <textarea
+                                    value={editDescription}
+                                    onChange={(e) => setEditDescription(e.target.value)}
+                                    className="w-full p-1 text-xs border border-gray-300 rounded"
+                                    placeholder="Description"
+                                    rows={2}
+                                  />
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-[10px]">Published:</span>
+                                    <button
+                                      type="button"
+                                      onClick={() => setEditPublished(!editPublished)}
+                                      className={`relative inline-flex h-4 w-8 items-center rounded-full ${editPublished ? 'bg-green-500' : 'bg-gray-300'}`}
+                                    >
+                                      <span className={`h-3 w-3 rounded-full bg-white transform transition ${editPublished ? 'translate-x-4' : 'translate-x-0.5'}`} />
+                                    </button>
+                                  </div>
+                                  <div className="flex gap-1 mt-1">
+                                    <button
+                                      onClick={() => handleSaveEdit(course.id)}
+                                      className="text-[10px] bg-green-600 text-white px-2 py-0.5 rounded"
+                                    >
+                                      Save
+                                    </button>
+                                    <button
+                                      onClick={handleCancelEdit}
+                                      className="text-[10px] bg-gray-300 text-gray-700 px-2 py-0.5 rounded"
+                                    >
+                                      Cancel
+                                    </button>
+                                  </div>
+                                </div>
+                              ) : (
+                                // 👁️ VIEW MODE
+                                <>
+                                  {/* Title + Status */}
+                                  <div className="flex items-center gap-3">
+                                    <h3 className="font-semibold text-sm md:text-base break-words">
 
-        {course.published ? (
-  <span
-    title="Already published"
-    className="text-[10px] px-2 py-0.5 rounded-full font-medium bg-green-100 text-green-700 cursor-default"
-  >
-    Published
-  </span>
-) : (
-  <span
-    onClick={() => openPublishModal(course.id)}
-    className="text-[10px] px-2 py-0.5 rounded-full font-medium bg-orange-100 text-orange-700 cursor-pointer"
-    title="Click to publish this course"
-  >
-    Draft
-  </span>
-)}
-      </div>
+                                      {course.title.toUpperCase()}
+                                    </h3>
+                                    <div className="text-[11px] text-gray-500 mt-0.5">
+                                      Created: {new Date(course.created_at).toLocaleDateString()}
+                                    </div>
 
-      {course.description && (
-        <div className="relative group overflow-visible">
-          <p className="text-xs text-gray-600 line-clamp-2 cursor-default max-w-2xl">
-            {course.description}
-          </p>
-          <div className="absolute left-0 top-full mt-2 hidden group-hover:block bg-gray-500 text-white text-xs rounded-md px-3 py-2 max-w-3xl shadow-xl z-50">
-            {course.description}
-            <span className="absolute -top-1 left-3 w-2 h-2 bg-gray-500 rotate-45" />
-          </div>
-        </div>
-      )}
-    </>
-  )}
-</div>
+                                    {course.published ? (
+                                      <span
+                                        title="Already published"
+                                        className="text-[10px] px-2 py-0.5 rounded-full font-medium bg-green-100 text-green-700 cursor-default"
+                                      >
+                                        Published
+                                      </span>
+                                    ) : (
+                                      <span
+                                        onClick={() => openPublishModal(course.id)}
+                                        className="text-[10px] px-2 py-0.5 rounded-full font-medium bg-orange-100 text-orange-700 cursor-pointer"
+                                        title="Click to publish this course"
+                                      >
+                                        Draft
+                                      </span>
+                                    )}
+                                  </div>
+
+                                  {course.description && (
+                                    <div className="relative group overflow-visible">
+                                      <p className="text-xs text-gray-600 line-clamp-2 cursor-default max-w-2xl">
+                                        {course.description}
+                                      </p>
+                                      <div className="absolute left-0 top-full mt-2 hidden group-hover:block bg-gray-500 text-white text-xs rounded-md px-3 py-2 max-w-3xl shadow-xl z-50">
+                                        {course.description}
+                                        <span className="absolute -top-1 left-3 w-2 h-2 bg-gray-500 rotate-45" />
+                                      </div>
+                                    </div>
+                                  )}
+                                </>
+                              )}
+                            </div>
 
                             {/* RIGHT: Actions */}
                             <div className="flex items-center gap-2 shrink-0">
@@ -692,15 +729,15 @@ export default function CourseStudents() {
                                     className="absolute right-0 mt-1 w-36 bg-white border rounded-md shadow-lg text-xs z-50"
                                     onClick={(e) => e.stopPropagation()}
                                   >
-                                  <button
-                                    onClick={() => {
-                                      setOpenMenuId(null);
-                                      handleEditCourse(course); // ✅ pass full course
-                                    }}
-                                    className="w-full text-left px-3 py-2 hover:bg-gray-100"
-                                     >
+                                    <button
+                                      onClick={() => {
+                                        setOpenMenuId(null);
+                                        handleEditCourse(course); // ✅ pass full course
+                                      }}
+                                      className="w-full text-left px-3 py-2 hover:bg-gray-100"
+                                    >
                                       ✏️ Update
-                                   </button>
+                                    </button>
 
                                     <button
                                       onClick={() => {
@@ -734,22 +771,22 @@ export default function CourseStudents() {
                               <span className="absolute top-4 right-24 w-10 h-10 bg-white/10 rotate-12" />
 
                               {/* Status Button */}{/* Status Indicator */}
-{course.published ? (
-  <span
-    title="Already published"
-    className="absolute top-2 right-2 text-[10px] px-2 py-0.5 rounded-md font-medium bg-green-600 text-white cursor-default"
-  >
-    Published
-  </span>
-) : (
-  <button
-    onClick={() => openPublishModal(course.id)}
-    className="absolute top-2 right-2 text-[10px] px-2 py-0.5 rounded-md font-medium bg-orange-500 text-white hover:bg-orange-600"
-    title="Click to publish"
-  >
-    Draft
-  </button>
-)}
+                              {course.published ? (
+                                <span
+                                  title="Already published"
+                                  className="absolute top-2 right-2 text-[10px] px-2 py-0.5 rounded-md font-medium bg-green-600 text-white cursor-default"
+                                >
+                                  Published
+                                </span>
+                              ) : (
+                                <button
+                                  onClick={() => openPublishModal(course.id)}
+                                  className="absolute top-2 right-2 text-[10px] px-2 py-0.5 rounded-md font-medium bg-orange-500 text-white hover:bg-orange-600"
+                                  title="Click to publish"
+                                >
+                                  Draft
+                                </button>
+                              )}
                             </div>
 
                             {/* ===================== */}
@@ -757,153 +794,153 @@ export default function CourseStudents() {
                             {/* ===================== */}
                             <div className="px-4 py-3 flex flex-col flex-1">
                               {/* ===================== */}
-{/* 🔹 DYNAMIC CONTENT: View or Edit */}
-{/* ===================== */}
-{editingCourseId === course.id ? (
-  // ✏️ EDIT MODE
-  <div className="flex flex-col flex-1">
-    <div className="space-y-2 mb-2">
-      <input
-        value={editTitle}
-        onChange={(e) => setEditTitle(e.target.value)}
-        className="w-full p-1.5 text-[13px] border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-900"
-        placeholder="Course title"
-        autoFocus
-      />
-      <textarea
-        value={editDescription}
-        onChange={(e) => setEditDescription(e.target.value)}
-        className="w-full p-1.5 text-[12px] border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-900"
-        placeholder="Description"
-        rows={2}
-      />
-      <div className="flex items-center gap-2">
-        <span className="text-[11px] font-medium">Published:</span>
-        <button
-          type="button"
-          onClick={() => setEditPublished(!editPublished)}
-          className={`relative inline-flex h-5 w-9 items-center rounded-full ${editPublished ? 'bg-green-500' : 'bg-gray-300'}`}
-        >
-          <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition ${editPublished ? 'translate-x-4' : 'translate-x-1'}`} />
-        </button>
-      </div>
-    </div>
+                              {/* 🔹 DYNAMIC CONTENT: View or Edit */}
+                              {/* ===================== */}
+                              {editingCourseId === course.id ? (
+                                // ✏️ EDIT MODE
+                                <div className="flex flex-col flex-1">
+                                  <div className="space-y-2 mb-2">
+                                    <input
+                                      value={editTitle}
+                                      onChange={(e) => setEditTitle(e.target.value)}
+                                      className="w-full p-1.5 text-[13px] border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-900"
+                                      placeholder="Course title"
+                                      autoFocus
+                                    />
+                                    <textarea
+                                      value={editDescription}
+                                      onChange={(e) => setEditDescription(e.target.value)}
+                                      className="w-full p-1.5 text-[12px] border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-900"
+                                      placeholder="Description"
+                                      rows={2}
+                                    />
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-[11px] font-medium">Published:</span>
+                                      <button
+                                        type="button"
+                                        onClick={() => setEditPublished(!editPublished)}
+                                        className={`relative inline-flex h-5 w-9 items-center rounded-full ${editPublished ? 'bg-green-500' : 'bg-gray-300'}`}
+                                      >
+                                        <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition ${editPublished ? 'translate-x-4' : 'translate-x-1'}`} />
+                                      </button>
+                                    </div>
+                                  </div>
 
-    {/* Meta (keep it in edit mode too) */}
-    <div className="text-[11px] text-gray-500 mb-2">
-      Created: {new Date(course.created_at).toLocaleDateString()}
-    </div>
+                                  {/* Meta (keep it in edit mode too) */}
+                                  <div className="text-[11px] text-gray-500 mb-2">
+                                    Created: {new Date(course.created_at).toLocaleDateString()}
+                                  </div>
 
-    {/* Save / Cancel buttons */}
-    <div className="mt-auto flex gap-2">
-      <button
-        onClick={() => handleSaveEdit(course.id)}
-        className="flex-1 bg-green-600 text-white text-[11px] py-1.5 rounded-md hover:bg-green-700"
-      >
-        Save
-      </button>
-      <button
-        onClick={handleCancelEdit}
-        className="flex-1 bg-gray-200 text-gray-700 text-[11px] py-1.5 rounded-md hover:bg-gray-300"
-      >
-        Cancel
-      </button>
-    </div>
-  </div>
-) : (
-  // 👁️ VIEW MODE (your original code, unchanged)
-  <>
-    {/* ===================== */}
-    {/* 🔹 TITLE + MENU */}
-    {/* ===================== */}
-    <div className="flex items-start justify-between gap-2 relative">
-      <h3 className="font-semibold text-[15px] leading-snug line-clamp-2 pr-8">
-        {course.title.toUpperCase()}
-      </h3>
+                                  {/* Save / Cancel buttons */}
+                                  <div className="mt-auto flex gap-2">
+                                    <button
+                                      onClick={() => handleSaveEdit(course.id)}
+                                      className="flex-1 bg-green-600 text-white text-[11px] py-1.5 rounded-md hover:bg-green-700"
+                                    >
+                                      Save
+                                    </button>
+                                    <button
+                                      onClick={handleCancelEdit}
+                                      className="flex-1 bg-gray-200 text-gray-700 text-[11px] py-1.5 rounded-md hover:bg-gray-300"
+                                    >
+                                      Cancel
+                                    </button>
+                                  </div>
+                                </div>
+                              ) : (
+                                // 👁️ VIEW MODE (your original code, unchanged)
+                                <>
+                                  {/* ===================== */}
+                                  {/* 🔹 TITLE + MENU */}
+                                  {/* ===================== */}
+                                  <div className="flex items-start justify-between gap-2 relative">
+                                    <h3 className="font-semibold text-[15px] leading-snug line-clamp-2 pr-8">
+                                      {course.title.toUpperCase()}
+                                    </h3>
 
-      {/* Three-dot menu (ALWAYS visible) */}
-      <div className="relative">
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            setOpenMenuId((prev) => (prev === course.id ? null : course.id));
-          }}
-          className="w-7 h-7 flex items-center justify-center text-gray-500 rounded-md hover:bg-gray-100 transition"
-          aria-label="Course actions"
-        >
-          ⋮
-        </button>
+                                    {/* Three-dot menu (ALWAYS visible) */}
+                                    <div className="relative">
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          setOpenMenuId((prev) => (prev === course.id ? null : course.id));
+                                        }}
+                                        className="w-7 h-7 flex items-center justify-center text-gray-500 rounded-md hover:bg-gray-100 transition"
+                                        aria-label="Course actions"
+                                      >
+                                        ⋮
+                                      </button>
 
-        {openMenuId === course.id && (
-          <div className="absolute right-0 mt-1 w-36 bg-white border rounded-md shadow-lg text-xs z-50 overflow-hidden">
-            <button
-              onClick={() => {
-                setOpenMenuId(null);
-                handleEditCourse(course);
-              }}
-              className="w-full text-left px-3 py-2 hover:bg-gray-100"
-            >
-              ✏️ Update
-            </button>
-            <button
-              onClick={() => {
-                setOpenMenuId(null);
-                handleDeleteCourse(course.id);
-              }}
-              className="w-full text-left px-3 py-2 text-red-600 hover:bg-red-50"
-            >
-              🗑 Delete
-            </button>
-          </div>
-        )}
-      </div>
-    </div>
+                                      {openMenuId === course.id && (
+                                        <div className="absolute right-0 mt-1 w-36 bg-white border rounded-md shadow-lg text-xs z-50 overflow-hidden">
+                                          <button
+                                            onClick={() => {
+                                              setOpenMenuId(null);
+                                              handleEditCourse(course);
+                                            }}
+                                            className="w-full text-left px-3 py-2 hover:bg-gray-100"
+                                          >
+                                            ✏️ Update
+                                          </button>
+                                          <button
+                                            onClick={() => {
+                                              setOpenMenuId(null);
+                                              handleDeleteCourse(course.id);
+                                            }}
+                                            className="w-full text-left px-3 py-2 text-red-600 hover:bg-red-50"
+                                          >
+                                            🗑 Delete
+                                          </button>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
 
-    {/* Meta */}
-    <div className="text-[11px] text-gray-500 mb-1">
-      Created: {new Date(course.created_at).toLocaleDateString()}
-    </div>
+                                  {/* Meta */}
+                                  <div className="text-[11px] text-gray-500 mb-1">
+                                    Created: {new Date(course.created_at).toLocaleDateString()}
+                                  </div>
 
-    {/* Description */}
-    {course.description && (
-      <div className="relative group overflow-visible">
-        <p className="text-xs text-gray-600 line-clamp-2 cursor-default">
-          {course.description}
-        </p>
-        <div className="absolute left-0 top-full mt-2 hidden group-hover:block bg-gray-500 text-white text-xs rounded-md px-3 py-2 max-w-xs shadow-xl z-50">
-          {course.description}
-          <span className="absolute -top-1 left-3 w-2 h-2 bg-gray-500 rotate-45" />
-        </div>
-      </div>
-    )}
+                                  {/* Description */}
+                                  {course.description && (
+                                    <div className="relative group overflow-visible">
+                                      <p className="text-xs text-gray-600 line-clamp-2 cursor-default">
+                                        {course.description}
+                                      </p>
+                                      <div className="absolute left-0 top-full mt-2 hidden group-hover:block bg-gray-500 text-white text-xs rounded-md px-3 py-2 max-w-xs shadow-xl z-50">
+                                        {course.description}
+                                        <span className="absolute -top-1 left-3 w-2 h-2 bg-gray-500 rotate-45" />
+                                      </div>
+                                    </div>
+                                  )}
 
-    {/* Action Buttons */}
-    <div className="mt-auto grid grid-cols-3 gap-2">
-      <button
-        onClick={() => navigate(`/admin/courses/${course.id}/content`)}
-        className="flex items-center justify-center gap-1 px-2 py-1.5 text-[11px] border rounded-md hover:bg-gray-50"
-      >
-        <GrChapterAdd className="text-xs" />
-        Content
-      </button>
+                                  {/* Action Buttons */}
+                                  <div className="mt-auto grid grid-cols-3 gap-2">
+                                    <button
+                                      onClick={() => navigate(`/admin/courses/${course.id}/content`)}
+                                      className="flex items-center justify-center gap-1 px-2 py-1.5 text-[11px] border rounded-md hover:bg-gray-50"
+                                    >
+                                      <GrChapterAdd className="text-xs" />
+                                      Content
+                                    </button>
 
-      <button
-        onClick={() => navigate(`/admin/courses/${course.id}/enroll`)}
-        className="flex items-center justify-center gap-1 px-2 py-1.5 text-[11px] border rounded-md hover:bg-gray-50">
-        <PiUsersBold className="text-xs" />
-        Enroll
-      </button>
+                                    <button
+                                      onClick={() => navigate(`/admin/courses/${course.id}/enroll`)}
+                                      className="flex items-center justify-center gap-1 px-2 py-1.5 text-[11px] border rounded-md hover:bg-gray-50">
+                                      <PiUsersBold className="text-xs" />
+                                      Enroll
+                                    </button>
 
-      <button
-        onClick={() => navigate(`/admin/courses/${course.id}/edit`)}
-        className="flex items-center justify-center gap-1 px-2 py-1.5 text-[11px] border rounded-md hover:bg-gray-50"
-      >
-        course discussions
-      </button>
-    </div>
-  </>
-)}
-                              
+                                    <button
+                                      onClick={() => navigate(`/admin/courses/${course.id}/edit`)}
+                                      className="flex items-center justify-center gap-1 px-2 py-1.5 text-[11px] border rounded-md hover:bg-gray-50"
+                                    >
+                                      course discussions
+                                    </button>
+                                  </div>
+                                </>
+                              )}
+
                             </div>
                           </div>
                         )}
