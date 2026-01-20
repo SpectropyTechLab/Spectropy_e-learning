@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import logo from "/spectropy_logo.png";
 import EventsPage from './Eventspage';
-import BlogPage from './BlogPage';
 import FutureFoundationSlider from './FutureFoundationSlider';
 import HappyClientsSlider from './HappyClientsSlider';
 import ChallengesModal from '../../components/Landingpage/challenges';
@@ -142,9 +141,6 @@ const LandingPage: React.FC = () => {
                             )}
 
                             {/* Content for Blog Modal */}
-                            {activeModal === 'blog' && (
-                                <BlogPage />
-                            )}
 
                             {activeModal === 'events' && (
                                 <EventsPage />
@@ -194,12 +190,6 @@ const LandingPage: React.FC = () => {
                             Awards/Rewards
                         </button>
 
-                        <button
-                            onClick={() => openModal('blog')}
-                            className="text-sm font-semibold text-slate-600 hover:text-blue-700 transition-colors"
-                        >
-                            Blog
-                        </button>
                         <button
                             onClick={() => setActiveModal('events')}
                             className="text-sm font-semibold text-slate-600 hover:text-blue-700 transition-colors"
