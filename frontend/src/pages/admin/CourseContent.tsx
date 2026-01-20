@@ -62,6 +62,7 @@ export default function CourseContent() {
   const [newFile, setNewFile] = useState<File | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
   const [loading, setLoading] = useState<boolean>(false);
+  const [leftPanelOpen, setLeftPanelOpen] = useState(false);
 
   // ✅ HANDLE REPLACE FILE
   const handleReplaceFile = async () => {
@@ -345,15 +346,38 @@ export default function CourseContent() {
 
       {/* MAIN LAYOUT */}
       <div className="flex flex-1 min-h-0 ">
+        {/* Mobile overlay for left panel */}
+        {leftPanelOpen && (
+          <div
+            className="fixed inset-0 bg-black/40 z-40 md:hidden"
+            onClick={() => setLeftPanelOpen(false)}
+          />
+        )}
+
 
         {/* ✅ LEFT PANEL */}
-        <div className=" w-[320px] border-r bg-white shrink-0">
+        <div
+          className={`
+    fixed md:static
+    inset-y-0 left-0
+    z-50
+    w-[320px]
+    border-r
+    bg-white
+    shrink-0
+    transform transition-transform duration-300
+    ${leftPanelOpen ? "translate-x-0" : "-translate-x-full"}
+    md:translate-x-0
+  `}
+        >
+
           <LeftPanel
             chapters={chapters}
             allItems={items}
             selectedItemId={selectedItem?.id}
             onSelectItem={(item: ContentItem) => {
-              setSelectedItem(item);        // ✅ store the entire item
+              setSelectedItem(item);
+              setLeftPanelOpen(false);        // ✅ store the entire item
             }}
 
             onAddChapter={() => setAddingChapter(true)}
@@ -370,46 +394,89 @@ export default function CourseContent() {
         {/* ✅ RIGHT SIDE — VIEW CONTENT */}
         <div className="flex-1 bg-white  shrink-0 overflow-y-none flex flex-col">
           {/* HEADER */}
-          <div className="w-full flex justify-between items-center px-4 pt-4 pb-2.5 border-b border-gray-200 ">
-            <h1 className="text-xl font-semibold ">{selectedItem ? selectedItem.title.toUpperCase() : ""}</h1>
+          <div className="w-full border-b border-gray-200 px-4 pt-4 pb-2.5">
 
-            {/* RIGHT SIDE — PREVIOUS / NEXT */}
-            <div className="flex items-center gap-4">
+            {/* ROW 1: ☰ + TITLE */}
+            <div className="flex items-center gap-3 mb-3 md:mb-0 md:flex-row md:justify-between md:items-center">
 
-              {/* PREVIOUS BUTTON */}
+              <div className="flex items-center gap-3 min-w-0">
+                {/* ☰ — MOBILE ONLY */}
+                <button
+                  onClick={() => setLeftPanelOpen(true)}
+                  className="md:hidden p-2 border rounded-md"
+                  aria-label="Open course syllabus"
+                >
+                  ☰
+                </button>
+
+                <h1 className="text-lg md:text-xl font-semibold truncate">
+                  {selectedItem ? selectedItem.title.toUpperCase() : ""}
+                </h1>
+              </div>
+
+              {/* DESKTOP PREV / NEXT */}
+              <div className="hidden md:flex items-center gap-4">
+                <button
+                  onClick={goToPrevious}
+                  disabled={!selectedItem || isFirstItem}
+                  className={`flex items-center gap-2 py-2 rounded-md border justify-center transition-all duration-200 text-xs bg-maincolor text-white w-20
+          ${!selectedItem || isFirstItem
+                      ? "opacity-40 cursor-not-allowed"
+                      : "hover:bg-lightmain hover:border-gray-300 active:scale-95"
+                    }`}
+                >
+                  <SlControlRewind /> Previous
+                </button>
+
+                <button
+                  onClick={goToNext}
+                  disabled={!selectedItem}
+                  className={`flex items-center gap-2 py-2 rounded-md border justify-center transition-all duration-200 text-xs bg-maincolor text-white w-20
+          ${!selectedItem
+                      ? "opacity-40 cursor-not-allowed"
+                      : "hover:bg-lightmain hover:border-gray-300 active:scale-95"
+                    }`}
+                >
+                  Next <SlControlPlay />
+                </button>
+              </div>
+            </div>
+
+            {/* ROW 2: MOBILE ICON-ONLY PREV / NEXT */}
+            <div className="flex justify-end gap-3 md:hidden">
               <button
                 onClick={goToPrevious}
                 disabled={!selectedItem || isFirstItem}
-                className={`flex items-center gap-2 py-2 rounded-md border justify-center transition-all duration-200 text-xs bg-maincolor text-white w-20 ${!selectedItem || isFirstItem
-                  ? "opacity-40 cursor-not-allowed"
-                  : "hover:bg-lightmain hover:border-gray-300 active:scale-95"
+                className={`p-2 rounded-md border bg-maincolor text-white
+        ${!selectedItem || isFirstItem
+                    ? "opacity-40 cursor-not-allowed"
+                    : "active:scale-95"
                   }`}
+                aria-label="Previous"
               >
-                <SlControlRewind /> Previous
+                <SlControlRewind />
               </button>
 
-              {/* NEXT BUTTON */}
               <button
                 onClick={goToNext}
                 disabled={!selectedItem}
-                className={`flex items-center gap-2 py-2 rounded-md border justify-center
-  transition-all duration-200 text-xs bg-maincolor text-white w-20
-  ${!selectedItem
+                className={`p-2 rounded-md border bg-maincolor text-white
+        ${!selectedItem
                     ? "opacity-40 cursor-not-allowed"
-                    : "hover:bg-lightmain hover:border-gray-300 active:scale-95"
+                    : "active:scale-95"
                   }`}
+                aria-label="Next"
               >
-                Next <SlControlPlay />
+                <SlControlPlay />
               </button>
-
-
-
             </div>
+
           </div>
+
 
           {!selectedItem ? (
             <p className="text-gray-400 text-center mt-20">
-              Select a chapter from the left panel →
+              Select a chapter
             </p>
           ) : (
             <ContentViewer item={selectedItem} />
