@@ -7,7 +7,7 @@ const ArrowRightIcon = () => (
 
 const BlogPage: React.FC = () => {
   return (
-    <div className="w-full max-w-6xl mx-auto pb-12  max-h-[70vh] overflow-y-auto overflow-x-hidden">
+    <div className="w-full max-w-6xl mx-auto pb-12  max-h-[95vh] overflow-y-auto overflow-x-hidden">
       {/* Header */}
       <div className="text-center mb-12">
         <h2 className="text-4xl md:text-6xl font-extrabold text-slate-900 mb-4">SPECTROPY BLOG</h2>

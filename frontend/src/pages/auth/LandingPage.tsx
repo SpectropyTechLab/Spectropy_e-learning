@@ -12,6 +12,7 @@ import Programcatalyst from './CATProgram';
 import Programmaestro from './MAEProgram';
 import Programpionner from './PIOProgram';
 import Fourpillars from './fourpillars';
+import AwardsRewards from './AwardsRewards';
 
 // --- SVGs for Icons ---
 const MenuIcon = () => (
@@ -148,6 +149,11 @@ const LandingPage: React.FC = () => {
                             {activeModal === 'events' && (
                                 <EventsPage />
                             )}
+
+                            {activeModal === 'Awards/Rewards' && (
+                                <AwardsRewards />
+                            )}
+
                         </div>
                         {/*</div>*/}
                     </div>
@@ -181,6 +187,13 @@ const LandingPage: React.FC = () => {
                                 {item}
                             </button>
                         ))}
+                        <button
+                            onClick={() => openModal('Awards/Rewards')}
+                            className="text-sm font-semibold text-slate-600 hover:text-blue-700 transition-colors"
+                        >
+                            Awards/Rewards
+                        </button>
+
                         <button
                             onClick={() => openModal('blog')}
                             className="text-sm font-semibold text-slate-600 hover:text-blue-700 transition-colors"
@@ -266,7 +279,7 @@ const LandingPage: React.FC = () => {
                 {/* Mobile Nav Dropdown */}
                 {isMobileMenuOpen && (
                     <div className="absolute top-full left-0 w-full bg-white shadow-xl border-t border-slate-100 lg:hidden flex flex-col p-4 space-y-4">
-                        {['Home', 'Courses', 'Why Foundation', 'Happy Clients'].map((item) => (
+                        {['Home', 'Courses', 'Why Foundation', 'Happy Clients', 'Awards/Rewards'].map((item) => (
                             <button
                                 key={item}
                                 onClick={() => scrollToSection(item.toLowerCase().replace(' ', '-'))}
