@@ -37,9 +37,6 @@ const Header = () => {
                     Membership
                 </span>
 
-                <span className={navItem} onClick={() => navigate("/login-form")}>
-                    Login
-                </span>
             </nav>
         </header>
     );

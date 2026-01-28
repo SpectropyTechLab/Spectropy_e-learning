@@ -4,8 +4,7 @@ import { useAuth, AuthProvider } from "./contexts/AuthContext";
 import { Toaster } from 'react-hot-toast';
 
 // Auth pages
-import LandingPage from './pages/auth/LandingPage'; // Contains inline login portal selection
-import MainLoginPage from './pages/auth/mainpagelogin'; // Role selector (for E-Learning)
+import LandingPage from './pages/auth/LandingPage'; // Contains inline login portal selection // Role selector (for E-Learning)
 import LoginForm from './pages/auth/LoginForm';
 import Courses from './pages/auth/courses';
 // Dashboard pages
@@ -65,7 +64,7 @@ function AppRoutes() {
     <Routes>
       {/* Public Routes */}
       <Route path="/" element={<LandingPage />} />
-      <Route path="/login" element={<MainLoginPage />} />
+      <Route path="/login" element={<LoginForm />} />
       <Route path="/login-form" element={<LoginForm />} />
       <Route path="/courses" element={<Courses />} />
 

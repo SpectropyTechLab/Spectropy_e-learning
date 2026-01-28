@@ -252,6 +252,22 @@ const LandingPage: React.FC = () => {
                                         <h3 className="font-bold text-blue-800">Tab Exams</h3>
                                         <p className="text-sm text-gray-500 mt-2">Online Assessment Platform</p>
                                     </Link>
+                                    <Link
+                                        to="https://pms.spectropy.com/"
+                                        className="block bg-white p-2 rounded-xl shadow-md hover:shadow-lg border border-blue-100 transition-all text-center hover:-translate-y-1"
+                                    >
+                                        <div className="text-3xl mb-3">📈</div>
+                                        <h3 className="font-bold text-blue-800">PMS</h3>
+                                        <p className="text-sm text-gray-500 mt-2">Project Management System</p>
+                                    </Link>
+                                    <Link
+                                        to="https://spectropy-csm.onrender.com/"
+                                        className="block bg-white p-2 rounded-xl shadow-md hover:shadow-lg border border-blue-100 transition-all text-center hover:-translate-y-1"
+                                    >
+                                        <div className="text-3xl mb-3">🤝</div>
+                                        <h3 className="font-bold text-blue-800">CSM</h3>
+                                        <p className="text-sm text-gray-500 mt-2">Client Service Management</p>
+                                    </Link>
                                 </div>
                             )}
                         </div>
@@ -309,6 +325,30 @@ const LandingPage: React.FC = () => {
                                 className="bg-blue-600 text-white py-3 rounded-lg font-bold text-center block"
                             >
                                 E-Learning
+                            </Link>
+                            <Link
+                                to="https://academy.spectropy.com/s/authenticate?url=/"
+                                className="bg-blue-600 text-white py-3 rounded-lg font-bold text-center block"
+                            >
+                                DITP
+                            </Link>
+                            <Link
+                                to="https://lms.spectropy.com/"
+                                className="bg-blue-600 text-white py-3 rounded-lg font-bold text-center block"
+                            >
+                                Tab Exams
+                            </Link>
+                            <Link
+                                to="https://pms.spectropy.com/"
+                                className="bg-blue-600 text-white py-3 rounded-lg font-bold text-center block"
+                            >
+                                PMS
+                            </Link>
+                            <Link
+                                to="https://spectropy-csm.onrender.com/"
+                                className="bg-blue-600 text-white py-3 rounded-lg font-bold text-center block"
+                            >
+                                CMS
                             </Link>
                         </div>
                     </div>
