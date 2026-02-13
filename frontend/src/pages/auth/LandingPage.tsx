@@ -216,58 +216,66 @@ const LandingPage: React.FC = () => {
                             </button>
 
                             {showLoginOptions && (
-                                <div className="absolute top-full right-0 mt-2 w-70 bg-blue-100 rounded-xl shadow-xl border border-slate-100 p-4 animate-fade-in z-50 flex flex-col gap-4   max-h-[60vh] overflow-y-auto overflow-x-hiddenscroll-smooth">
-                                    <Link
-                                        to="/login-form"
-                                        className="block bg-white p-2 rounded-xl shadow-md hover:shadow-lg border border-blue-100 transition-all text-center hover:-translate-y-1"
-                                    >
-                                        <div className="text-3xl mb-3">🖥️</div>
-                                        <h3 className="font-bold text-blue-800">E-Learning (LMS)</h3>
-                                        <p className="text-sm text-gray-600 mt-2">For students, teachers, and admins</p>
-                                    </Link>
+                                <div className="absolute top-full right-0 mt-3 w-80 bg-white rounded-2xl shadow-2xl border border-blue-100 p-4 animate-fade-in z-50">
+                                    <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider px-2 mb-3">
+                                        Quick Access
+                                    </div>
+                                    <div className="grid gap-3 max-h-[60vh] overflow-y-auto pr-1">
+                                        <Link
+                                            to="/login-form"
+                                            className="block bg-blue-50 p-3 rounded-xl border border-blue-100 transition-all text-left hover:shadow-md hover:-translate-y-0.5"
+                                        >
+                                            <h3 className="font-bold text-blue-800">E-Learning (LMS)</h3>
+                                            <p className="text-xs text-slate-600 mt-1">For students, teachers, and admins</p>
+                                        </Link>
 
-                                    <Link
-                                        to="https://ra-portal-frontend.vercel.app/login"
-                                        className="block bg-white p-2 rounded-xl shadow-md hover:shadow-lg border border-blue-100 transition-all text-center hover:-translate-y-1"
-                                    >
-                                        <div className="text-3xl mb-3">📊</div>
-                                        <h3 className="font-bold text-blue-800">RA Portal</h3>
-                                        <p className="text-sm text-gray-500 mt-2">Results and Analysis Portal</p>
-                                    </Link>
+                                        <Link
+                                            to="https://ra-portal-frontend.vercel.app/login"
+                                            className="block bg-blue-50 p-3 rounded-xl border border-slate-200 transition-all text-left hover:shadow-md hover:-translate-y-0.5"
+                                        >
+                                            <h3 className="font-bold text-blue-800">RA Portal</h3>
+                                            <p className="text-xs text-slate-600 mt-1">Results and Analysis Portal</p>
+                                        </Link>
 
-                                    <Link
-                                        to="https://academy.spectropy.com/s/authenticate?url=/"
-                                        className="block bg-white p-2 rounded-xl shadow-md hover:shadow-lg border border-blue-100 transition-all text-center hover:-translate-y-1"
-                                    >
-                                        <div className="text-3xl mb-3">💻</div>
-                                        <h3 className="font-bold text-blue-800">DITP</h3>
-                                        <p className="text-sm text-gray-500 mt-2">Digital Interactive Teaching Product</p>
-                                    </Link>
+                                        <Link
+                                            to="https://academy.spectropy.com/s/authenticate?url=/"
+                                            className="block bg-blue-50 p-3 rounded-xl border border-slate-200 transition-all text-left hover:shadow-md hover:-translate-y-0.5"
+                                        >
+                                            <h3 className="font-bold text-blue-800">DITP</h3>
+                                            <p className="text-xs text-slate-600 mt-1">Digital Interactive Teaching Product</p>
+                                        </Link>
 
-                                    <Link
-                                        to="https://lms.spectropy.com/"
-                                        className="block bg-white p-2 rounded-xl shadow-md hover:shadow-lg border border-blue-100 transition-all text-center hover:-translate-y-1"
-                                    >
-                                        <div className="text-3xl mb-3">📱</div>
-                                        <h3 className="font-bold text-blue-800">Tab Exams</h3>
-                                        <p className="text-sm text-gray-500 mt-2">Online Assessment Platform</p>
-                                    </Link>
-                                    <Link
-                                        to="https://pms.spectropy.com/"
-                                        className="block bg-white p-2 rounded-xl shadow-md hover:shadow-lg border border-blue-100 transition-all text-center hover:-translate-y-1"
-                                    >
-                                        <div className="text-3xl mb-3">📈</div>
-                                        <h3 className="font-bold text-blue-800">PMS</h3>
-                                        <p className="text-sm text-gray-500 mt-2">Project Management System</p>
-                                    </Link>
-                                    <Link
-                                        to="https://spectropy-csm.onrender.com/"
-                                        className="block bg-white p-2 rounded-xl shadow-md hover:shadow-lg border border-blue-100 transition-all text-center hover:-translate-y-1"
-                                    >
-                                        <div className="text-3xl mb-3">🤝</div>
-                                        <h3 className="font-bold text-blue-800">CSM</h3>
-                                        <p className="text-sm text-gray-500 mt-2">Client Service Management</p>
-                                    </Link>
+                                        <Link
+                                            to="https://lms.spectropy.com/"
+                                            className="block bg-blue-50 p-3 rounded-xl border border-slate-200 transition-all text-left hover:shadow-md hover:-translate-y-0.5"
+                                        >
+                                            <h3 className="font-bold text-blue-800">Tab Exams</h3>
+                                            <p className="text-xs text-slate-600 mt-1">Online Assessment Platform</p>
+                                        </Link>
+                                        <Link
+                                            to="https://pms.spectropy.com/"
+                                            className="block bg-blue-50 p-3 rounded-xl border border-slate-200 transition-all text-left hover:shadow-md hover:-translate-y-0.5"
+                                        >
+                                            <h3 className="font-bold text-blue-800">PMS</h3>
+                                            <p className="text-xs text-slate-600 mt-1">Project Management System</p>
+                                        </Link>
+                                        <Link
+                                            to="https://spectropy-csm.onrender.com/"
+                                            className="block bg-blue-50 p-3 rounded-xl border border-slate-200 transition-all text-left hover:shadow-md hover:-translate-y-0.5"
+                                        >
+                                            <h3 className="font-bold text-blue-800">CSM</h3>
+                                            <p className="text-xs text-slate-600 mt-1">Client Service Management</p>
+                                        </Link>
+                                        <a
+                                            href="https://tlm-generator.vercel.app/"
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            className="block bg-blue-50 p-3 rounded-xl border border-slate-200 transition-all text-left hover:shadow-md hover:-translate-y-0.5"
+                                        >
+                                            <h3 className="font-bold text-blue-800">TLM Generator</h3>
+                                            <p className="text-xs text-slate-600 mt-1">Generate teaching-learning materials</p>
+                                        </a>
+                                    </div>
                                 </div>
                             )}
                         </div>
