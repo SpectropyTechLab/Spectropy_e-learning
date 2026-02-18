@@ -29,6 +29,11 @@ const PhoneIcon = () => (
 const MailIcon = () => (
     <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
 );
+const WhatsAppIcon = () => (
+    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M12.04 2C6.55 2 2.09 6.46 2.09 11.95c0 1.95.57 3.77 1.56 5.31L2 22l4.93-1.6a9.9 9.9 0 0 0 5.11 1.4h.01c5.49 0 9.95-4.46 9.95-9.95S17.53 2 12.04 2zm0 17.92h-.01a7.9 7.9 0 0 1-4.03-1.11l-.29-.17-2.93.95.96-2.85-.19-.3a7.91 7.91 0 0 1-1.21-4.19C4.34 7.6 7.69 4.25 12.04 4.25c4.35 0 7.69 3.35 7.69 7.7 0 4.35-3.34 7.97-7.69 7.97zm4.34-5.8c-.24-.12-1.41-.7-1.63-.78-.22-.08-.38-.12-.55.12-.17.24-.63.78-.77.94-.14.16-.28.18-.52.06-.24-.12-1-.37-1.9-1.18-.7-.62-1.17-1.39-1.31-1.63-.14-.24-.02-.37.1-.49.11-.11.24-.28.36-.42.12-.14.16-.24.24-.4.08-.16.04-.3-.02-.42-.06-.12-.55-1.32-.75-1.8-.2-.48-.41-.41-.55-.42-.14 0-.3-.02-.46-.02-.16 0-.42.06-.64.3-.22.24-.84.82-.84 2 0 1.18.86 2.32.98 2.48.12.16 1.7 2.6 4.12 3.65.58.25 1.03.4 1.38.52.58.18 1.11.15 1.53.09.47-.07 1.41-.58 1.61-1.14.2-.56.2-1.04.14-1.14-.06-.1-.22-.16-.46-.28z" />
+    </svg>
+);
 const LocationIcon = () => (
     <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
 );
@@ -592,11 +597,11 @@ const LandingPage: React.FC = () => {
                     {/* --- COMBINED CONTACT SECTION */}
                     <div id="contact-footer" className="py-20">
 
-                        <div className="container mx-auto px-6 mb-16">
-                            <p className="text-center text-slate-400 text-xs font-extrabold uppercase tracking-[0.2em] mb-8">
+                        <div className="container mx-auto px-4 mb-10">
+                            <p className="text-center text-slate-400 text-xs font-extrabold uppercase tracking-[0.2em] mb-6">
                                 Trusted by Forward-Thinking Campuses
                             </p>
-                            <div className="flex flex-wrap justify-center gap-12 md:gap-20 opacity-50 grayscale hover:grayscale-0 transition-all duration-500">
+                            <div className="flex flex-wrap justify-center gap-12 md:gap-8 opacity-50 grayscale hover:grayscale-0 transition-all duration-500">
                                 {/* Visual Placeholders for Logos - Replace with <img /> if needed */}
                                 <h3 className="text-xl md:text-2xl font-serif font-bold text-slate-300 hover:text-slate-500 transition-colors cursor-default">CITY SCHOOL</h3>
                                 <h3 className="text-xl md:text-2xl font-mono font-bold text-slate-300 hover:text-slate-500 transition-colors cursor-default">GLOBAL ACADEMY</h3>
@@ -606,14 +611,14 @@ const LandingPage: React.FC = () => {
                         </div>
 
                         {/* Main CTA & Contact Block */}
-                        <div className="container mx-auto px-4 md:px-6">
-                            <div className="relative bg-gradient-to-br from-blue-900 via-indigo-900 to-slate-900 rounded-[2.5rem] overflow-hidden shadow-2xl p-8 md:p-8 lg:p-8">
+                        <div className="container mx-auto px-1 md:px-1">
+                            <div className="relative bg-gradient-to-br from-blue-900 via-indigo-900 to-slate-900 rounded-[2.5rem] overflow-hidden shadow-2xl p-6 md:p-6 lg:p-6">
 
                                 {/* Abstract Background Decor */}
                                 <div className="absolute top-0 right-0 -mt-20 -mr-20 w-80 h-80 bg-blue-500/20 rounded-full blur-3xl"></div>
                                 <div className="absolute bottom-0 left-0 -mb-20 -ml-20 w-80 h-80 bg-indigo-500/20 rounded-full blur-3xl"></div>
 
-                                <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-12">
+                                <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-10">
 
                                     {/* LEFT: Heading & Actions */}
                                     <div className="text-center lg:text-left lg:w-1/2 space-y-6">
@@ -630,7 +635,7 @@ const LandingPage: React.FC = () => {
 
                                     {/* RIGHT: Contact Details Card */}
                                     <div className="lg:w-5/12 w-full bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl p-6 md:p-8 shadow-xl">
-                                        <div className="space-y-6">
+                                        <div className="space-y-3">
 
                                             {/* Address */}
                                             <div className="flex items-start space-x-4 group">
@@ -656,10 +661,30 @@ const LandingPage: React.FC = () => {
                                                 <div>
                                                     <h4 className="text-white font-bold text-sm uppercase tracking-wide mb-1 opacity-80">Call Us</h4>
                                                     <p className="text-blue-100 text-sm font-mono tracking-wide">
-                                                        +91 90143 412377
+                                                        +91 90143 41237
                                                     </p>
                                                 </div>
                                             </div>
+
+                                            {/* Divider */}
+                                            <div className="h-px w-full bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
+
+                                            {/* WhatsApp */}
+                                            <a
+                                                href="https://wa.me/919014341237"
+                                                target="_blank"
+                                                rel="noreferrer"
+                                                className="flex items-start space-x-4 group"
+                                                aria-label="Chat on WhatsApp with +91 90143 41237"
+                                            >
+                                                <div className="flex-shrink-0 w-12 h-12 bg-emerald-600/20 rounded-full flex items-center justify-center text-emerald-400 group-hover:bg-emerald-600 group-hover:text-white transition-all">
+                                                    <WhatsAppIcon />
+                                                </div>
+                                                <div>
+                                                    <h4 className="text-white font-bold text-sm uppercase tracking-wide mb-1 opacity-80">WhatsApp</h4>
+                                                    <p className="text-blue-100 text-sm font-mono tracking-wide">Chat with +91 90143 41237</p>
+                                                </div>
+                                            </a>
 
                                             {/* Divider */}
                                             <div className="h-px w-full bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
