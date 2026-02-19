@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 
 // Define the user roles as a union type
@@ -19,6 +20,7 @@ interface User {
 type UserTab = 'Students' | 'Teachers' | 'Admins' | 'Super Admins' | 'Inactive';
 
 const UserManagement: React.FC = () => {
+  const navigate = useNavigate();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -101,9 +103,17 @@ const UserManagement: React.FC = () => {
   return (
     <div className="p-1">
       {/*<h2 className="text-xl font-semibold mb-4">User Management</h2>*/}
-      <p className="text-gray-600 mb-6">
-        Showing {filteredUsers.length} of {users.length} users
-      </p>
+      <div className="flex items-center justify-between gap-3 flex-wrap mb-6">
+        <p className="text-gray-600">
+          Showing {filteredUsers.length} of {users.length} users
+        </p>
+        <button
+          onClick={() => navigate('/admin/users/bulk-register')}
+          className="bg-blue-900 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm"
+        >
+          Bulk Register Users
+        </button>
+      </div>
 
       {/* Tabs */}
       <div className="border-b border-gray-200 mb-4">

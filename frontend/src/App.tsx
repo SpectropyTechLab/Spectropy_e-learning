@@ -12,6 +12,7 @@ import SuperAdminDashboard from './pages/superadmin/RegisterAdmin';
 import AdminDashboard from './pages/admin/admindashboard';
 import CourseContent from './pages/admin/CourseContent';
 import EnrollUsers from "./pages/admin/EnrollUsers";
+import BulkRegisterUsers from './pages/admin/BulkRegisterUsers';
 import TeacherDashboard from './pages/teacher/Dashboard';
 import CourseContentManager from './pages/teacher/CourseContentManager';
 import StudentDashboard from './pages/student/StudentDashboard';
@@ -101,6 +102,14 @@ function AppRoutes() {
         }
       />
       <Route path="/admin/courses/:courseId/enroll" element={<EnrollUsers />} />
+      <Route
+        path="/admin/users/bulk-register"
+        element={
+          <ProtectedRoute allowedRoles={['super_admin', 'admin']}>
+            <BulkRegisterUsers />
+          </ProtectedRoute>
+        }
+      />
       <Route
         path="/teacher/dashboard"
         element={

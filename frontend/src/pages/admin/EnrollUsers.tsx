@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import logo from "/logo.png"; // adjust path if needed
 import { PiUsersBold } from "react-icons/pi";
+import Papa from 'papaparse';
 
 export default function EnrollUsers() {
   const { courseId } = useParams<{ courseId: string }>();
@@ -13,6 +14,15 @@ export default function EnrollUsers() {
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const [showBulkModal, setShowBulkModal] = useState(false);
+  const [bulkFile, setBulkFile] = useState<File | null>(null);
+  const [bulkSubmitting, setBulkSubmitting] = useState(false);
+  const [bulkResult, setBulkResult] = useState<{
+    total: number;
+    success: number;
+    failed: number;
+    errors: string[];
+  } | null>(null);
   // For three-dot menu
   const [openMenuUserId, setOpenMenuUserId] = useState<number | null>(null);
   // For loading states (optional but nice)
@@ -30,22 +40,22 @@ export default function EnrollUsers() {
 
   const [loadingEnrollments, setLoadingEnrollments] = useState(true);
 
+  const fetchEnrollments = async () => {
+    if (!courseId) return;
+    setLoadingEnrollments(true);
+    try {
+      const response = await api.get(`/admin/courses/${courseId}/enrollments`);
+      setAllEnrollments(response.data);
+    } catch (err) {
+      console.error('Failed to load enrollments:', err);
+      setMessage({ type: 'error', text: 'Failed to load enrolled users.' });
+    } finally {
+      setLoadingEnrollments(false);
+    }
+  };
+
   // Fetch all enrollments for the course
   useEffect(() => {
-    const fetchEnrollments = async () => {
-      if (!courseId) return;
-      setLoadingEnrollments(true);
-      try {
-        const response = await api.get(`/admin/courses/${courseId}/enrollments`);
-        setAllEnrollments(response.data);
-      } catch (err) {
-        console.error('Failed to load enrollments:', err);
-        setMessage({ type: 'error', text: 'Failed to load enrolled users.' });
-      } finally {
-        setLoadingEnrollments(false);
-      }
-    };
-
     fetchEnrollments();
   }, [courseId]);
 
@@ -82,8 +92,7 @@ export default function EnrollUsers() {
       setEmail('');
 
       // Refetch full enrollment list to update UI
-      const response = await api.get(`/admin/courses/${courseId}/enrollments`);
-      setAllEnrollments(response.data);
+      await fetchEnrollments();
 
       // Auto-close modal after success
       setTimeout(() => {
@@ -99,7 +108,96 @@ export default function EnrollUsers() {
       setSubmitting(false);
     }
   };
-  
+
+  const getCsvColumnValue = (row: Record<string, unknown>, columnName: string) => {
+    const matchKey = Object.keys(row).find(
+      (key) => key.trim().toLowerCase() === columnName.toLowerCase()
+    );
+    if (!matchKey) return '';
+    const value = row[matchKey];
+    if (value === null || value === undefined) return '';
+    return String(value).trim();
+  };
+
+  const parseEmailsFromCsv = (file: File): Promise<string[]> =>
+    new Promise((resolve, reject) => {
+      Papa.parse<Record<string, unknown>>(file, {
+        header: true,
+        delimiter: ',',
+        skipEmptyLines: true,
+        complete: (results) => {
+          if (results.errors?.length) {
+            reject(new Error(results.errors[0].message));
+            return;
+          }
+          const emails = results.data
+            .map((row) => getCsvColumnValue(row, 'email'))
+            .filter((value) => value.length > 0);
+          const uniqueEmails = Array.from(new Set(emails));
+          resolve(uniqueEmails);
+        },
+        error: (error) => reject(error),
+      });
+    });
+
+  const handleBulkEnroll = async () => {
+    if (!courseId || !role || !bulkFile) return;
+
+    setBulkSubmitting(true);
+    setBulkResult(null);
+
+    try {
+      const emails = await parseEmailsFromCsv(bulkFile);
+
+      if (emails.length === 0) {
+        setBulkResult({
+          total: 0,
+          success: 0,
+          failed: 0,
+          errors: ['No valid emails found. Make sure the CSV has an "email" column.'],
+        });
+        return;
+      }
+
+      let success = 0;
+      let failed = 0;
+      const errors: string[] = [];
+
+      for (const emailAddress of emails) {
+        try {
+          await api.post(`/admin/courses/${courseId}/enroll-by-email`, {
+            email: emailAddress,
+            role,
+          });
+          success += 1;
+        } catch (err: any) {
+          failed += 1;
+          const errorMsg =
+            err.response?.data?.error || 'Failed to enroll this user.';
+          errors.push(`${emailAddress}: ${errorMsg}`);
+        }
+      }
+
+      setBulkResult({
+        total: emails.length,
+        success,
+        failed,
+        errors,
+      });
+
+      await fetchEnrollments();
+    } catch (err: any) {
+      setBulkResult({
+        total: 0,
+        success: 0,
+        failed: 0,
+        errors: [err?.message || 'Failed to parse CSV file.'],
+      });
+    } finally {
+      setBulkSubmitting(false);
+    }
+  };
+
   // 🗑️ Remove user from course
 const handleRemoveUser = async (userId: number) => {
   if (!confirm('Are you sure you want to remove this user from the course?')) return;
@@ -245,12 +343,24 @@ const handleUpdateRole = async (userId: number, currentRole: 'student' | 'teache
               </p>
             </div>
             {role && (
-              <button
-                onClick={() => setShowModal(true)}
-                className="bg-blue-900 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2"
-              >
-                Add User
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setShowModal(true)}
+                  className="bg-blue-900 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2"
+                >
+                  Add User
+                </button>
+                <button
+                  onClick={() => {
+                    setBulkFile(null);
+                    setBulkResult(null);
+                    setShowBulkModal(true);
+                  }}
+                  className="bg-white text-blue-900 border border-blue-900 px-4 py-2 rounded-lg hover:bg-blue-50 flex items-center gap-2"
+                >
+                  Bulk Upload
+                </button>
+              </div>
             )}
           </div>
         </div>
@@ -394,6 +504,105 @@ const handleUpdateRole = async (userId: number, currentRole: 'student' | 'teache
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Bulk Upload Modal */}
+      {showBulkModal && role && (
+        <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-50">
+          <div className="bg-white rounded-lg w-full max-w-lg">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-lg font-medium">
+                  Bulk Enroll {role === 'student' ? 'Students' : 'Teachers'}
+                </h2>
+                <button
+                  onClick={() => {
+                    setShowBulkModal(false);
+                    setBulkResult(null);
+                    setBulkFile(null);
+                  }}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  âœ•
+                </button>
+              </div>
+
+              <div className="mb-4 flex items-center justify-between gap-3 flex-wrap">
+                <div>
+                  <p className="text-sm font-medium">Sample CSV template</p>
+                  <p className="text-xs text-gray-500">
+                    Download the sample and replace emails.
+                  </p>
+                </div>
+                <a
+                  href="/samples/enroll_emails_sample.csv"
+                  download
+                  className="text-blue-900 text-sm font-medium hover:underline"
+                >
+                  Download Sample
+                </a>
+              </div>
+
+              {bulkResult && (
+                <div className="mb-4 rounded border border-gray-200 bg-gray-50 p-3 text-sm">
+                  <p>
+                    Processed: {bulkResult.total} | Success: {bulkResult.success} | Failed:{' '}
+                    {bulkResult.failed}
+                  </p>
+                  {bulkResult.errors.length > 0 && (
+                    <div className="mt-2 space-y-1 text-red-600">
+                      {bulkResult.errors.slice(0, 5).map((error, index) => (
+                        <p key={`${error}-${index}`}>{error}</p>
+                      ))}
+                      {bulkResult.errors.length > 5 && (
+                        <p>And {bulkResult.errors.length - 5} more...</p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    Upload CSV (email column) *
+                  </label>
+                  <input
+                    type="file"
+                    accept=".csv"
+                    onChange={(e) => setBulkFile(e.target.files?.[0] || null)}
+                    className="w-full p-2 border rounded"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    CSV with a single header named "email".
+                  </p>
+                </div>
+
+                <div className="flex justify-end gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowBulkModal(false);
+                      setBulkResult(null);
+                      setBulkFile(null);
+                    }}
+                    className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    disabled={bulkSubmitting || !bulkFile}
+                    onClick={handleBulkEnroll}
+                    className="bg-blue-900 text-white px-5 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 font-medium"
+                  >
+                    {bulkSubmitting ? 'Uploading...' : 'Upload & Enroll'}
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
