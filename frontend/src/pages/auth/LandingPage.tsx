@@ -233,6 +233,13 @@ const LandingPage: React.FC = () => {
                                             <h3 className="font-bold text-blue-800">E-Learning (LMS)</h3>
                                             <p className="text-xs text-slate-600 mt-1">For students, teachers, and admins</p>
                                         </Link>
+                                        <Link
+                                            to="https://learning-management-system-jade-one.vercel.app/"
+                                            className="block bg-blue-50 p-3 rounded-xl border border-slate-200 transition-all text-left hover:shadow-md hover:-translate-y-0.5"
+                                        >
+                                            <h3 className="font-bold text-blue-800">Spectropy OS</h3>
+                                            <p className="text-xs text-slate-600 mt-1">Results and Analysis Portal</p>
+                                        </Link>
 
                                         <Link
                                             to="https://ra-portal-frontend.vercel.app/login"
