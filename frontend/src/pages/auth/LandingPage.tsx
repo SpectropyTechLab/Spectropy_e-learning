@@ -238,7 +238,7 @@ const LandingPage: React.FC = () => {
                                             className="block bg-blue-50 p-3 rounded-xl border border-slate-200 transition-all text-left hover:shadow-md hover:-translate-y-0.5"
                                         >
                                             <h3 className="font-bold text-blue-800">Spectropy OS</h3>
-                                            <p className="text-xs text-slate-600 mt-1">Results and Analysis Portal</p>
+                                            <p className="text-xs text-slate-600 mt-1">The Central Operating System for All Spectropy Products and Intelligence Systems</p>
                                         </Link>
 
                                         <Link
