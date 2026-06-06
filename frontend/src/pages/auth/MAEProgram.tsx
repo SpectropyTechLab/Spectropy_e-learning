@@ -298,81 +298,154 @@ const MaestroPresentation = () => {
     },
   ];
 
+  const mobileSummaries = [
+    [
+      "Holistic foundation with curriculum, target exams, and digital enablement.",
+      "Learning materials include techno curriculum, advanced curriculum, and vertical expansion.",
+      "Digital support covers DITP and RA dashboard reporting for school, class, student, and teacher views.",
+    ],
+    [
+      "Assessment architecture includes question types, skill levels, exam structure, and exam modes.",
+      "Covers single and multi MCQ, numerical, matrix, and assertion and reasoning formats.",
+      "Built for a structured mix of part tests, unit tests, grand tests, and both OMR and TAB modes.",
+    ],
+    [
+      "Ecosystem support strengthens delivery beyond core academics.",
+      "Includes teacher training, academic audition, subject enrichment sessions, and parent seminars.",
+      "Focuses on continuous growth for teachers, students, and families.",
+    ],
+  ];
+
   return (
-    <div className="w-full max-w-8xl mx-auto h-[500px] bg-white rounded-3xl shadow-2xl overflow-hidden flex font-sans border-4 border-purple-100">
-      
-      {/* --- LEFT PANEL (Navigation) --- */}
-      <div className="w-1/4 bg-purple-50/50 border-r border-purple-100 flex flex-col z-20">
-        <div className="p-5 border-b border-purple-100 bg-white shadow-sm z-10">
-          <div className="flex items-center gap-2 mb-1">
-             <div className="bg-purple-100 p-1.5 rounded-full"><MaestroIcon /></div>
-             <h2 className="font-black text-lg text-slate-800 leading-none tracking-tight">MAESTRO<br/><span className="text-purple-600">PROGRAM</span></h2>
-          </div>
-          
-          {/* TOGGLE SWITCH */}
-          <div className="mt-4 flex items-center gap-2 bg-white border border-purple-100 p-1 rounded-full w-fit shadow-sm">
-            <button 
-              onClick={() => setIsAutoPlay(false)}
-              className={`p-1.5 rounded-full transition-all ${!isAutoPlay ? 'bg-purple-100 shadow-inner text-purple-800' : 'text-slate-400 hover:text-slate-600'}`}
-            >
-              <Pause size={12} fill={!isAutoPlay ? "currentColor" : "none"}/>
-            </button>
-            <button 
-              onClick={() => setIsAutoPlay(true)}
-              className={`p-1.5 rounded-full transition-all ${isAutoPlay ? 'bg-purple-600 shadow text-white' : 'text-slate-400 hover:text-slate-600'}`}
-            >
-              <Play size={12} fill={isAutoPlay ? "currentColor" : "none"}/>
-            </button>
-            <span className="text-[10px] font-bold text-slate-500 pr-2">{isAutoPlay ? 'Auto' : 'Manual'}</span>
-          </div>
-        </div>
-
-        <div className="flex-grow flex flex-col overflow-y-auto">
-          {sections.map((section, index) => (
-            <button
-              key={section.id} 
-              onClick={() => { setActiveStep(index); setIsAutoPlay(false); }} 
-              className={`relative flex-1 px-5 py-2 flex flex-col justify-center text-left transition-all duration-300 outline-none border-b border-purple-50 ${activeStep === index ? 'bg-white shadow-[inset_4px_0_0_0_#9333ea]' : 'hover:bg-purple-50'}`}
-            >
-              {/* Progress Bar (Auto only) */}
-              {activeStep === index && isAutoPlay && (
-                <motion.div 
-                  className={`absolute bottom-0 left-0 h-1 ${section.color} opacity-30`}
-                  initial={{ width: "0%" }}
-                  animate={{ width: "100%" }}
-                  transition={{ duration: DURATION / 1000, ease: "linear" }}
-                />
-              )}
-
-              <div className="relative z-10">
-                <span className={`text-[9px] font-bold uppercase tracking-wider mb-0.5 block ${activeStep === index ? 'text-purple-500' : 'text-slate-400'}`}>Step 0{index + 1}</span>
-                <h3 className={`font-bold text-sm leading-tight ${activeStep === index ? 'text-slate-800' : 'text-slate-400'}`}>{section.title}</h3>
-                <p className={`text-[10px] mt-1 truncate ${activeStep === index ? 'text-slate-500' : 'text-slate-300'}`}>{section.desc}</p>
-              </div>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* --- RIGHT PANEL (Content) --- */}
-      <div className="w-3/4 relative bg-slate-50 overflow-hidden">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={activeStep}
-            initial={{ opacity: 0, scale: 0.98 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 1.02 }}
-            transition={{ duration: 0.4, ease: "easeOut" }}
-            className="h-full w-full"
-          >
-            {/* Card Container */}
-            <div className="h-full w-full bg-white shadow-inner">
-              {sections[activeStep].content}
+    <div className="mx-auto h-[78vh] max-h-[42rem] w-full max-w-8xl overflow-hidden rounded-3xl border-4 border-purple-100 bg-white font-sans shadow-2xl">
+      <div className="flex h-full flex-col lg:hidden">
+        <div className="border-b border-purple-100 bg-white p-4">
+          <div className="flex items-center gap-2">
+            <div className="rounded-full bg-purple-100 p-1.5"><MaestroIcon /></div>
+            <div>
+              <h2 className="text-base font-black leading-none tracking-tight text-slate-800">MAESTRO <span className="text-purple-600">PROGRAM</span></h2>
+              <p className="mt-1 text-xs font-medium text-slate-500">{sections[activeStep].desc}</p>
             </div>
-          </motion.div>
-        </AnimatePresence>
+          </div>
+          <div className="mt-4 flex items-center gap-2 rounded-full border border-purple-100 bg-white p-1 shadow-sm">
+            <button
+              onClick={() => setIsAutoPlay(false)}
+              className={`rounded-full p-1.5 transition-all ${!isAutoPlay ? 'bg-purple-100 text-purple-800 shadow-inner' : 'text-slate-400'}`}
+            >
+              <Pause size={12} fill={!isAutoPlay ? "currentColor" : "none"} />
+            </button>
+            <button
+              onClick={() => setIsAutoPlay(true)}
+              className={`rounded-full p-1.5 transition-all ${isAutoPlay ? 'bg-purple-600 text-white shadow' : 'text-slate-400'}`}
+            >
+              <Play size={12} fill={isAutoPlay ? "currentColor" : "none"} />
+            </button>
+            <span className="pr-2 text-[10px] font-bold text-slate-500">{isAutoPlay ? 'Auto' : 'Manual'}</span>
+          </div>
+        </div>
+
+        <div className="border-b border-purple-100 bg-purple-50/60 px-3 py-3">
+          <div className="flex gap-2 overflow-x-auto pb-1">
+            {sections.map((section, index) => (
+              <button
+                key={section.id}
+                onClick={() => { setActiveStep(index); setIsAutoPlay(false); }}
+                className={`min-w-[9rem] rounded-2xl border px-3 py-2 text-left transition-all ${
+                  activeStep === index
+                    ? 'border-purple-200 bg-white text-slate-800 shadow-sm'
+                    : 'border-transparent bg-purple-100/70 text-slate-500'
+                }`}
+              >
+                <span className="block text-[10px] font-bold uppercase tracking-wider text-purple-500">Step 0{index + 1}</span>
+                <span className="mt-1 block text-sm font-bold leading-tight">{section.title}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex-1 overflow-y-auto bg-slate-50 p-4">
+          <div className="rounded-3xl bg-white p-4 shadow-sm">
+            <h3 className="text-lg font-black text-slate-800">{sections[activeStep].title}</h3>
+            <p className="mt-1 text-sm font-medium text-slate-500">{sections[activeStep].desc}</p>
+            <div className="mt-4 space-y-3">
+              {mobileSummaries[activeStep].map((item) => (
+                <div key={item} className="flex gap-3 rounded-2xl border border-purple-100 bg-purple-50/40 p-3">
+                  <div className="mt-1 h-2.5 w-2.5 flex-shrink-0 rounded-full bg-purple-500" />
+                  <p className="text-sm leading-6 text-slate-700">{item}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
 
+      <div className="hidden h-full lg:flex">
+        <div className="flex w-1/4 flex-col border-r border-purple-100 bg-purple-50/50 z-20">
+          <div className="border-b border-purple-100 bg-white p-5 shadow-sm z-10">
+            <div className="mb-1 flex items-center gap-2">
+               <div className="bg-purple-100 p-1.5 rounded-full"><MaestroIcon /></div>
+               <h2 className="font-black text-lg text-slate-800 leading-none tracking-tight">MAESTRO<br/><span className="text-purple-600">PROGRAM</span></h2>
+            </div>
+            <div className="mt-4 flex w-fit items-center gap-2 rounded-full border border-purple-100 bg-white p-1 shadow-sm">
+              <button 
+                onClick={() => setIsAutoPlay(false)}
+                className={`p-1.5 rounded-full transition-all ${!isAutoPlay ? 'bg-purple-100 shadow-inner text-purple-800' : 'text-slate-400 hover:text-slate-600'}`}
+              >
+                <Pause size={12} fill={!isAutoPlay ? "currentColor" : "none"}/>
+              </button>
+              <button 
+                onClick={() => setIsAutoPlay(true)}
+                className={`p-1.5 rounded-full transition-all ${isAutoPlay ? 'bg-purple-600 shadow text-white' : 'text-slate-400 hover:text-slate-600'}`}
+              >
+                <Play size={12} fill={isAutoPlay ? "currentColor" : "none"}/>
+              </button>
+              <span className="text-[10px] font-bold text-slate-500 pr-2">{isAutoPlay ? 'Auto' : 'Manual'}</span>
+            </div>
+          </div>
+
+          <div className="flex-grow flex flex-col overflow-y-auto">
+            {sections.map((section, index) => (
+              <button
+                key={section.id} 
+                onClick={() => { setActiveStep(index); setIsAutoPlay(false); }} 
+                className={`relative flex-1 px-5 py-2 flex flex-col justify-center text-left transition-all duration-300 outline-none border-b border-purple-50 ${activeStep === index ? 'bg-white shadow-[inset_4px_0_0_0_#9333ea]' : 'hover:bg-purple-50'}`}
+              >
+                {activeStep === index && isAutoPlay && (
+                  <motion.div 
+                    className={`absolute bottom-0 left-0 h-1 ${section.color} opacity-30`}
+                    initial={{ width: "0%" }}
+                    animate={{ width: "100%" }}
+                    transition={{ duration: DURATION / 1000, ease: "linear" }}
+                  />
+                )}
+
+                <div className="relative z-10">
+                  <span className={`text-[9px] font-bold uppercase tracking-wider mb-0.5 block ${activeStep === index ? 'text-purple-500' : 'text-slate-400'}`}>Step 0{index + 1}</span>
+                  <h3 className={`font-bold text-sm leading-tight ${activeStep === index ? 'text-slate-800' : 'text-slate-400'}`}>{section.title}</h3>
+                  <p className={`text-[10px] mt-1 truncate ${activeStep === index ? 'text-slate-500' : 'text-slate-300'}`}>{section.desc}</p>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="relative w-3/4 overflow-hidden bg-slate-50">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeStep}
+              initial={{ opacity: 0, scale: 0.98 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 1.02 }}
+              transition={{ duration: 0.4, ease: "easeOut" }}
+              className="h-full w-full"
+            >
+              <div className="h-full w-full bg-white shadow-inner">
+                {sections[activeStep].content}
+              </div>
+            </motion.div>
+          </AnimatePresence>
+        </div>
+      </div>
     </div>
   );
 };

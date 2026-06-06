@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import toast from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
 import logo from "/spectropy_logo.png";
 import EventsPage from './Eventspage';
 import FutureFoundationSlider from './FutureFoundationSlider';
@@ -37,26 +38,75 @@ const WhatsAppIcon = () => (
 const LocationIcon = () => (
     <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
 );
-const ChartIcon = () => (
-    <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
-);
-const BookIcon = () => (
-    <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
-);
-const ChipIcon = () => (
-    <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" /></svg>
-);
-const UserGroupIcon = () => (
-    <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
-);
-
 // Program Icons
 const FutureIcon = () => <svg className="w-12 h-12 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" /></svg>;
 const CatalystIcon = () => <svg className="w-12 h-12 text-teal-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>;
 const MaestroIcon = () => <svg className="w-12 h-12 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>;
 const PioneerIcon = () => <svg className="w-12 h-12 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" /></svg>;
 
+type AppLink = {
+    href: string;
+    label: string;
+    description: string;
+    variant: 'blue' | 'indigo' | 'teal' | 'emerald' | 'slate';
+    type: 'internal' | 'external';
+};
+
+const navItems = [
+    { label: 'Home', action: 'scroll', target: 'home' },
+    { label: 'Courses', action: 'scroll', target: 'courses' },
+    { label: 'Why Foundation', action: 'scroll', target: 'why-foundation' },
+    { label: 'Happy Clients', action: 'scroll', target: 'happy-clients' },
+] as const;
+
+const appLinks: AppLink[] = [
+    {
+        href: 'https://learning-management-system-jade-one.vercel.app/',
+        label: 'Spectropy OS',
+        description: 'Central operating system for Spectropy products and intelligence workflows.',
+        variant: 'blue',
+        type: 'external',
+    },
+    {
+        href: 'https://ra-portal-frontend.vercel.app/login',
+        label: 'RA Portal',
+        description: 'Results and analysis portal for institution-level visibility.',
+        variant: 'indigo',
+        type: 'external',
+    },
+    {
+        href: '/login',
+        label: 'E Learning',
+        description: 'Learning management access for students, teachers, and admins.',
+        variant: 'teal',
+        type: 'internal',
+    },
+    {
+        href: 'https://pms.spectropy.com/',
+        label: 'PMS',
+        description: 'Project management system for planning and execution.',
+        variant: 'emerald',
+        type: 'external',
+    },
+    {
+        href: 'https://spectropy.m.frappe.cloud/desk',
+        label: 'ERP',
+        description: 'Enterprise resource planning workspace for operations and administration.',
+        variant: 'slate',
+        type: 'external',
+    },
+];
+
+const appCardClasses: Record<AppLink['variant'], string> = {
+    blue: 'bg-blue-50 border-blue-100 text-blue-800',
+    indigo: 'bg-indigo-50 border-indigo-100 text-indigo-800',
+    teal: 'bg-teal-50 border-teal-100 text-teal-800',
+    emerald: 'bg-emerald-50 border-emerald-100 text-emerald-800',
+    slate: 'bg-slate-100 border-slate-200 text-slate-800',
+};
+
 const LandingPage: React.FC = () => {
+    const navigate = useNavigate();
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [activeModal, setActiveModal] = useState<string | null>(null);
@@ -71,16 +121,30 @@ const LandingPage: React.FC = () => {
         return () => window.removeEventListener('scroll', handleScroll);
     }, [showLoginOptions]);
 
+    useEffect(() => {
+        const handleResize = () => {
+            if (window.innerWidth >= 1024) {
+                setIsMobileMenuOpen(false);
+            }
+        };
+
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
     const scrollToSection = (id: string) => {
         const element = document.getElementById(id);
         if (element) {
             element.scrollIntoView({ behavior: 'smooth' });
         }
         setIsMobileMenuOpen(false);
+        setShowLoginOptions(false);
     };
 
     const openModal = (modalName: string) => {
         setActiveModal(modalName);
+        setIsMobileMenuOpen(false);
+        setShowLoginOptions(false);
         document.body.style.overflow = 'hidden'; // Prevent background scrolling
     };
 
@@ -89,19 +153,65 @@ const LandingPage: React.FC = () => {
         document.body.style.overflow = 'auto';
     };
 
+    const closeMenus = () => {
+        setIsMobileMenuOpen(false);
+        setShowLoginOptions(false);
+    };
+
+    const handleAppAccess = (app: AppLink) => {
+        closeMenus();
+
+        if (app.type === 'internal') {
+            navigate(app.href);
+            return;
+        }
+
+        const openedWindow = window.open(app.href, '_blank', 'noopener,noreferrer');
+
+        if (!openedWindow) {
+            toast.error('Pop-up blocked. Please allow pop-ups or open the app link manually.');
+            return;
+        }
+
+        toast.success(`${app.label} opened in a new tab.`);
+    };
+
+    const renderAppLink = (app: AppLink, compact = false) => {
+        const className = compact
+            ? `block w-full rounded-xl border px-4 py-3 text-left font-semibold transition-all hover:-translate-y-0.5 hover:shadow-md ${appCardClasses[app.variant]}`
+            : `block w-full rounded-2xl border p-4 text-left transition-all hover:-translate-y-0.5 hover:shadow-md ${appCardClasses[app.variant]}`;
+
+        const content = (
+            <>
+                <h3 className={`${compact ? 'text-sm' : 'text-base'} font-bold`}>{app.label}</h3>
+                <p className={`${compact ? 'mt-1 text-xs' : 'mt-2 text-xs'} text-slate-600`}>{app.description}</p>
+            </>
+        );
+
+        return (
+            <button
+                key={app.label}
+                type="button"
+                onClick={() => handleAppAccess(app)}
+                className={className}
+            >
+                {content}
+            </button>
+        );
+    };
+
     // Happy clients slider is rendered directly below the Programs section.
-    console.log("***activeModal:****", activeModal);
     return (
         <div className="min-h-screen bg-slate-50 font-sans text-slate-800 relative">
 
             {/* --- MODALS (Overlays) --- */}
             {activeModal && (
-                <div className={`fixed inset-0 z-[60] flex w-full h-full bg-white`}>
-                    <div className={`w-full h-full relative `}>
+                <div className="fixed inset-0 z-[60] flex h-full w-full bg-white">
+                    <div className="relative h-full w-full overflow-y-auto">
                         {activeModal !== 'events' && (
                             <button
                                 onClick={closeModal}
-                                className="absolute top-4 right-4 bg-slate-100 hover:bg-slate-200 p-2 rounded-full transition-colors"
+                                className="absolute right-4 top-4 z-10 rounded-full bg-slate-100 p-2 transition-colors hover:bg-slate-200"
                             >
                                 <CloseIcon />
                             </button>
@@ -111,14 +221,14 @@ const LandingPage: React.FC = () => {
                         {activeModal === 'events' && (
                             <button
                                 onClick={closeModal}
-                                className=" absolute top-4 right-4 bg-slate-100 hover:bg-slate-200 p-2 rounded-full transition-colors z-10"
+                                className="absolute right-4 top-4 z-10 rounded-full bg-slate-100 p-2 transition-colors hover:bg-slate-200"
                             >
                                 <CloseIcon />
                             </button>
                         )}
 
                         {/* Content for Core Challenges Modal */}
-                        <div className="container mx-auto px-4 py-4 h-full flex justify-center items-center">
+                        <div className="container mx-auto flex min-h-full items-center justify-center px-4 py-16 sm:px-6">
 
                             {/* Content for Core Challenges Modal (FULL SCREEN VERTICAL FLOW) */}
                             <ChallengesModal activeModal={activeModal} />
@@ -166,7 +276,7 @@ const LandingPage: React.FC = () => {
                 className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? 'bg-white shadow-md py-2' : 'bg-transparent py-4'
                     }`}
             >
-                <div className="container mx-auto px-4 md:px-6 flex justify-between items-center">
+                <div className="container mx-auto flex items-center justify-between gap-3 px-4 md:px-6">
                     {/* Logo */}
                     <div className="flex items-center cursor-pointer" onClick={() => scrollToSection('home')}>
                         {/* USER REQUEST 1: Logo Placeholder */}
@@ -178,14 +288,14 @@ const LandingPage: React.FC = () => {
                     </div>
 
                     {/* Desktop Nav */}
-                    <nav className="hidden lg:flex items-center space-x-6 xl:space-x-8">
-                        {['Home', 'Courses', 'Why Foundation', 'Happy Clients'].map((item) => (
+                    <nav className="hidden items-center space-x-5 lg:flex xl:space-x-7">
+                        {navItems.map((item) => (
                             <button
-                                key={item}
-                                onClick={() => scrollToSection(item.toLowerCase().replace(' ', '-'))}
+                                key={item.label}
+                                onClick={() => scrollToSection(item.target)}
                                 className="text-sm font-semibold text-slate-600 hover:text-blue-700 transition-colors"
                             >
-                                {item}
+                                {item.label}
                             </button>
                         ))}
                         <button
@@ -214,79 +324,19 @@ const LandingPage: React.FC = () => {
                         <div className="relative">
                             <button
                                 onClick={() => setShowLoginOptions(!showLoginOptions)}
-                                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-full text-sm font-bold transition-all shadow-sm hover:shadow-md flex items-center"
+                                className="flex items-center rounded-full bg-blue-600 px-5 py-2 text-sm font-bold text-white shadow-sm transition-all hover:bg-blue-700 hover:shadow-md"
                             >
                                 Login
                                 <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
                             </button>
 
                             {showLoginOptions && (
-                                <div className="absolute top-full right-0 mt-3 w-80 bg-white rounded-2xl shadow-2xl border border-blue-100 p-4 animate-fade-in z-50">
-                                    <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider px-2 mb-3">
+                                <div className="animate-fade-in absolute right-0 top-full z-50 mt-3 w-[min(22rem,calc(100vw-2rem))] rounded-2xl border border-blue-100 bg-white p-4 shadow-2xl">
+                                    <div className="mb-3 px-2 text-xs font-semibold uppercase tracking-wider text-slate-500">
                                         Quick Access
                                     </div>
-                                    <div className="grid gap-3 max-h-[60vh] overflow-y-auto pr-1">
-                                        <Link
-                                            to="/login-form"
-                                            className="block bg-blue-50 p-3 rounded-xl border border-blue-100 transition-all text-left hover:shadow-md hover:-translate-y-0.5"
-                                        >
-                                            <h3 className="font-bold text-blue-800">E-Learning (LMS)</h3>
-                                            <p className="text-xs text-slate-600 mt-1">For students, teachers, and admins</p>
-                                        </Link>
-                                        <Link
-                                            to="https://learning-management-system-jade-one.vercel.app/"
-                                            className="block bg-blue-50 p-3 rounded-xl border border-slate-200 transition-all text-left hover:shadow-md hover:-translate-y-0.5"
-                                        >
-                                            <h3 className="font-bold text-blue-800">Spectropy OS</h3>
-                                            <p className="text-xs text-slate-600 mt-1">The Central Operating System for All Spectropy Products and Intelligence Systems</p>
-                                        </Link>
-
-                                        <Link
-                                            to="https://ra-portal-frontend.vercel.app/login"
-                                            className="block bg-blue-50 p-3 rounded-xl border border-slate-200 transition-all text-left hover:shadow-md hover:-translate-y-0.5"
-                                        >
-                                            <h3 className="font-bold text-blue-800">RA Portal</h3>
-                                            <p className="text-xs text-slate-600 mt-1">Results and Analysis Portal</p>
-                                        </Link>
-
-                                        <Link
-                                            to="https://academy.spectropy.com/s/authenticate?url=/"
-                                            className="block bg-blue-50 p-3 rounded-xl border border-slate-200 transition-all text-left hover:shadow-md hover:-translate-y-0.5"
-                                        >
-                                            <h3 className="font-bold text-blue-800">DITP</h3>
-                                            <p className="text-xs text-slate-600 mt-1">Digital Interactive Teaching Product</p>
-                                        </Link>
-
-                                        <Link
-                                            to="https://lms.spectropy.com/"
-                                            className="block bg-blue-50 p-3 rounded-xl border border-slate-200 transition-all text-left hover:shadow-md hover:-translate-y-0.5"
-                                        >
-                                            <h3 className="font-bold text-blue-800">Tab Exams</h3>
-                                            <p className="text-xs text-slate-600 mt-1">Online Assessment Platform</p>
-                                        </Link>
-                                        <Link
-                                            to="https://pms.spectropy.com/"
-                                            className="block bg-blue-50 p-3 rounded-xl border border-slate-200 transition-all text-left hover:shadow-md hover:-translate-y-0.5"
-                                        >
-                                            <h3 className="font-bold text-blue-800">PMS</h3>
-                                            <p className="text-xs text-slate-600 mt-1">Project Management System</p>
-                                        </Link>
-                                        <Link
-                                            to="https://spectropy-csm.onrender.com/"
-                                            className="block bg-blue-50 p-3 rounded-xl border border-slate-200 transition-all text-left hover:shadow-md hover:-translate-y-0.5"
-                                        >
-                                            <h3 className="font-bold text-blue-800">CSM</h3>
-                                            <p className="text-xs text-slate-600 mt-1">Client Service Management</p>
-                                        </Link>
-                                        <a
-                                            href="https://tlm-generator.vercel.app/"
-                                            target="_blank"
-                                            rel="noreferrer"
-                                            className="block bg-blue-50 p-3 rounded-xl border border-slate-200 transition-all text-left hover:shadow-md hover:-translate-y-0.5"
-                                        >
-                                            <h3 className="font-bold text-blue-800">TLM Generator</h3>
-                                            <p className="text-xs text-slate-600 mt-1">Generate teaching-learning materials</p>
-                                        </a>
+                                    <div className="grid max-h-[60vh] gap-3 overflow-y-auto pr-1">
+                                        {appLinks.map((app) => renderAppLink(app))}
                                     </div>
                                 </div>
                             )}
@@ -295,8 +345,9 @@ const LandingPage: React.FC = () => {
 
                     {/* Mobile Menu Toggle */}
                     <button
-                        className="lg:hidden text-slate-700"
+                        className="rounded-full p-2 text-slate-700 transition-colors hover:bg-white/70 lg:hidden"
                         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                        aria-label={isMobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
                     >
                         {isMobileMenuOpen ? <CloseIcon /> : <MenuIcon />}
                     </button>
@@ -304,106 +355,75 @@ const LandingPage: React.FC = () => {
 
                 {/* Mobile Nav Dropdown */}
                 {isMobileMenuOpen && (
-                    <div className="absolute top-full left-0 w-full bg-white shadow-xl border-t border-slate-100 lg:hidden flex flex-col p-4 space-y-4">
-                        {['Home', 'Courses', 'Why Foundation', 'Happy Clients', 'Awards/Rewards'].map((item) => (
+                    <div className="absolute left-0 top-full w-full border-t border-slate-100 bg-white shadow-xl lg:hidden">
+                        <div className="mx-auto flex max-h-[calc(100vh-5rem)] w-full max-w-7xl flex-col gap-4 overflow-y-auto px-4 py-4">
+                        {navItems.map((item) => (
                             <button
-                                key={item}
-                                onClick={() => scrollToSection(item.toLowerCase().replace(' ', '-'))}
-                                className="text-left text-slate-700 font-medium py-2 border-b border-slate-50"
+                                key={item.label}
+                                onClick={() => scrollToSection(item.target)}
+                                className="border-b border-slate-100 py-2 text-left font-medium text-slate-700"
                             >
-                                {item}
+                                {item.label}
                             </button>
                         ))}
                         <button
-                            onClick={() => { openModal('blog'); setIsMobileMenuOpen(false); }}
-                            className="text-left text-slate-700 font-medium py-2 border-b border-slate-50"
+                            onClick={() => openModal('Awards/Rewards')}
+                            className="border-b border-slate-100 py-2 text-left font-medium text-slate-700"
                         >
-                            Blog
+                            Awards/Rewards
                         </button>
                         <button
-                            onClick={() => { setActiveModal('events'); setIsMobileMenuOpen(false); }}
-                            className="text-left text-slate-700 font-medium py-2 border-b border-slate-50"
+                            onClick={() => openModal('events')}
+                            className="border-b border-slate-100 py-2 text-left font-medium text-slate-700"
                         >
-                            Events
+                            Client Services
                         </button>
                         <button
                             onClick={() => scrollToSection('contact-footer')}
-                            className="text-left text-slate-700 font-medium py-2 border-b border-slate-50"
+                            className="border-b border-slate-100 py-2 text-left font-medium text-slate-700"
                         >
                             Contact
                         </button>
-                        <div className="pt-2 flex flex-col gap-2">
-                            <span className="text-xs font-bold text-slate-400 uppercase">Login Options:</span>
-                            <Link
-                                to="https://ra-portal-frontend.vercel.app/login"
-                                className="bg-blue-50 text-blue-700 py-3 rounded-lg font-bold text-center block"
-                            >
-                                RA Portal
-                            </Link>
-                            <Link
-                                to="/login"
-                                className="bg-blue-600 text-white py-3 rounded-lg font-bold text-center block"
-                            >
-                                E-Learning
-                            </Link>
-                            <Link
-                                to="https://academy.spectropy.com/s/authenticate?url=/"
-                                className="bg-blue-600 text-white py-3 rounded-lg font-bold text-center block"
-                            >
-                                DITP
-                            </Link>
-                            <Link
-                                to="https://lms.spectropy.com/"
-                                className="bg-blue-600 text-white py-3 rounded-lg font-bold text-center block"
-                            >
-                                Tab Exams
-                            </Link>
-                            <Link
-                                to="https://pms.spectropy.com/"
-                                className="bg-blue-600 text-white py-3 rounded-lg font-bold text-center block"
-                            >
-                                PMS
-                            </Link>
-                            <Link
-                                to="https://spectropy-csm.onrender.com/"
-                                className="bg-blue-600 text-white py-3 rounded-lg font-bold text-center block"
-                            >
-                                CMS
-                            </Link>
+                        <div className="rounded-2xl bg-slate-50 p-4">
+                            <span className="text-xs font-bold uppercase text-slate-400">Quick Access</span>
+                            <div className="mt-3 grid gap-3">
+                                {appLinks.map((app) => renderAppLink(app, true))}
+                            </div>
+                        </div>
                         </div>
                     </div>
                 )}
             </header>
 
             {/* --- SCROLL 1: HERO + PURPOSE --- */}
-            <section id="home" className="relative min-h-screen flex flex-col pt-24 pb-12 overflow-hidden bg-gradient-to-br from-blue-50 to-indigo-50">
-                <div className="absolute top-0 right-0 w-2/3 h-full bg-white opacity-40 skew-x-12 transform translate-x-1/4 pointer-events-none"></div>
+            <section id="home" className="relative flex min-h-screen flex-col overflow-hidden bg-gradient-to-br from-blue-50 to-indigo-50 pb-12 pt-24 sm:pt-28">
+                <div className="pointer-events-none absolute right-0 top-0 h-full w-2/3 translate-x-1/4 transform bg-white opacity-40 skew-x-12"></div>
 
                 {/* --- PART 1: HERO TEXT & BRIDGE VISUAL --- */}
-                <div className="container mx-auto px-6 grid lg:grid-cols-2 gap-12 items-center relative z-10 mb-16 h-[80vh]">
+                <div className="container relative z-10 mx-auto mb-12 grid items-center gap-10 px-4 sm:px-6 lg:min-h-[80vh] lg:grid-cols-2 lg:gap-12">
 
                     {/* Text Content */}
-                    <div className="space-y-6 text-center lg:text-left ">
-                        <h1 className="text-4xl md:text-6xl font-extrabold text-slate-900 leading-tight">
+                    <div className="space-y-5 text-center lg:text-left">
+                        <h1 className="text-4xl font-extrabold leading-tight text-slate-900 sm:text-5xl md:text-6xl">
                             Building the <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">Foundation</span> of the Future
                         </h1>
                         <div className="inline-block px-4 py-1.5 bg-blue-100 text-blue-800 text-xs font-bold rounded-full uppercase tracking-wider mb-2">
                             The Purpose
                         </div>
-                        <p className="text-lg md:text-xl text-slate-600 leading-relaxed max-w-lg mx-auto lg:mx-0">
+                        <p className="mx-auto max-w-lg text-base leading-relaxed text-slate-600 sm:text-lg md:text-xl lg:mx-0">
                             Strengthen academic foundation in formative years. We bridge the critical gap between classroom learning and competitive successful.
                         </p>
 
-                        <div className="flex flex-col sm:flex-row gap-4 pt-4 justify-center lg:justify-start">
+                        <div className="flex flex-col justify-center gap-3 pt-2 sm:flex-row lg:justify-start">
                             <button
                                 onClick={() => scrollToSection('courses')}
-                                className="flex items-center justify-center bg-blue-900 hover:bg-blue-800 text-white px-8 py-4 rounded-xl font-bold text-lg transition-all shadow-lg hover:shadow-xl hover:-translate-y-1"
+                                className="flex items-center justify-center rounded-xl bg-blue-900 px-6 py-4 text-base font-bold text-white shadow-lg transition-all hover:-translate-y-1 hover:bg-blue-800 hover:shadow-xl sm:px-8 sm:text-lg"
                             >
                                 Explore Courses <ArrowRightIcon />
                             </button>
                             <button
                                 onClick={() => scrollToSection('why-foundation')}
-                                className="flex items-center justify-center bg-white border-2 border-slate-200 hover:border-blue-300 text-slate-700 px-8 py-4 rounded-xl font-bold text-lg transition-all"
+                                className="flex items-center justify-center rounded-xl border-2 border-slate-200 bg-white px-6 py-4 text-base font-bold text-slate-700 transition-all hover:border-blue-300 sm:px-8 sm:text-lg"
                             >
                                 Why Foundation Matters
                             </button>
@@ -414,25 +434,25 @@ const LandingPage: React.FC = () => {
                     <div className="relative flex flex-col items-center">
 
                         {/* 1. The Bridge Concept */}
-                        <div className="relative w-full aspect-video max-w-xl mb-6">
-                            <div className="relative z-10 bg-white p-5 md:p-8 rounded-3xl shadow-2xl border border-slate-100 flex flex-col justify-between h-full hover:scale-[1.02]">
+                        <div className="relative mb-6 w-full max-w-xl">
+                            <div className="relative z-10 flex min-h-[360px] flex-col justify-between rounded-3xl border border-slate-100 bg-white p-4 shadow-2xl transition-transform hover:scale-[1.02] sm:min-h-[420px] sm:p-6 md:p-8">
 
                                 <div className="text-center mb-3">
                                     <h3 className="inline-block px-3 py-1.5 bg-blue-100 text-blue-900 text-xl font-bold rounded-full uppercase tracking-wider mb-1">The Problem (The Gap)</h3>
                                 </div>
 
                                 {/* The Visual Bridge */}
-                                <div className="flex-grow flex items-center justify-between relative px-1">
+                                <div className="relative flex flex-grow items-center justify-between px-1">
                                     {/* Left Pillar */}
                                     <div className="flex flex-col items-center z-10">
-                                        <div className="w-16 h-24 bg-slate-200 rounded-t-lg border-x-2 border-t-2 border-slate-300 flex items-center justify-center">
+                                        <div className="flex h-20 w-14 items-center justify-center rounded-t-lg border-x-2 border-t-2 border-slate-300 bg-slate-200 sm:h-24 sm:w-16">
                                             <span className="text-4xl">🏫</span>
                                         </div>
-                                        <span className="mt-2 font-bold text-slate-600 text-sm">Classroom </span>
+                                        <span className="mt-2 text-center text-xs font-bold text-slate-600 sm:text-sm">Classroom </span>
                                     </div>
 
                                     {/* The Bridge & Gap */}
-                                    <div className="flex-grow h-full relative mx-2 flex flex-col justify-end pb-8 -mt-6">
+                                    <div className="-mt-4 mx-2 flex h-full flex-grow flex-col justify-end pb-8 sm:-mt-6">
                                         <div className="absolute bottom-8 left-0 w-5/12 h-2 bg-red-400 rounded-l-full transform -rotate-6 origin-left"></div>
                                         <div className="absolute bottom-8 right-0 w-5/12 h-2 bg-red-400 rounded-r-full transform rotate-6 origin-right"></div>
 
@@ -444,7 +464,7 @@ const LandingPage: React.FC = () => {
 
                                         {/* Spectropy Solution Overlay */}
                                         <div className="absolute bottom-12 left-0 right-0 flex justify-center">
-                                            <div className="bg-blue-600 text-white text-xs px-3 py-1 rounded-full shadow-lg z-20">
+                                            <div className="z-20 rounded-full bg-blue-600 px-3 py-1 text-[11px] text-white shadow-lg sm:text-xs">
                                                 Bridging the Gap
                                             </div>
                                         </div>
@@ -453,10 +473,10 @@ const LandingPage: React.FC = () => {
 
                                     {/* Right Pillar */}
                                     <div className="flex flex-col items-center z-10">
-                                        <div className="w-16 h-24 bg-blue-100 rounded-t-lg border-x-2 border-t-2 border-blue-200 flex items-center justify-center">
+                                        <div className="flex h-20 w-14 items-center justify-center rounded-t-lg border-x-2 border-t-2 border-blue-200 bg-blue-100 sm:h-24 sm:w-16">
                                             <span className="text-4xl">🏆</span>
                                         </div>
-                                        <span className="mt-2 font-bold text-slate-600 text-sm text-center leading-tight">Competitive<br />Exams </span>
+                                        <span className="mt-2 text-center text-xs font-bold leading-tight text-slate-600 sm:text-sm">Competitive<br />Exams </span>
                                     </div>
                                 </div>
 
@@ -467,9 +487,9 @@ const LandingPage: React.FC = () => {
                         </div>
 
                         {/* 2. The Vision Block (Added Below Problem Block) */}
-                        <div className="w-full max-w-xl bg-white rounded-2xl p-4 shadow-lg border border-indigo-100 flex items-center gap-4 transform hover:scale-[1.02] transition-transform">
+                        <div className="flex w-full max-w-xl flex-col gap-4 rounded-2xl border border-indigo-100 bg-white p-4 shadow-lg transition-transform hover:scale-[1.02] sm:flex-row sm:items-center">
                             {/* Simple Image Placeholder */}
-                            <div className="w-20 h-20 md:w-24 md:h-24 bg-indigo-50 rounded-xl flex-shrink-0 flex items-center justify-center text-4xl border border-indigo-100">
+                            <div className="flex h-20 w-20 flex-shrink-0 items-center justify-center rounded-xl border border-indigo-100 bg-indigo-50 text-4xl md:h-24 md:w-24">
                                 🚀
                             </div>
                             {/* Vision Text */}
@@ -485,8 +505,8 @@ const LandingPage: React.FC = () => {
                 </div>
 
                 {/* --- PART 2: CHALLENGES & SOLUTION BLOCKS --- */}
-                <div className="container mx-auto px-6 relative z-10">
-                    <div className="grid md:grid-cols-2 gap-12 max-w-6xl mx-auto">
+                <div className="container relative z-10 mx-auto px-4 sm:px-6">
+                    <div className="mx-auto grid max-w-6xl gap-6 md:grid-cols-2 md:gap-8 lg:gap-12">
 
                         {/* Core Challenges Block */}
                         <div className="bg-red-50 rounded-3xl p-8 md:p-10 border border-red-100 relative overflow-hidden group hover:shadow-xl transition-all">
@@ -542,14 +562,14 @@ const LandingPage: React.FC = () => {
             <FutureFoundationSlider />
 
             {/* --- SCROLL 3: PROGRAMS + TRUST + CTA (USER REQUEST 5) --- */}
-            <section id="courses" className="py-24 bg-slate-900 text-white relative">
-                <div className="container mx-auto px-6">
-                    <div className="mb-16 text-center md:text-left">
+            <section id="courses" className="relative bg-slate-900 py-20 text-white sm:py-24">
+                <div className="container mx-auto px-4 sm:px-6">
+                    <div className="mb-12 text-center md:mb-16 md:text-left">
                         <h2 className="text-3xl md:text-4xl font-bold mb-4">Programs Designed for Excellence</h2>
                         <p className="text-slate-400 max-w-2xl">Tailored academic architectures for every student's potential.</p>
                     </div>
 
-                    <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-20">
+                    <div className="mb-16 grid gap-6 md:grid-cols-2 lg:mb-20 lg:grid-cols-4">
 
                         {/* USER REQUEST 5: Future Foundation Program (New) */}
                         <div className="bg-slate-800 rounded-2xl p-6 border border-slate-700 hover:border-blue-500 transition-all flex flex-col">
@@ -597,18 +617,18 @@ const LandingPage: React.FC = () => {
                     </div>
 
                     {/* Happy Clients Slider - keep inside the Programs section */}
-                    <div id="happy-clients" className="mb-20">
+                    <div id="happy-clients" className="mb-16 lg:mb-20">
                         <HappyClientsSlider />
                     </div>
 
                     {/* --- COMBINED CONTACT SECTION */}
-                    <div id="contact-footer" className="py-20">
+                    <div id="contact-footer" className="py-12 sm:py-16 lg:py-20">
 
-                        <div className="container mx-auto px-4 mb-10">
+                        <div className="container mx-auto mb-10 px-4">
                             <p className="text-center text-slate-400 text-xs font-extrabold uppercase tracking-[0.2em] mb-6">
                                 Trusted by Forward-Thinking Campuses
                             </p>
-                            <div className="flex flex-wrap justify-center gap-12 md:gap-8 opacity-50 grayscale hover:grayscale-0 transition-all duration-500">
+                            <div className="flex flex-wrap justify-center gap-8 opacity-50 grayscale transition-all duration-500 hover:grayscale-0 md:gap-8">
                                 {/* Visual Placeholders for Logos - Replace with <img /> if needed */}
                                 <h3 className="text-xl md:text-2xl font-serif font-bold text-slate-300 hover:text-slate-500 transition-colors cursor-default">CITY SCHOOL</h3>
                                 <h3 className="text-xl md:text-2xl font-mono font-bold text-slate-300 hover:text-slate-500 transition-colors cursor-default">GLOBAL ACADEMY</h3>
@@ -618,22 +638,22 @@ const LandingPage: React.FC = () => {
                         </div>
 
                         {/* Main CTA & Contact Block */}
-                        <div className="container mx-auto px-1 md:px-1">
-                            <div className="relative bg-gradient-to-br from-blue-900 via-indigo-900 to-slate-900 rounded-[2.5rem] overflow-hidden shadow-2xl p-6 md:p-6 lg:p-6">
+                        <div className="container mx-auto px-0">
+                            <div className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-blue-900 via-indigo-900 to-slate-900 p-5 shadow-2xl sm:rounded-[2.5rem] sm:p-6">
 
                                 {/* Abstract Background Decor */}
                                 <div className="absolute top-0 right-0 -mt-20 -mr-20 w-80 h-80 bg-blue-500/20 rounded-full blur-3xl"></div>
                                 <div className="absolute bottom-0 left-0 -mb-20 -ml-20 w-80 h-80 bg-indigo-500/20 rounded-full blur-3xl"></div>
 
-                                <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-10">
+                                <div className="relative z-10 flex flex-col items-start justify-between gap-8 lg:flex-row lg:items-center lg:gap-10">
 
                                     {/* LEFT: Heading & Actions */}
-                                    <div className="text-center lg:text-left lg:w-1/2 space-y-6">
-                                        <h2 className="text-3xl md:text-5xl font-extrabold text-white leading-tight">
+                                    <div className="space-y-5 text-center lg:w-1/2 lg:text-left">
+                                        <h2 className="text-3xl font-extrabold leading-tight text-white md:text-5xl">
                                             Ready to Build a <br />
                                             <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-teal-400">Future-Ready School?</span>
                                         </h2>
-                                        <p className="text-blue-200 text-lg max-w-md mx-auto lg:mx-0 leading-relaxed">
+                                        <p className="mx-auto max-w-md text-base leading-relaxed text-blue-200 sm:text-lg lg:mx-0">
                                             Join the partner network transforming academic ecosystems. Let's discuss your school's vision today.
                                         </p>
                                         <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start pt-4">
@@ -641,17 +661,17 @@ const LandingPage: React.FC = () => {
                                     </div>
 
                                     {/* RIGHT: Contact Details Card */}
-                                    <div className="lg:w-5/12 w-full bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl p-6 md:p-8 shadow-xl">
+                                    <div className="w-full rounded-3xl border border-white/10 bg-white/5 p-5 shadow-xl backdrop-blur-md sm:p-6 md:p-8 lg:w-5/12">
                                         <div className="space-y-3">
 
                                             {/* Address */}
-                                            <div className="flex items-start space-x-4 group">
+                                            <div className="group flex items-start space-x-4">
                                                 <div className="flex-shrink-0 w-12 h-12 bg-blue-600/20 rounded-full flex items-center justify-center text-blue-400 group-hover:bg-blue-600 group-hover:text-white transition-all">
                                                     <LocationIcon />
                                                 </div>
                                                 <div>
                                                     <h4 className="text-white font-bold text-sm uppercase tracking-wide mb-1 opacity-80">Headquarters</h4>
-                                                    <p className="text-blue-100 text-sm leading-relaxed">
+                                                    <p className="break-words text-sm leading-relaxed text-blue-100">
                                                         G94H+MJP, Beside Guru Global School, <br />Hyderabad, Telangana 500085
                                                     </p>
                                                 </div>
@@ -661,7 +681,7 @@ const LandingPage: React.FC = () => {
                                             <div className="h-px w-full bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
 
                                             {/* Phones */}
-                                            <div className="flex items-start space-x-4 group">
+                                            <div className="group flex items-start space-x-4">
                                                 <div className="flex-shrink-0 w-12 h-12 bg-green-600/20 rounded-full flex items-center justify-center text-green-400 group-hover:bg-green-600 group-hover:text-white transition-all">
                                                     <PhoneIcon />
                                                 </div>
@@ -681,7 +701,7 @@ const LandingPage: React.FC = () => {
                                                 href="https://wa.me/919014341237"
                                                 target="_blank"
                                                 rel="noreferrer"
-                                                className="flex items-start space-x-4 group"
+                                                className="group flex items-start space-x-4"
                                                 aria-label="Chat on WhatsApp with +91 90143 41237"
                                             >
                                                 <div className="flex-shrink-0 w-12 h-12 bg-emerald-600/20 rounded-full flex items-center justify-center text-emerald-400 group-hover:bg-emerald-600 group-hover:text-white transition-all">
@@ -697,7 +717,7 @@ const LandingPage: React.FC = () => {
                                             <div className="h-px w-full bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
 
                                             {/* Email */}
-                                            <div className="flex items-start space-x-4 group">
+                                            <div className="group flex items-start space-x-4">
                                                 <div className="flex-shrink-0 w-12 h-12 bg-purple-600/20 rounded-full flex items-center justify-center text-purple-400 group-hover:bg-purple-600 group-hover:text-white transition-all">
                                                     <MailIcon />
                                                 </div>

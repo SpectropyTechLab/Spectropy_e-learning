@@ -1,8 +1,13 @@
 // frontend/src/services/api.ts
 import axios from 'axios';
 
+const rawBaseUrl = import.meta.env.VITE_API_BASE_URL?.trim();
+const normalizedBaseUrl = rawBaseUrl
+  ? rawBaseUrl.replace(/\/+$/, '')
+  : 'http://localhost:5000';
+
 const api = axios.create({
-  baseURL: `${import.meta.env.VITE_API_BASE_URL}/api` || 'http://localhost:5000/api',
+  baseURL: `${normalizedBaseUrl}/api`,
 });
 
 // Add auth token to requests
